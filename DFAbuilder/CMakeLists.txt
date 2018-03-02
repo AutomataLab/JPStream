@@ -8,7 +8,7 @@ find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
 FLEX_TARGET(RSCANNER ${CMAKE_CURRENT_SOURCE_DIR}/src/Lexer/r_scanner.l
-${CMAKE_CURRENT_BINARY_DIR}/r_scanner.cpp DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/r_scanner.h COMPILE_FLAGS ${ADDITIONAL_FLEX_FLAGS})
+${CMAKE_CURRENT_BINARY_DIR}/r_scanner.cpp COMPILE_FLAGS "--header-file=${CMAKE_CURRENT_BINARY_DIR}/r_scanner.h")
 BISON_TARGET(RPARSER ${CMAKE_CURRENT_SOURCE_DIR}/src/Lexer/r_parser.y
 ${CMAKE_CURRENT_BINARY_DIR}/r_parser.cpp COMPILE_FLAGS "-d -v")
 ADD_FLEX_BISON_DEPENDENCY(RSCANNER RPARSER)
@@ -19,7 +19,6 @@ include_directories(src include runtime)
 file(GLOB lib_source_files
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Lexer/*.cpp
-    ${BISON_RPARSER_OUTPUTS} ${FLEX_RSCANNER_OUTPUTS}
 )
 
-add_library(${PROJECT_NAME} STATIC ${lib_source_files})
+add_library(${PROJECT_NAME} STATIC ${lib_source_files} ${BISON_RPARSER_OUTPUTS} ${FLEX_RSCANNER_OUTPUTS})

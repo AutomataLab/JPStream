@@ -40,7 +40,7 @@ protected:
 };
 
 IPassable* RegexParser::Execute(IPassable* data, IPassable* join_data) {
-    return regex_model;
+    return nullptr;
 }
 
 }  // namespace dragontooth

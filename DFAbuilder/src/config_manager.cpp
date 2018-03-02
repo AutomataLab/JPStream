@@ -1,20 +1,7 @@
 #include "config_manager.hpp"
-#include "cmdline.h"
 
 using namespace std;
 namespace dragontooth {
-
-int ConfigManager::ParseArgs(int argc, char** argv) {
-    cmdline::parser parser;
-    parser.add<string>("lexer", 'l', "lexer scheme for lexical analysis", false, "normal", cmdline::oneof<string>("none", "normal", "parallel"));
-    parser.add<string>("parser", 'p', "parser scheme for gramma analysis", false, "LALR", cmdline::oneof<string>("none", "LALR", "DEPP", "EXLALR"));
-    parser.add<string>("output", 'o', "output file for the final code");
-    parser.add("utf8", '\0', "enable uft8 support", false, true);
-    parser.add("estring", '\0', "enable estring support", false, false);
-    parser.add("eqclass", 'e', "enable equivalence class support", false, true);
-    parser.add("minidfa", 'm', "enable minimize dfa in lexer", false, true);
-    parser.add("compresstable", 'c', "enable minimize dfa in lexer", false, true);
-}
 
 void ConfigManager::initDefault() {
     // components
