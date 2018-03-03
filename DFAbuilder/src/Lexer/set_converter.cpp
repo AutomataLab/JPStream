@@ -1,6 +1,6 @@
 #include "Lexer/set_converter.hpp"
 #include "Lexer/charset.hpp"
-
+#include "Lexer/model_core.hpp"
 namespace dragontooth {
 
 void SetConverter::Convert(RegexSet* itemset) {
@@ -29,7 +29,12 @@ void SetConverter::Convert(RegexSet* itemset) {
 }
 
 IPassable* SetConverter::Execute(IPassable* data, IPassable* join_data) {
-    
+    RegexModel* model = dynamic_cast<RegexModel*>(data);
+    for (int i = 0; i < model->size(); ++i) {
+        auto p = model->at(i);
+        ConvertAll(p->root);
+    }
+    return model;
 }
 
 void SetConverter::traverses_model(RegexItem* root) {

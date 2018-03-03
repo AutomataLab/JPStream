@@ -18,18 +18,11 @@ namespace dragontooth {
  * This structure is a item of Regex Model. It means an element in rule list.
  */
 struct RegexModelItem {
-    std::string name;
-    std::string value_name;
-    std::string source;
-    std::set<std::string> prerequisites;  // TODO: Support prerequisites
-    std::string script;
     RegexItem* root;
     DFA* dfa;
-    int rank;
 
     friend std::ostream& operator<<(std::ostream& out,
                                     const RegexModelItem& that) {
-        out << that.name << " : " << that.source << std::endl;
         that.dfa->print();
         return out;
     }
@@ -41,11 +34,8 @@ struct RegexModelItem {
  */
 class RegexModel : public IPassable {
 public:
-    void Add(const std::string& name, 
-             const std::string& value_name,
-             const std::string& source) {
-        auto p = new RegexModelItem{name, value_name, source};
-        p->rank = rules.size();
+    void Add(RegexItem* root) {
+        auto p = new RegexModelItem{root};
         rules.push_back(p);
     }
     

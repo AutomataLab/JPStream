@@ -4,12 +4,14 @@
 #include <set>
 #include <vector>
 #include "Lexer/regex_model.hpp"
+#include "pass.hpp"
+
 namespace dragontooth {
 
 /**
  * In DFA, the state 0 is the illegal state, first state from 1
  */
-class DFA {
+class DFA : public IPassable {
 public:
 	DFA() : input_max(256) {}
 	DFA(int input_max) : input_max(input_max) {}
@@ -42,10 +44,12 @@ public:
 
 	// @brief this stop state is the map of state number to actual token id
 	std::vector<int> stopState;
-protected:
+
 	int input_max;
 	int Top;
 	int Bottom;
+
+protected:
 
 	void createNewArea(int base, int s, const std::vector<int>& objvec);
 	void createLinkArea(int base, int s, const std::vector<int>& objvec);

@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "pass.hpp"
 
 namespace dragontooth {
 
@@ -28,7 +29,7 @@ class RegexRef;
  * @brief RegexItem is the basic class of the model. It has all the common
  * methods for all Items and it defined the Extern Operator of this Item.
  */
-class RegexItem {
+class RegexItem : public IPassable {
 public:
     RegexItem() {}
     virtual ~RegexItem() {}
@@ -167,6 +168,7 @@ protected:
 class RegexChar : public RegexItem {
 public:
     RegexChar() {}
+    RegexChar(unsigned int tr) { ch = tr; }
     // create an escape character, if no escape, we just create the character
     RegexChar(const char* tr) { ch = escape_char(tr); }
     RegexChar(const RegexChar& other) : ch(other.ch) {}
@@ -210,6 +212,8 @@ public:
     RegexSet(const RegexSet& other)
         : data(other.data), charset(other.charset) {}
     virtual ~RegexSet() {}
+
+    static RegexSet* createNegative(regex_char x);
 
     // create an escape character collection
     static RegexSet* getPreset(const char* tr);

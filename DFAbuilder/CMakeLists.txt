@@ -22,3 +22,5 @@ file(GLOB lib_source_files
 )
 
 add_library(${PROJECT_NAME} STATIC ${lib_source_files} ${BISON_RPARSER_OUTPUTS} ${FLEX_RSCANNER_OUTPUTS})
+add_executable(dfatest ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp)
+target_link_libraries(dfatest DFAbuilder)

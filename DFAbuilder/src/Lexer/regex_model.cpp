@@ -154,5 +154,23 @@ void RegexList::BuildFollow() {
     }
 }
 
+RegexSet* RegexSet::createNegative(regex_char x) {
+    std::vector<unsigned int> stack;
+    std::string temp = "^\\U";
+    for (int i = 0; i < 8; ++i) {
+        unsigned int t = (x >> (4*i)) & 15;
+        stack.push_back(t);
+    }
+    for (int i = 0; i < 8; ++i) {
+        if (stack.back() < 10)
+            temp += ('0' + stack.back());
+        else
+            temp += ('A' + stack.back() - 10);
+        stack.pop_back();
+    }
+    std::cout << temp << std::endl;
+    return new RegexSet(temp.c_str());
+}
+
 
 }  // namespace dragontooth

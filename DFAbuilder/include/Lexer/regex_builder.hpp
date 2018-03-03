@@ -21,8 +21,6 @@ public:
     DFA* CreateDFA(RegexItem* item);
     
     virtual IPassable* Execute(IPassable* data, IPassable* join_data);
-
-
     
 protected:
     bool GetNextSet(const std::set<RegexItem*>& setNode, std::set<RegexItem*>& setNodeNext, regex_char a);

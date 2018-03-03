@@ -72,8 +72,9 @@ void DFAMixer::addStopState(RegexModel* model, const std::vector<int>& newvec,
 
 IPassable* DFAMixer::Execute(IPassable* data, IPassable* join_data) {
     RegexModel* model = dynamic_cast<RegexModel*>(data);
+    if (model->size() == 1) return model->at(0)->dfa;
     Combine(model);
-    return model;
+    return model->main_dfa;
 }
 
 }  // namespace dragontooth
