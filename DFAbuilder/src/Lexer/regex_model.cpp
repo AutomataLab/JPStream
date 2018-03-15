@@ -141,15 +141,15 @@ void RegexList::BuildFollow() {
     RegexItem::BuildFollow();
     if (!enableOr) {
         RegexItem* last = nullptr;
-        for (auto p : items) {
-            if (last) {
+        for (auto p = items.begin(); p != items.end(); ++p) {
+            for (auto q = p+1; q != items.end(); ++q) {
                 // for each pos in the firstpos set of p should be a follower of each lastpos set of last element
-                for (auto q : last->lastpos) {
-                    for (auto k : p->firstpos)
-                        q->followpos.insert(k);
+                for (auto t : (*p)->lastpos) {
+                    for (auto k : (*q)->firstpos)
+                        t->followpos.insert(k);
                 }
-            }
-            last = p;
+                if ((*q)->nullable == false) break;
+            }            
         }
     }
 }
