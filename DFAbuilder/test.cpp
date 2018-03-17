@@ -18,7 +18,10 @@ using namespace dragontooth;
 void CallDemo() {
     RegexList* list = new RegexList();
     list->Add(new RegexChar(1));
-    list->Add(new RegexSet("^\x02"));
+    auto* p = new RegexSet("^\x02"); 
+    p->setOpt(RegexItem::re_repetition);
+    list->Add(p);
+    list->Add(new RegexChar(2));
     list->Add(new RegexChar(3));
     RegexModel* model = new RegexModel();
     model->input_max = 10;
