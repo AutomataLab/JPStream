@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project("JSONPath")
 
-include_directories(src include)
+include_directories(src include DFAbuilder/include DFAbuilder/runtime)
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
