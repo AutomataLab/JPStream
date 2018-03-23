@@ -7,8 +7,14 @@ project("DFAbuilder")
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+if (WIN32)
+    set (ADDITIONAL_FLEX_FLAGS "--wincompat")
+else()
+    set (ADDITIONAL_FLEX_FLAGS "")
+endif()
+
 FLEX_TARGET(RSCANNER ${CMAKE_CURRENT_SOURCE_DIR}/src/Lexer/r_scanner.l
-${CMAKE_CURRENT_BINARY_DIR}/r_scanner.cpp COMPILE_FLAGS "--header-file=${CMAKE_CURRENT_BINARY_DIR}/r_scanner.h")
+${CMAKE_CURRENT_BINARY_DIR}/r_scanner.cpp COMPILE_FLAGS "--header-file=${CMAKE_CURRENT_BINARY_DIR}/r_scanner.h ${ADDITIONAL_FLEX_FLAGS}")
 BISON_TARGET(RPARSER ${CMAKE_CURRENT_SOURCE_DIR}/src/Lexer/r_parser.y
 ${CMAKE_CURRENT_BINARY_DIR}/r_parser.cpp COMPILE_FLAGS "-d -v")
 ADD_FLEX_BISON_DEPENDENCY(RSCANNER RPARSER)

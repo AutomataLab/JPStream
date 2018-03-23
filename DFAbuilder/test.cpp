@@ -23,9 +23,15 @@ void CallDemo() {
     list->Add(p);
     list->Add(new RegexChar(2));
     list->Add(new RegexChar(3));
+
+    RegexList* list2 = new RegexList();
+    list2->Add(new RegexChar(1));
+    list2->Add(new RegexChar(3));
+
     RegexModel* model = new RegexModel();
     model->input_max = 10;
     model->Add(list);
+    model->Add(list2);
 
     SetConverter* start = new SetConverter();
     RegexBuilder* builder = new RegexBuilder();
