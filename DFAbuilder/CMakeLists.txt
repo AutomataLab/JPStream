@@ -20,7 +20,6 @@ ${CMAKE_CURRENT_BINARY_DIR}/r_parser.cpp COMPILE_FLAGS "-d -v")
 ADD_FLEX_BISON_DEPENDENCY(RSCANNER RPARSER)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(src include runtime)
 
 file(GLOB lib_source_files
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
