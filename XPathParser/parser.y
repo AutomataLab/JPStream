@@ -32,34 +32,85 @@ void xxerror (XXLTYPE * yylloc, yyscan_t locp, XPathNode **root, const char *msg
 	char *string;
 }
 
-%token <str> R_ID R_CHAR R_STRING R_SET R_PRESET
-%type <item> item item_with_opt
-%type <list> list regex
-%start regex
+%token <string> STRING NCNAME
+%token <double> NUMBER
+%token DESC NEQ LEQ GEQ OR AND MOD DIV CURRENT PARENT
+%type <node> LocationPath
+%start LocationPath
 
 %%
 
-regex: list { $$ = new RegexList(true); $$->Add($1); parser->model = $$; }
-     | regex '|' list { $$ = $1; $$->Add($3); }
-     ;
+LocationPath: RelativeLocationPath 
+            | AbsoluteLocationPath
+            ;
 
-list: item_with_opt { $$ = new RegexList(); $$->Add($1); }
-    | list item_with_opt { $$ = $1; $$->Add($2); }
+AbsoluteLocationPath: '/'
+                    | '/' RelativeLocationPath
+                    | '//' RelativeLocationPath
+                    ;
+
+RelativeLocationPath: Step
+                    | RelativeLocationPath '/' Step	
+                    | RelativeLocationPath '//' Step
+                    ;
+
+Predicates: Predicate
+          | Predicates Predicate
+          | %empty
+          ;
+
+Step: AxisSpecifier NodeTest Predicates	
+    | '.'
+    | '..'
     ;
 
-item_with_opt: item '?' { $$ = $1; $$->setOpt(dragontooth::RegexItem::RegexExternOpt::re_optional); }
-             | item '*' { $$ = $1; $$->setOpt(dragontooth::RegexItem::RegexExternOpt::re_repetition); }
-             | item '+' { $$ = $1; $$->setOpt(dragontooth::RegexItem::RegexExternOpt::re_nonzero_repetition); }
-             | item { $$ = $1; }
+AxisSpecifier: NCNAME '::' 
+             | '@'
+             | %empty
              ;
 
-item: R_SET { $$ = new RegexSet($1); }
-    | R_PRESET { $$ = RegexSet::getPreset($1); }
-    | R_STRING { $$ = new RegexString($1); }
-    | R_CHAR { $$ = new RegexChar($1); }
-    | R_ID { $$ = parser->mapper->Find($1); /* This is very special that need parser support holding other substring */ }
-    | '(' regex ')' { $$ = $2; }
+NodeTest: NameTest
+        | NCNAME '(' ')'
+        | NCNAME '(' STRING ')'	
+        ;
+    
+Predicate: '[' Expr ']'	
+         ;
+
+Expr: Expr OR Expr
+    | Expr AND Expr
+    | Expr '=' Expr
+    | Expr NEQ Expr
+    | Expr '<' Expr
+    | Expr '>' Expr
+    | Expr LEQ Expr
+    | Expr GEQ Expr
+    | Expr '+' Expr
+    | Expr '-' Expr
+    | Expr '*' Expr
+    | Expr DIV Expr
+    | Expr MOD Expr
+    | '-' Expr
+    | '(' Expr ')'
+    | NUMBER
+    | REFERENCE
+    | STRING
+    | NCNAME '(' ExprList ')'
     ;
+
+ExprList: %empty
+        | Expr
+        | ExprList Expr
+        ;
+
+NameTest: '*'
+        | NCNAME ':' '*'
+        | QName
+        ;
+
+QName: NCNAME ':' NCNAME
+     | NCNAME
+     ;
 
 %%
 

@@ -1,7 +1,7 @@
 %{
 
 #include <string.h>
-#include "parser.hpp"
+#include "parser.h"
 
 #define SAVE_TOKEN yylval->str = maketoken(yytext, yyleng)
 #define SAVE_STRING yylval->str = makestring(yytext, yyleng)
@@ -17,15 +17,17 @@ static char* makestring(const char* data, int len);
 %option never-interactive
 %option prefix="xx"
 
-NameStartChar 	":"|[A-Z]|"_"|[a-z]|[#xC0-#xD6]|[#xD8-#xF6]|[#xF8-#x2FF]|[#x370-#x37D]|[#x37F-#x1FFF]|[#x200C-#x200D]|[#x2070-#x218F]|[#x2C00-#x2FEF]|[#x3001-#xD7FF]|[#xF900-#xFDCF]|[#xFDF0-#xFFFD]|[#x10000-#xEFFFF]
-NameChar	    NameStartChar|"-"|"."|[0-9]|#xB7|[#x0300-#x036F]|[#x203F-#x2040]
-Name			NameStartChar(NameChar)*
+NameStartChar 	":"|[A-Z]|"_"|[a-z]
+NameChar	    {NameStartChar}|"-"|"."|[0-9]
+Name			{NameStartChar}({NameChar})*
 
-NCNameStartChar [A-Z]|"_"|[a-z]|[#xC0-#xD6]|[#xD8-#xF6]|[#xF8-#x2FF]|[#x370-#x37D]|[#x37F-#x1FFF]|[#x200C-#x200D]|[#x2070-#x218F]|[#x2C00-#x2FEF]|[#x3001-#xD7FF]|[#xF900-#xFDCF]|[#xFDF0-#xFFFD]|[#x10000-#xEFFFF]
-NCNameChar	    NCNameStartChar|"-"|"."|[0-9]|#xB7|[#x0300-#x036F]|[#x203F-#x2040]
-NCName			NCNameStartChar(NCNameChar)*
+NCNameStartChar [A-Z]|"_"|[a-z]
+NCNameChar	    {NCNameStartChar}|"-"|"."|[0-9]
+NCName			{NCNameStartChar}({NCNameChar})*
 
+QName 			{NCName}":"{NCName}|{NCName}
 
+Digits			[0-9]+
 
 %%
 
@@ -71,9 +73,25 @@ NCName			NCNameStartChar(NCNameChar)*
 
 "div"					return DIV;
 
+"$"						return '$';
+
+"@"						return '@';
+
+"."						return CURRENT;
+
+".."					return PARENT;
+
+":"						return ':';
+
+"::"					return AXES;
+
 \"(\\.|[^\"\\])*\"		SAVE_STRING; return STRING;
 
+\'(\\.|[^\'\\])*\'		SAVE_STRING; return STRING;
 
+{Digits}("."{Digits})?|"."{Digits} 		SAVE_TOKEN; return NUMBER;
+
+{NCName}				SAVE_TOKEN; return NCNAME;
 
 
 
