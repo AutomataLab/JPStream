@@ -30,12 +30,13 @@ void xxerror (XXLTYPE * yylloc, yyscan_t locp, XPathNode **root, const char *msg
 %union {
     double number;
 	char *string;
+    XPathNode *node;
 }
 
-%token <string> STRING NCNAME
+%token <string> STRING NCNAME REFERENCE
 %token <double> NUMBER
-%token DESC NEQ LEQ GEQ OR AND MOD DIV CURRENT PARENT
-%type <node> LocationPath
+%token DESC NEQ LEQ GEQ OR AND MOD DIV PARENT AXES 
+%type <node> LocationPath AbsoluteLocationPath RelativeLocationPath Predicates Step AxisSpecifier NodeTest Predicate Expr ExprList NameTest QName 
 %start LocationPath
 
 %%
@@ -46,12 +47,12 @@ LocationPath: RelativeLocationPath
 
 AbsoluteLocationPath: '/'
                     | '/' RelativeLocationPath
-                    | '//' RelativeLocationPath
+                    | DESC RelativeLocationPath
                     ;
 
 RelativeLocationPath: Step
                     | RelativeLocationPath '/' Step	
-                    | RelativeLocationPath '//' Step
+                    | RelativeLocationPath DESC Step
                     ;
 
 Predicates: Predicate
@@ -61,10 +62,10 @@ Predicates: Predicate
 
 Step: AxisSpecifier NodeTest Predicates	
     | '.'
-    | '..'
+    | PARENT
     ;
 
-AxisSpecifier: NCNAME '::' 
+AxisSpecifier: NCNAME AXES 
              | '@'
              | %empty
              ;

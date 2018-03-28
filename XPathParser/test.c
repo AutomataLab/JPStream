@@ -11,7 +11,7 @@ XPathNode* Analysis(const char* data) {
     res = xxparse(sc, &root);
     xx_delete_buffer(buffer, sc);
     xxlex_destroy(sc);
-    return model;
+    return root;
 }
 
 int main() {

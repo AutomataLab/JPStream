@@ -15,24 +15,7 @@
 using namespace std;
 using namespace dragontooth;
 
-void CallDemo() {
-    RegexList* list = new RegexList();
-    list->Add(new RegexChar(1));
-    auto* p = new RegexSet("^\x02"); 
-    p->setOpt(RegexItem::re_repetition);
-    list->Add(p);
-    list->Add(new RegexChar(2));
-    list->Add(new RegexChar(3));
-
-    RegexList* list2 = new RegexList();
-    list2->Add(new RegexChar(1));
-    list2->Add(new RegexChar(3));
-
-    RegexModel* model = new RegexModel();
-    model->input_max = 10;
-    model->Add(list);
-    model->Add(list2);
-
+void CallDemo(RegexModel* model) {
     SetConverter* start = new SetConverter();
     RegexBuilder* builder = new RegexBuilder();
     DFAMixer* mixer = new DFAMixer();
@@ -57,7 +40,61 @@ void CallDemo() {
     }
 }
 
+void Test1() {
+    RegexList* list = new RegexList();
+    list->Add(new RegexChar(1));
+    auto* p = new RegexSet("^\x02"); 
+    p->setOpt(RegexItem::re_repetition);
+    list->Add(p);
+    list->Add(new RegexChar(2));
+    list->Add(new RegexChar(3));
+
+    RegexList* list2 = new RegexList();
+    list2->Add(new RegexChar(1));
+    list2->Add(new RegexChar(3));
+
+    RegexModel* model = new RegexModel();
+    model->input_max = 10;
+    model->Add(list);
+    model->Add(list2);
+    CallDemo(model);
+}
+
+void Test2() {
+    RegexList* list = new RegexList();
+    list->Add(new RegexChar(1));
+    list->Add(new RegexChar(2));
+    list->Add(new RegexChar(3));
+    list->Add(new RegexChar(4));
+
+    RegexList* list2 = new RegexList();
+    list2->Add(new RegexChar(1));
+    list2->Add(new RegexChar(2));
+    list2->Add(new RegexChar(3));
+    list2->Add(new RegexChar(5));
+
+    RegexList* list3 = new RegexList();
+    list3->Add(new RegexChar(1));
+    list3->Add(new RegexChar(2));
+    list3->Add(new RegexChar(3));
+    list3->Add(new RegexChar(4));
+    list3->Add(new RegexChar(5));
+    list3->Add(new RegexChar(6));
+    list3->Add(new RegexChar(7));
+    list3->Add(new RegexChar(8));
+    list3->Add(new RegexChar(9));
+
+
+    RegexModel* model = new RegexModel();
+    model->input_max = 10;
+    model->Add(list);
+    model->Add(list2);
+    model->Add(list3);
+    CallDemo(model);
+}
+
 int main() {
-    CallDemo();
+    Test1();
+    Test2();
     return 0;
 }

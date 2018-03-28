@@ -3,8 +3,8 @@
 #include <string.h>
 #include "parser.h"
 
-#define SAVE_TOKEN yylval->str = maketoken(yytext, yyleng)
-#define SAVE_STRING yylval->str = makestring(yytext, yyleng)
+#define SAVE_TOKEN yylval->string = maketoken(yytext, yyleng)
+#define SAVE_STRING yylval->string = makestring(yytext, yyleng)
 
 static char* maketoken(const char* data, int len);
 static char* makestring(const char* data, int len);
@@ -77,7 +77,7 @@ Digits			[0-9]+
 
 "@"						return '@';
 
-"."						return CURRENT;
+"."						return '.';
 
 ".."					return PARENT;
 
@@ -99,14 +99,14 @@ Digits			[0-9]+
 
 
 static char* maketoken(const char* data, int len) {
-	char* str = new char[len+1];
+	char* str = (char*) malloc(len+1); 
 	strncpy(str, data, len);
 	str[len] = 0;
 	return str;
 }
 
 static char* makestring(const char* data, int len) {
-	char* str = new char[len-1];
+	char* str = (char*) malloc(len-1); 
 	strncpy(str, data+1, len-2);
 	str[len-2] = 0;
 	return str;

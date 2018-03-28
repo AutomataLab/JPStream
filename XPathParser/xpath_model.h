@@ -142,7 +142,7 @@ inline void xpn_print_node(XPathNode* node, int depth, bool print_return) {
             break;
         }
         case xnt_function: {
-            printf("%s (");
+            printf("%s (", node->string);
             break;
         }
         case xnt_attribute: {
@@ -167,6 +167,7 @@ inline void xpn_print_node(XPathNode* node, int depth, bool print_return) {
             right_is_child = 1;
         }
         default:
+            break;
     }
     if (print_return) printf("\n");
     if (node->children.left) xpn_print_node(node->children.left, depth+1, children_print_return);
