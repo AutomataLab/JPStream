@@ -46,8 +46,8 @@ public:
 	std::vector<int> stopState;
 
 	int input_max;
-	int Top;
-	int Bottom;
+	int Top = 0;
+	int Bottom = 0;
 
 protected:
 
