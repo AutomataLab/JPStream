@@ -6,15 +6,15 @@ XPathNode* Analysis(const char* data) {
     XPathNode* root;
     yyscan_t sc;
     int res;
-    xxlex_init(&sc);
-    YY_BUFFER_STATE buffer = xx_scan_string(data, sc);
-    res = xxparse(sc, &root);
-    xx_delete_buffer(buffer, sc);
-    xxlex_destroy(sc);
+    jlex_init(&sc);
+    YY_BUFFER_STATE buffer = j_scan_string(data, sc);
+    res = jparse(sc, &root);
+    j_delete_buffer(buffer, sc);
+    jlex_destroy(sc);
     return root;
 }
 
 int main() {
-
-    
+    XPathNode* root = Analysis("$.store.book[?(@.price < 10)].title");
+    return 0;
 }
