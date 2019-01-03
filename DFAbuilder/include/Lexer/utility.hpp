@@ -29,7 +29,7 @@ inline regex_char HexStringToDec(const std::string& hex) {
     return dec;
 }
 
-inline regex_char EscapeChar(const char* tr) {
+inline regex_char EscapeChar(const char*& tr) {
     int ws;
     if (*tr != '\\') return *tr;
     ++tr;

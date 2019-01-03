@@ -12,7 +12,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "pass.hpp"
 
 namespace dragontooth {
 
@@ -29,12 +28,13 @@ class RegexRef;
  * @brief RegexItem is the basic class of the model. It has all the common
  * methods for all Items and it defined the Extern Operator of this Item.
  */
-class RegexItem : public IPassable {
+class RegexItem {
 public:
     RegexItem() {}
+    RegexItem(const RegexItem& other): opt(other.opt) {}
     virtual ~RegexItem() {}
 
-    enum RegexItemType { rt_list, rt_set, rt_string, rt_char, rt_ref };
+    enum RegexItemType { rt_list, rt_set, rt_char, rt_ref };
     enum RegexExternOpt {
         re_none,
         re_optional,
@@ -45,6 +45,8 @@ public:
     virtual RegexItem* deepCopy() const = 0;
     virtual void setOpt(RegexExternOpt opt) { this->opt = opt; }
     virtual RegexExternOpt getOpt() { return opt; }
+    virtual void setNonGreedy(bool nongreedy) { this->nongreedy = nongreedy; }
+    virtual bool isNonGreedy() { return nongreedy; }
 
 protected:
     RegexExternOpt opt = re_none;
@@ -59,8 +61,26 @@ public:
     virtual void addTerminator();
     virtual bool isEdge(regex_char) const { return false; }
     virtual void printFollowpos() {}
+    virtual void printTree(int level) {
+        for (int i = 0; i < level; ++i) std::cerr << "  ";
+        switch(getItemType()) {
+            case rt_list: std::cerr << "list "; break;
+            case rt_set: std::cerr << "set "; break;
+            case rt_char: std::cerr << "char "; break;
+            case rt_ref: std::cerr << "ref "; break;
+            default: break;
+        }
+        switch(getOpt()) {
+            case re_optional:  std::cerr << '?'; break;
+            case re_repetition:  std::cerr << '*'; break;
+            case re_nonzero_repetition:  std::cerr << '+'; break;
+            default: break;
+        }
+    }
     bool isTerminator = false;
-    bool nullable;
+    bool nullable = false;
+    bool nongreedy = false;
+    bool keepout = false;
     std::set<RegexItem*> firstpos;
     std::set<RegexItem*> lastpos;
     std::set<RegexItem*> followpos;
@@ -73,7 +93,8 @@ public:
 class RegexList : public RegexItem {
 public:
     RegexList(bool enableOr = false) { this->enableOr = enableOr; }
-    RegexList(const RegexList& other) : enableOr(other.enableOr) {
+    RegexList(const char* str) { escapeString(str); }
+    RegexList(const RegexList& other) : enableOr(other.enableOr), RegexItem(other) {
         for (auto p : other.items) items.push_back(p->deepCopy());
     }
     virtual ~RegexList() {}
@@ -86,7 +107,7 @@ public:
     virtual RegexItem* deepCopy() const { return new RegexList(*this); }
 
 protected:
-    bool enableOr;
+    bool enableOr = false;
     std::vector<RegexItem*> items;
 
     virtual void BuildNullable();
@@ -98,6 +119,16 @@ protected:
             std::cout << std::endl;
         }
     }
+
+    virtual void printTree(int level) {
+        RegexItem::printTree(level);
+        if (enableOr) std::cerr << " |";
+        std::cerr << std::endl;
+        for (auto p : items) 
+            p->printTree(level+1);
+    }
+
+    void escapeString(const char* str);
 
     friend std::ostream& operator<<(std::ostream& out, const RegexList& that) {
         bool first = true;
@@ -120,58 +151,24 @@ protected:
     }
 };
 
-/**
- * The string in regex. It can effectively reduce the number of nodes.
- */
-class RegexString : public RegexItem {
-public:
-    RegexString(const char* str) : data(str) { escapeString(); }
-    RegexString(const RegexString& other)
-        : data(other.data), ch_data(other.ch_data) {}
-    virtual ~RegexString() {}
-    virtual RegexItemType getItemType() const { return rt_string; }
-    virtual RegexItem* deepCopy() const { return new RegexString(*this); }
-    virtual bool isEdge(regex_char ch) const {
-        if (ch_data.empty())
-            return false;
-        else
-            return ch_data[0] == ch;
-    }
-    const std::vector<regex_char>& getChData() const { return ch_data; }
-    std::vector<regex_char>& getChData() { return ch_data; }
-
-protected:
-    std::string data;
-    std::vector<regex_char> ch_data;
-    void escapeString();
-
-    virtual void printFollowpos() {
-        std::cout << "string: " << data << std::endl;
-        for (auto p : followpos) {
-            std::cout << '\t' << *p;
-        }
-    }
-
-    friend std::ostream& operator<<(std::ostream& out,
-                                    const RegexString& that) {
-        out << '"' << that.data << '"';
-        if (that.opt == re_optional) out << '?';
-        if (that.opt == re_repetition) out << '*';
-        if (that.opt == re_nonzero_repetition) out << '+';
-        return out;
-    }
-};
 
 /**
  * One char in regex
  */
 class RegexChar : public RegexItem {
 public:
-    RegexChar() {}
-    RegexChar(unsigned int tr) { ch = tr; }
+    RegexChar() { ch = 0; }
     // create an escape character, if no escape, we just create the character
-    RegexChar(const char* tr) { ch = escape_char(tr); }
-    RegexChar(const RegexChar& other) : ch(other.ch) {}
+    RegexChar(regex_char c) {
+        ch = c;
+    }
+    RegexChar(const char* tr) { 
+        ch = escape_char(tr); 
+    }
+    RegexChar(const char** tr) { 
+        ch = escape_char(*tr); 
+    }
+    RegexChar(const RegexChar& other) : ch(other.ch), RegexItem(other) {}
     virtual ~RegexChar() {}
     virtual RegexItemType getItemType() const { return rt_char; }
     virtual RegexItem* deepCopy() const { return new RegexChar(*this); }
@@ -183,12 +180,18 @@ public:
             std::cout << '\t' << *p;
         }
     }
+    virtual void printTree(int level) {
+        RegexItem::printTree(level);
+        std::cerr << ' ' << ch << std::endl;
+    }
 
     regex_char getChar() const { return ch; }
-    regex_char& getChar() { return ch; }
+    void setChar(regex_char _ch) { ch = _ch; }
+    // regex_char& getChar() { return ch; }
 
-protected:
-    regex_char escape_char(const char* tr);
+
+private:
+    regex_char escape_char(const char*& tr);
     regex_char ch = 0;
 
     friend std::ostream& operator<<(std::ostream& out, const RegexChar& that) {
@@ -210,10 +213,8 @@ public:
     RegexSet() {}
     RegexSet(const char* tr) { data = tr; }
     RegexSet(const RegexSet& other)
-        : data(other.data), charset(other.charset) {}
+        : data(other.data), charset(other.charset), RegexItem(other) {}
     virtual ~RegexSet() {}
-
-    static RegexSet* createNegative(regex_char x);
 
     // create an escape character collection
     static RegexSet* getPreset(const char* tr);
@@ -240,7 +241,10 @@ public:
             std::cout << '\t' << *p;
         }
     }
-
+    virtual void printTree(int level) {
+        RegexItem::printTree(level);
+        std::cerr << ' ' << data << std::endl;
+    }
 protected:
     std::string data;
     std::set<regex_char> charset;
@@ -259,7 +263,7 @@ class RegexRef : public RegexItem {
 public:
     virtual ~RegexRef() {}
     virtual RegexItemType getItemType() const { return rt_ref; }
-    RegexRef(const RegexRef& other) : name(other.name) {
+    RegexRef(const RegexRef& other) : name(other.name), RegexItem(other) {
         ref = other.ref->deepCopy();
     }
     RegexItem* getRef() { return ref; }
@@ -277,14 +281,22 @@ protected:
     RegexItem* ref;
     virtual void BuildNullable();
     virtual void BuildFirstAndLast();
+    virtual void BuildFollow();
     friend std::ostream& operator<<(std::ostream& out, const RegexRef& that) {
         out << '{';
-        out << that.name << " : " << *that.ref;
+        // out << that.name << " : " << *that.ref;
+        out << *that.ref;
         out << '}';
         if (that.opt == re_optional) out << '?';
         if (that.opt == re_repetition) out << '*';
         if (that.opt == re_nonzero_repetition) out << '+';
         return out;
+    }
+
+    virtual void printTree(int level) {
+        RegexItem::printTree(level);
+        std::cerr << ' ' << name << std::endl;
+        ref->printTree(level+1);
     }
 };
 
@@ -312,7 +324,7 @@ public:
         if (it == mapper.end())
             return NULL;
         else
-            return it->second;
+            return (RegexRef*)(it->second->deepCopy());
     }
 
 protected:

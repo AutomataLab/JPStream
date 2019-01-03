@@ -4,90 +4,56 @@
 #include <set>
 #include <vector>
 #include "Lexer/regex_model.hpp"
-#include "pass.hpp"
+#include <cstdint>
 
 namespace dragontooth {
 
 /**
  * In DFA, the state 0 is the illegal state, first state from 1
  */
-class DFA : public IPassable {
+class DFA {
 public:
-	DFA() : input_max(256) {}
-	DFA(int input_max) : input_max(input_max) {}
-	virtual ~DFA() {}
-	
-	int getStateSum() { return m_base.size(); }
-
-	// ========== State Map =========
-
 	/// @brief used to get the next state
-	int nextState(int s, regex_char a);
+	virtual int nextState(int s, regex_char a) = 0;
 
 	/// @brief add a new edge
-	void addEdge(int s, const std::vector<int>& objvec, int max);
+	virtual void addEdge(int s, const std::vector<int>& objvec, int max) = 0;
 
 	/// @brief check a state is the stop state, return the token id, or return 0 if not found
-	int isStopState(int s) {
+	virtual int isStopState(int s) {
+		if (s >= stopState.size()) return 0;
 		return stopState[s];
 	}
 
-    void setStopState(int s,int t) {
+    virtual void setStopState(int s,int t) {
         if (stopState.size() <= s) stopState.resize(s+1, 0);
         stopState[s] = t;
     }
 
-	std::vector<int> m_default;
-	std::vector<int> m_base;
-	std::vector<int> m_next;
-	std::vector<int> m_check;
+	virtual const std::vector<int32_t>& getStopState() {
+        if (stopState.size() <= state_num) stopState.resize(state_num+1, 0);
+		return stopState;
+	}
 
-	// @brief this stop state is the map of state number to actual token id
-	std::vector<int> stopState;
-
-	int input_max;
-	int Top = 0;
-	int Bottom = 0;
+	virtual uint32_t getStateSum() { return state_num; }
+	virtual uint32_t getInputSize() { return input_max; }
 
 protected:
+	DFA() : input_max(256) {}
+	DFA(int input_max) : input_max(input_max) {}
+	virtual ~DFA() {}
 
-	void createNewArea(int base, int s, const std::vector<int>& objvec);
-	void createLinkArea(int base, int s, const std::vector<int>& objvec);
+	int input_max;
+	uint32_t state_num = 1;
 
-	bool compareState(int s, const std::vector<int>& vec) {
-		int counter = 10;
-		if (m_default[s] > 0) return false;
-		for (int a = 1; a < vec.size(); ++a) {
-			if (vec[a] != nextState(s, a)) counter--;
-			if (counter <= 0) return false;
-		}
-		return true;
-	}
+	std::vector<int32_t> stopState;
 
-	int getValidSize(const std::vector<int>& vec, int max, int& most_frq) {
-		std::vector<int> sum(m_default.size()+1);
-		for (int q : vec) {
-			sum[q]++;
-		}
-		int most = 0;
-		for (int a = 0; a < sum.size(); ++a) {
-			int q = sum[a];
-			if (q > most) { most = q; most_frq = a; }
-		}
-		return vec.size() - most;
-	}
-
-	void checkSpace(int i) {
-		if (i >= m_next.size()) {
-            m_next.resize(i + 1);
-            m_check.resize(i + 1);
-        }
-	}
+/** Debug Functions */
 
 public:
-	void printArrays();
+	virtual void printArrays() = 0;
 
-	void print() {
+	virtual void print() {
 		for (int i = 1; i< input_max; ++i) {
 			printf("\t%d",i);
 		}

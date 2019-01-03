@@ -32,12 +32,13 @@ void EquivalenceClass::Add(CharSet& cset) {
 
 void EquivalenceClass::Rearrage() {
     vector<regex_char> v(eclass_sum + 1);
-
-    for (auto i : vec) if (i != 0) v[i] = 1;
+    // It will build a mapping array
+    for (auto i : vec) if (i != 0 && v[i] == 0) v[i] = 1;
     int p = 0;
+    // after marking, we rearrage the array
     for (int i = 1; i <= eclass_sum; ++i)
         if (v[i] != 0) v[i] = ++p;
-
+    
     eclass_sum = p;
     for (auto& i : vec) i = v[i];
     vec[0] = 0;

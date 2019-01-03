@@ -18,12 +18,8 @@ void ECSetConverter::Prescan(RegexItem* root) {
             ec->Add(cset);
             return;
         }
-        case RegexItem::rt_string: {
-            RegexString* ptr = dynamic_cast<RegexString*>(root);
-            ec->Add(ptr->getChData());
-            return;
-        }
         case RegexItem::rt_char: {
+            // FIXME: Sometimes the ecset builder is not right
             RegexChar* ptr = dynamic_cast<RegexChar*>(root);
             ec->Add(ptr->getChar());
             return;
@@ -39,14 +35,9 @@ void ECSetConverter::Convert(RegexItem* root) {
             ptr->setCharset(ec->makeSet(cset));
             return;
         }
-        case RegexItem::rt_string: {
-            RegexString* ptr = dynamic_cast<RegexString*>(root);
-            ptr->getChData() = ec->makeString(ptr->getChData());
-            return;
-        }
         case RegexItem::rt_char: {
             RegexChar* ptr = dynamic_cast<RegexChar*>(root);
-            ptr->getChar() = ec->makeChar(ptr->getChar());
+            ptr->setChar(ec->makeChar(ptr->getChar()));
             return;
         }
     }
@@ -64,6 +55,7 @@ IPassable* ECSetConverter::Execute(IPassable* data, IPassable* join_data) {
         ConvertAll(p->root);
     }
     model->input_max = ec->getSum();
+    model->ec = ec;
     return model;
 }
 
@@ -75,6 +67,11 @@ void ECSetConverter::traverses_model(RegexItem* root, bool isPrescan) {
             for (auto p : item) {
                 traverses_model(p, isPrescan);
             }
+            break;
+        }
+        case RegexItem::rt_ref: {
+            RegexRef* ptr = dynamic_cast<RegexRef*>(root);
+            traverses_model(ptr->getRef(), isPrescan);
             break;
         }
         default:

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "Lexer/regex_model.hpp"
 #include "Lexer/model_core.hpp"
+#include "Lexer/dfa_simple.hpp"
 
 using namespace std;
 namespace dragontooth {
@@ -15,14 +16,25 @@ IPassable* RegexBuilder::Execute(IPassable* data, IPassable* join_data) {
     for (int i = 0; i < model->size(); ++i) {
         auto p = model->at(i);
         PrescanModel(p->root);
+        // p->root->printTree(0);
         p->dfa = CreateDFA(p->root);
     }
     return model;
 }
 
+
+bool RegexBuilder::find_keepout(const set<RegexItem*>& now_set) {
+    for (auto p : now_set) {
+        if (p->keepout == true) {
+            return true;
+        }
+    }
+    return false;
+}
+
 DFA* RegexBuilder::CreateDFA(RegexItem* item) {
     item->addTerminator();
-    DFA* dfa = new DFA(input_max);
+    DFA* dfa = new DFASimple(input_max);
     int p = 0;
     // initialize queue and put the firstpos of root as the first element.
     RegexChar ch;
@@ -33,6 +45,9 @@ DFA* RegexBuilder::CreateDFA(RegexItem* item) {
     listSet.push_back(begin);
     vector<int> transform_buffer;
     while (p < listSet.size()) {
+        // This line will let all the set contain a keepout stop finding next edge
+        if (find_keepout(listSet[p])) { ++p; continue; }
+
         transform_buffer.clear();
         transform_buffer.resize(input_max);
         for (int a = 1; a < input_max; ++a) {
@@ -49,7 +64,7 @@ DFA* RegexBuilder::CreateDFA(RegexItem* item) {
                     if (isTerminator)
                         // we didn't know the token id now, it will be set later
                         dfa->setStopState(listSet.size(), 1);
-                    // 添加一条转移
+                    // add a new transform
                     transform_buffer[a] = listSet.size();
                 } else {
                     transform_buffer[a] = (i - listSet.begin()) + 1;

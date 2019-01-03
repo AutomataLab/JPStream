@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 #include "pass.hpp"
-#include "Lexer/regex_parser.hpp"
+#include "Lexer/dfa_compressed.hpp"
 #include "Lexer/ecset_converter.hpp"
 #include "Lexer/regex_builder.hpp"
 #include "Lexer/model_core.hpp"
@@ -21,17 +21,18 @@ void CallDemo(RegexModel* model) {
     DFAMixer* mixer = new DFAMixer();
     start->next(builder)->next(mixer);
 
-    DFA* dfa = start->ExecuteAll<DFA>(model);
+    RegexModel* data = start->ExecuteAll<RegexModel>(model);
+    DFACompressed* dfa = (DFACompressed*)(data->main_dfa);
     dfa->print();
 
     DTLexerState* lexer = dtl_Create();
     
     lexer->m_base = dfa->m_base.data();
-    lexer->m_next = (const uint32_t *)dfa->m_next.data();
-    lexer->m_check = (const uint32_t *)dfa->m_check.data();
+    lexer->m_next = dfa->m_next.data();
+    lexer->m_check = dfa->m_check.data();
     lexer->m_default = dfa->m_default.data();
-    lexer->m_token = dfa->stopState.data();
-    lexer->bottom = dfa->Bottom;
+    lexer->m_stop_state = dfa->getStopState().data();
+    lexer->bottom = dfa->getBottom();
     int state = 1, nextstate;
     for (int i = 0; i < 3; ++i) {
         nextstate = dtl_nextState(lexer, i+1, i+1);

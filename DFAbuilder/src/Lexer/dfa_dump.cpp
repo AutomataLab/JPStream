@@ -3,7 +3,7 @@
 namespace dragontooth {
 
 void DFADump::Save(DFA* dfa) {
-    
+    // TODO: save the DFA
 }
 
 IPassable* DFADump::Execute(IPassable* data, IPassable* join_data) {

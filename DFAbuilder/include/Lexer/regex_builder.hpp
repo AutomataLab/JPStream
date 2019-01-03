@@ -21,9 +21,11 @@ public:
     DFA* CreateDFA(RegexItem* item);
     
     virtual IPassable* Execute(IPassable* data, IPassable* join_data);
-    
+
 protected:
     bool GetNextSet(const std::set<RegexItem*>& setNode, std::set<RegexItem*>& setNodeNext, regex_char a);
+
+    bool find_keepout(const std::set<RegexItem*>& now_set);
 
     // @brief all input char need to be smaller than input_max
 	int input_max;

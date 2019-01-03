@@ -15,9 +15,6 @@ std::ostream& operator<<(std::ostream& out, const RegexItem& that) {
         case RegexItem::rt_set:
             out << dynamic_cast<const RegexSet&>(that);
             break;
-        case RegexItem::rt_string:
-            out << dynamic_cast<const RegexString&>(that);
-            break;
         case RegexItem::rt_ref:
             out << dynamic_cast<const RegexRef&>(that);
             break;
@@ -25,26 +22,26 @@ std::ostream& operator<<(std::ostream& out, const RegexItem& that) {
     return out;
 }
 
-void RegexString::escapeString() {
-    for (auto p = data.begin(); p != data.end(); ++p) {
-        if (*p != '\\') ch_data.push_back(*p);
-        else ch_data.push_back(CharEscape(p));
+void RegexList::escapeString(const char* data) {
+    for (auto p = data; *p != 0; ++p) {
+        Add(new RegexChar(&p));
     }
 }
 
-regex_char RegexChar::escape_char(const char* tr) {
+regex_char RegexChar::escape_char(const char*& tr) {
     return EscapeChar(tr);
 }
 
 RegexSet* RegexSet::getPreset(const char* tr) {
+    if (*tr == '.') return new RegexSet("^");
     ++tr;
     switch (*tr) {
         case 'd': return new RegexSet("0-9");
         case 'D': return new RegexSet("^0-9");
         case 'w': return new RegexSet("A-Za-z_");
         case 'W': return new RegexSet("^A-Za-z_");
-        case 's': return new RegexSet(" \t\v\f\r\n");
-        case 'S': return new RegexSet("^ \t\v\f\r\n");
+        case 's': return new RegexSet(" \\t\\v\\f\\r\\n");
+        case 'S': return new RegexSet("^ \\t\\v\\f\\r\\n");
     }
     return nullptr;
 }
@@ -68,13 +65,15 @@ void RegexItem::BuildNullable() {
 }
 
 void RegexRef::BuildNullable() {
+    ref->BuildNullable();
     nullable = ref->nullable;
+    if (opt == re_optional || opt == re_repetition) nullable = true;
 }
 
 void RegexList::BuildNullable() {
     for (auto p : items) 
         p->BuildNullable();
-                
+
     RegexItem::BuildNullable();
     if (nullable == false) {
         if (enableOr) {
@@ -96,6 +95,7 @@ void RegexItem::BuildFirstAndLast() {
 }
 
 void RegexRef::BuildFirstAndLast() {
+    ref->BuildFirstAndLast();
     firstpos = ref->firstpos;
     lastpos = ref->lastpos;
 }
@@ -126,12 +126,15 @@ void RegexList::BuildFirstAndLast() {
 }
 
 void RegexItem::BuildFollow() {
-    if (opt == re_nonzero_repetition || opt == re_repetition) {
-        for (auto q : lastpos) {
+    if (opt == re_nonzero_repetition || opt == re_repetition) 
+        for (auto q : lastpos) 
             for (auto k : firstpos)
                 q->followpos.insert(k);
-        }
-    }
+}
+
+void RegexRef::BuildFollow() {
+    ref->BuildFollow();
+    RegexItem::BuildFollow();
 }
 
 void RegexList::BuildFollow() {
@@ -149,27 +152,17 @@ void RegexList::BuildFollow() {
                         t->followpos.insert(k);
                 }
                 if ((*q)->nullable == false) break;
-            }            
+            }
+
+            // here we deal with the non-greedy matching
+            if ((*p)->nongreedy) {
+                // printf("nongreedy\n");
+                for (auto g : lastpos)
+                    g->keepout = true;
+            } 
+
         }
     }
-}
-
-RegexSet* RegexSet::createNegative(regex_char x) {
-    std::vector<unsigned int> stack;
-    std::string temp = "^\\U";
-    for (int i = 0; i < 8; ++i) {
-        unsigned int t = (x >> (4*i)) & 15;
-        stack.push_back(t);
-    }
-    for (int i = 0; i < 8; ++i) {
-        if (stack.back() < 10)
-            temp += ('0' + stack.back());
-        else
-            temp += ('A' + stack.back() - 10);
-        stack.pop_back();
-    }
-    std::cout << temp << std::endl;
-    return new RegexSet(temp.c_str());
 }
 
 

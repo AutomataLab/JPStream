@@ -1,26 +1,30 @@
 #include "Lexer/dfa_mixer.hpp"
 #include <algorithm>
 #include <vector>
-#include "Lexer/dfa.hpp"
+#include "Lexer/dfa_compressed.hpp"
 
 using namespace std;
 
 namespace dragontooth {
 
-void DFAMixer::Combine(RegexModel* model) {
-    // TODO: testing, support prerequisites
-    vector<int> states;
-    vector<vector<int>> statelist;
-    main_dfa = new DFA(model->input_max);
+int DFAMixer::find_states(vector<vector<int>>& statelist, int begin, int i, vector<int>& newvec) {
+    // find the begin state
+    auto beg = statelist.begin()+begin;
+    auto end = statelist.begin()+begin+1;
+    auto q = find(beg, end, newvec);
+    if (q != end) return begin;
 
-    for (int i = 0; i < model->size(); ++i) states.push_back(0);
-    statelist.push_back(states);
-    states.clear();
-    for (int i = 0; i < model->size(); ++i) states.push_back(1);
-    statelist.push_back(states);
-    addStopState(model, states, 1);
+    // find other part
+    if (i < statelist.size()) {
+        q = find(statelist.begin()+i, statelist.end(), newvec);
+        if (q != statelist.end()) return q - statelist.begin();
+    }
+    // can not find
+    return -1;
+}
 
-    int i = 0, p = 0;
+void DFAMixer::CombineSpecial(RegexModel* model, vector<vector<int>>& statelist, int begin, int top) {
+    int p = 0, i = begin;
     while (i < statelist.size()) {
         vector<int> transform_buffer(model->input_max);
         for (int c = 1; c < model->input_max; ++c) {
@@ -40,24 +44,75 @@ void DFAMixer::Combine(RegexModel* model) {
             if (all_zero) {
                 transform_buffer[c] = 0;
             } else {
-                auto i = find(statelist.begin(), statelist.end(), newvec);
-                if (i == statelist.end()) {
+                int q = find_states(statelist, begin, top, newvec);
+                if (q == -1) {
                     statelist.push_back(newvec);
                     p = statelist.size()-1;
                     addStopState(model, newvec, p);
                 } else
-                    p = (i - statelist.begin());
+                    p = q;
                 transform_buffer[c] = p;
             }
         }
         main_dfa->addEdge(i, transform_buffer, statelist.size());
-        ++i;
+        if (i == begin) i = top; else ++i;
     }
+}
+
+
+void DFAMixer::Combine(RegexModel* model) {
+    vector<int> states;
+    vector<vector<int>> statelist;
+    main_dfa = new DFACompressed(model->input_max);
+
+    for (int i = 0; i < model->size(); ++i) states.push_back(0);
+    statelist.push_back(states); // statelist[0]
+
+    set<string> prenames;
+    for (int i = 0; i < model->size(); ++i) {
+        const auto& pre = model->at(i)->prerequisites;
+        for (auto p : pre) 
+            if (p != "default")
+                prenames.insert(p);
+    }
+    // This is for default
+    states.clear();
+    for (int i = 0; i < model->size(); ++i) {
+        const auto& pre = model->at(i)->prerequisites;
+        if (pre.empty() || pre.find("default") != pre.end()) 
+            states.push_back(1);
+        else
+            states.push_back(0);
+    }
+    statelist.push_back(states);  // statelist[1]
+    addStopState(model, states, 1);
+
+    int count = 2;
+    // This is for other prerequisites
+    for (auto& name : prenames) {
+        states.clear();
+        for (int i = 0; i < model->size(); ++i) {
+            const auto& pre = model->at(i)->prerequisites;
+            if (!pre.empty() && pre.find(name) != pre.end()) 
+                states.push_back(1);
+            else
+                states.push_back(0);
+        }
+        statelist.push_back(states);  // statelist[2] ..
+        addStopState(model, states, count++);
+    }
+    
+    int size = statelist.size();
+    CombineSpecial(model, statelist, 1, size);
+
+    for (int i = 2; i < size; ++i) {
+        CombineSpecial(model, statelist, i, statelist.size());
+    }
+
     model->main_dfa = main_dfa;
 }
 
-void DFAMixer::addStopState(RegexModel* model, const std::vector<int>& newvec,
-                            int p) {
+void DFAMixer::addStopState(RegexModel* model, const std::vector<int>& newvec, int p) {
     for (int i = 0; i < newvec.size(); ++i) {
         if (newvec[i] != 0) {
             auto r = model->at(i);
@@ -72,9 +127,8 @@ void DFAMixer::addStopState(RegexModel* model, const std::vector<int>& newvec,
 
 IPassable* DFAMixer::Execute(IPassable* data, IPassable* join_data) {
     RegexModel* model = dynamic_cast<RegexModel*>(data);
-    if (model->size() == 1) return model->at(0)->dfa;
     Combine(model);
-    return model->main_dfa;
+    return model;
 }
 
 }  // namespace dragontooth

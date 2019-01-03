@@ -39,7 +39,7 @@ protected:
     void insert(regex_char p, regex_char q,
                 std::map<regex_char, regex_char>& m);
 
-    regex_char eclass_sum = 0;
+    regex_char eclass_sum = 1;
     std::vector<regex_char> vec;
 };
 
