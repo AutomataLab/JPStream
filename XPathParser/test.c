@@ -1,6 +1,6 @@
 #include "xpath_model.h"
-#include "parser.h"
-#include "scanner.h"
+#include "parser_j.h"
+#include "scanner_j.h"
 
 XPathNode* Analysis(const char* data) {
     XPathNode* root;

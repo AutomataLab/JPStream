@@ -35,7 +35,7 @@ void jerror (JLTYPE * yylloc, yyscan_t locp, XPathNode **root, const char *msg);
 
 %token <string> STRING NCNAME REFERENCE
 %token <double> NUMBER
-%token DESC NEQ LEQ GEQ OR AND MOD DIV PARENT AXES 
+%token DESC NEQ LEQ GEQ OR AND MOD DIV PARENT AXES RE EQ
 %type <node> LocationPath AbsoluteLocationPath RelativeLocationPath Predicates Step AxisSpecifier NodeTest Predicate Expr ExprList NameTest QName 
 %start LocationPath
 
