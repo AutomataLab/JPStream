@@ -17,15 +17,10 @@ static char* makestring(const char* data, int len);
 %option never-interactive
 %option prefix="j"
 
-NameStartChar 	":"|[A-Z]|"_"|[a-z]
-NameChar	    {NameStartChar}|"-"|"."|[0-9]
-Name			{NameStartChar}({NameChar})*
 
 NCNameStartChar [A-Z]|"_"|[a-z]
 NCNameChar	    {NCNameStartChar}|"-"|"."|[0-9]
 NCName			{NCNameStartChar}({NCNameChar})*
-
-QName 			{NCName}":"{NCName}|{NCName}
 
 Digits			[0-9]+
 
@@ -36,6 +31,12 @@ Digits			[0-9]+
 "*"						return '*';
 
 "-"						return '-';
+
+"+"						return '+';
+
+"/"						return '/';
+
+"%"						return '%';
 
 "?"						return '?';
 

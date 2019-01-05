@@ -33,11 +33,17 @@ void jerror (JLTYPE * yylloc, yyscan_t locp, XPathNode **root, const char *msg);
     XPathNode *node;
 }
 
-%token <string> STRING NCNAME REFERENCE
+%token <string> STRING NCNAME
 %token <number> NUMBER
-%token DESC NEQ LEQ GEQ OR AND MOD DIV PARENT AXES RE EQ
+%token NEQ LEQ GEQ OR AND PARENT RE EQ
 %type <node> AllPath LocationPath Number Property IndexList Predicate Expr  
 %start AllPath
+
+%left OR AND
+%left NEQ LEQ GEQ EQ '<' '>'
+%left '+' '-'
+%left '*' '/' 
+%left '(' '[' ')' ']'
 
 %%
 
@@ -54,9 +60,7 @@ Property: NCNAME {$$ = xpn_CreateID($1); }
     | '*' { $$ = xpn_CreateWildcard(); }
     ;
 
-Predicate: STRING { $$ = xpn_CreateString($1); }
-    | Number 
-    | Number ':' Number {$$ = xpn_CreateRange($1, $3);}
+Predicate: Number ':' Number {$$ = xpn_CreateRange($1, $3);}
     | ':' Number {$$ = xpn_CreateRange(NULL, $2);}
     | Number ':' {$$ = xpn_CreateRange($1, NULL);}
     | '*' { $$ = xpn_CreateWildcard(); }
@@ -82,26 +86,24 @@ Expr: Expr OR Expr  { $$ = xpn_CreateOperator(xot_or, $1, $3); }
     | Expr '+' Expr  { $$ = xpn_CreateOperator(xot_add, $1, $3); }
     | Expr '-' Expr  { $$ = xpn_CreateOperator(xot_minus, $1, $3); }
     | Expr '*' Expr  { $$ = xpn_CreateOperator(xot_multiply, $1, $3); }
-    | Expr DIV Expr  { $$ = xpn_CreateOperator(xot_div, $1, $3); }
-    | Expr MOD Expr  { $$ = xpn_CreateOperator(xot_mod, $1, $3); }
+    | Expr '/' Expr  { $$ = xpn_CreateOperator(xot_div, $1, $3); }
+    | Expr '%' Expr  { $$ = xpn_CreateOperator(xot_mod, $1, $3); }
     | '@' { $$ = xpn_CreateRef(); }
     | Number
     | STRING { $$ = xpn_CreateString($1); }
     ;
 
 Number: NUMBER { $$ = xpn_CreateNumber($1); }
-     | '-' NUMBER { $$ = xpn_CreateNumber(-$2); }
-     ;
+    | '-' NUMBER { $$ = xpn_CreateNumber(-$2); }
+    ;
 
-ExprList: %empty
-        | Expr
-        | ExprList Expr
-        ;
 
 %%
 
 void jerror (JLTYPE * yylloc, yyscan_t locp, XPathNode **root, const char *msg) {
 	fprintf(stderr, "error> %s\n", msg);
 	// TODO: add line number and detail
+    fprintf(stderr, "pos: %d\n", yylloc->first_column);
+    fprintf(stderr, "end: %d\n", yylloc->last_column);
 	exit(1);
 }
