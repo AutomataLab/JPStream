@@ -71,6 +71,8 @@ Digits			[0-9]+
 
 "."						return '.';
 
+","						return ',';
+
 ".."					return PARENT;
 
 ":"						return ':';
