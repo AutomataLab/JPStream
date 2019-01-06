@@ -239,8 +239,89 @@ static inline void xpn_print_node(XPathNode* node, int depth, bool print_return)
     if (node->children.right) xpn_print_node(node->children.right, depth+right_is_child, children_print_return);
 }
 
+
+static inline void xpn_print_jnode(XPathNode* node, int depth, bool print_return) {
+    bool children_print_return = true;
+    int right_is_child = 0;
+    xpn_print_space(depth);
+    switch (node->node_type) {
+        case xnt_concat: {
+            printf(".");
+
+            break;
+        }
+        case xnt_descendants: {
+            printf("//");
+            break;
+        }
+        case xnt_number: {
+            printf("number %.3f", node->number);
+            break;
+        }
+        case xnt_id: {
+            printf("%s", node->string);
+            break;
+        }
+        case xnt_function: {
+            printf("%s (", node->string);
+            break;
+        }
+        case xnt_attribute: {
+            printf("@%s", node->string);
+            break;
+        }
+        case xnt_string: {
+            printf("\"%s\"", node->string);
+            break;
+        }
+        case xnt_variable: {
+            printf("$%s", node->string);
+            break;
+        }
+        case xnt_predicate: {
+            printf("[");
+            break;
+        }
+        case xnt_operator: {
+            xpn_print_opt(node->opt);
+            right_is_child = 1;
+            break;
+        }
+        case xnt_root: {
+            printf("$");
+            break;
+        }
+        case xnt_script: {
+            printf("(");
+            break;
+        }
+        case xnt_fliter: {
+            printf("?(");
+            break;
+        }
+        case xnt_range: {
+            printf("[]");
+            break;
+        }
+        case xnt_reference: {
+            printf("@");
+            break;
+        }
+        default:
+            break;
+    }
+    if (print_return) printf("\n");
+    if (node->children.left) xpn_print_jnode(node->children.left, depth+1, children_print_return);
+    if (node->children.right) xpn_print_jnode(node->children.right, depth+1, children_print_return);
+}
+
+
 static inline void xpn_Print(XPathNode* root) {
     xpn_print_node(root, 0, true);
+} 
+
+static inline void xpn_PrintJSON(XPathNode* root) {
+    xpn_print_jnode(root, 0, true);
 } 
 
 

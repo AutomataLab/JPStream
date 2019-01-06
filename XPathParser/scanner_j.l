@@ -5,7 +5,7 @@
 
 #define SAVE_TOKEN yylval->string = maketoken(yytext, yyleng)
 #define SAVE_STRING yylval->string = makestring(yytext, yyleng)
-
+#define SAVE_DOUBLE {char* b = maketoken(yytext, yyleng); yylval->number = atof(b); free(b); }
 static char* maketoken(const char* data, int len);
 static char* makestring(const char* data, int len);
 
@@ -14,12 +14,11 @@ static char* makestring(const char* data, int len);
 /* show the line number */
 %option yylineno
 %option reentrant noyywrap
-%option never-interactive
 %option prefix="j"
 
 
 NCNameStartChar [A-Z]|"_"|[a-z]
-NCNameChar	    {NCNameStartChar}|"-"|"."|[0-9]
+NCNameChar	    {NCNameStartChar}|[0-9]
 NCName			{NCNameStartChar}({NCNameChar})*
 
 Digits			[0-9]+
@@ -82,11 +81,11 @@ Digits			[0-9]+
 
 \'(\\.|[^\'\\])*\'		SAVE_STRING; return STRING;
 
-{Digits}("."{Digits})?|"."{Digits} 		SAVE_TOKEN; return NUMBER;
+{Digits}("."{Digits})? 	SAVE_DOUBLE; return NUMBER;
 
 {NCName}				SAVE_TOKEN; return NCNAME;
 
-
+.						printf("tokenizer error\n");
 
 %%
 

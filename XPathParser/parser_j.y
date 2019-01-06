@@ -43,7 +43,7 @@ void jerror (JLTYPE * yylloc, yyscan_t locp, XPathNode **root, const char *msg);
 %left NEQ LEQ GEQ EQ '<' '>'
 %left '+' '-'
 %left '*' '/' 
-%left '(' '[' ')' ']'
+
 
 %%
 
@@ -91,6 +91,8 @@ Expr: Expr OR Expr  { $$ = xpn_CreateOperator(xot_or, $1, $3); }
     | '@' { $$ = xpn_CreateRef(); }
     | Number
     | STRING { $$ = xpn_CreateString($1); }
+    | Expr '.' Property { $$ = xpn_CreateConcat($1, $3); }
+    | Expr PARENT Property  { $$ = xpn_CreateParentConcat($1, $3); }
     ;
 
 Number: NUMBER { $$ = xpn_CreateNumber($1); }
