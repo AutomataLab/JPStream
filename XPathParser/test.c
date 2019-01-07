@@ -17,5 +17,11 @@ XPathNode* Analysis(const char* data) {
 int main() {
     XPathNode* root = Analysis("$.store.book[?(@.price < 10)].title");
     xpn_PrintJSON(root);
+
+    root = Analysis("$[?(@.a)]");
+    xpn_PrintJSON(root);
+
+    root = Analysis("$[?(@.a&&(@.b||@.c))]");
+    xpn_PrintJSON(root);
     return 0;
 }
