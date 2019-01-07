@@ -23,5 +23,8 @@ int main() {
 
     root = Analysis("$[?(@.a&&(@.b||@.c))]");
     xpn_PrintJSON(root);
+
+    root = Analysis("$[?((@.a||@.d&&(@.e||@.f))&&(@.b||@.c))]");
+    xpn_PrintJSON(root);
     return 0;
 }
