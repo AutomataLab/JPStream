@@ -27,15 +27,16 @@ typedef struct XPathNode {
     union {
         double number;
         char* string;
+        bool boolean;
         XPathOperatorType opt;
     };
-    struct { struct XPathNode *left, *right; } children;
+    struct XPathNode *left, *right;
 } XPathNode;
 
 static inline XPathNode* xpn_Create() {
     XPathNode* xpn = (XPathNode*) malloc(sizeof(XPathNode));
-    xpn->children.left = NULL;
-    xpn->children.right = NULL;
+    xpn->left = NULL;
+    xpn->right = NULL;
     return xpn;
 }
 
@@ -103,24 +104,24 @@ static inline XPathNode* xpn_CreateRef() {
 static inline XPathNode* xpn_CreateConcat(XPathNode* left, XPathNode* right) {
     XPathNode* xpn = xpn_Create();
     xpn->node_type = xnt_concat;
-    xpn->children.left = left;
-    xpn->children.right = right;
+    xpn->left = left;
+    xpn->right = right;
     return xpn;
 }
 
 static inline XPathNode* xpn_CreateRange(XPathNode* left, XPathNode* right) {
     XPathNode* xpn = xpn_Create();
     xpn->node_type = xnt_range;
-    xpn->children.left = left;
-    xpn->children.right = right;
+    xpn->left = left;
+    xpn->right = right;
     return xpn;
 }
 
 static inline XPathNode* xpn_CreateParentConcat(XPathNode* left, XPathNode* right) {
     XPathNode* xpn = xpn_Create();
     xpn->node_type = xnt_parent_concat;
-    xpn->children.left = left;
-    xpn->children.right = right;
+    xpn->left = left;
+    xpn->right = right;
     return xpn;
 }
 
@@ -128,8 +129,8 @@ static inline XPathNode* xpn_CreateParentConcat(XPathNode* left, XPathNode* righ
 static inline XPathNode* xpn_CreatePredicate(XPathNode* left, XPathNode* right) {
     XPathNode* xpn = xpn_Create();
     xpn->node_type = xnt_predicate;
-    xpn->children.left = left;
-    xpn->children.right = right;
+    xpn->left = left;
+    xpn->right = right;
     return xpn;
 }
 
@@ -137,8 +138,8 @@ static inline XPathNode* xpn_CreateOperator(XPathOperatorType opt, XPathNode* le
     XPathNode* xpn = xpn_Create();
     xpn->node_type = xnt_operator;
     xpn->opt = opt;
-    xpn->children.left = left;
-    xpn->children.right = right;
+    xpn->left = left;
+    xpn->right = right;
     return xpn;
 }
 
@@ -146,7 +147,7 @@ static inline XPathNode* xpn_CreateOperatorOne(XPathOperatorType opt, XPathNode*
     XPathNode* xpn = xpn_Create();
     xpn->node_type = xnt_operator;
     xpn->opt = opt;
-    xpn->children.left = left;
+    xpn->left = left;
     return xpn;
 }
 
@@ -154,14 +155,14 @@ static inline XPathNode* xpn_CreateOperatorOne(XPathOperatorType opt, XPathNode*
 static inline XPathNode* xpn_CreateScript(XPathNode* left) {
     XPathNode* xpn = xpn_Create();
     xpn->node_type = xnt_script;
-    xpn->children.left = left;
+    xpn->left = left;
     return xpn;
 }
 
 static inline XPathNode* xpn_CreateFliter(XPathNode* left) {
     XPathNode* xpn = xpn_Create();
     xpn->node_type = xnt_fliter;
-    xpn->children.left = left;
+    xpn->left = left;
     return xpn;
 }
 
@@ -235,8 +236,8 @@ static inline void xpn_print_node(XPathNode* node, int depth, bool print_return)
             break;
     }
     if (print_return) printf("\n");
-    if (node->children.left) xpn_print_node(node->children.left, depth+1, children_print_return);
-    if (node->children.right) xpn_print_node(node->children.right, depth+right_is_child, children_print_return);
+    if (node->left) xpn_print_node(node->left, depth+1, children_print_return);
+    if (node->right) xpn_print_node(node->right, depth+right_is_child, children_print_return);
 }
 
 
@@ -311,8 +312,8 @@ static inline void xpn_print_jnode(XPathNode* node, int depth, bool print_return
             break;
     }
     if (print_return) printf("\n");
-    if (node->children.left) xpn_print_jnode(node->children.left, depth+1, children_print_return);
-    if (node->children.right) xpn_print_jnode(node->children.right, depth+1, children_print_return);
+    if (node->left) xpn_print_jnode(node->left, depth+1, children_print_return);
+    if (node->right) xpn_print_jnode(node->right, depth+1, children_print_return);
 }
 
 

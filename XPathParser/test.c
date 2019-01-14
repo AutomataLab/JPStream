@@ -1,4 +1,5 @@
 #include "xpath_model.h"
+#include "xpath_verify.h"
 #include "parser_j.h"
 #include "scanner_j.h"
 
