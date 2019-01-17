@@ -1,0 +1,1667 @@
+{
+  "meta" : {
+    "view" : {
+      "id" : "gz3p-wzwf",
+      "name" : "NNDSS - Table II. Ehrlichiosis and Anaplasmosis",
+      "attribution" : "Division of Health Informatics and Surveillance (DHIS), Centers for Disease Control and Prevention",
+      "averageRating" : 0,
+      "category" : "NNDSS",
+      "createdAt" : 1484248472,
+      "description" : "NNDSS - Table II. Ehrlichiosis and Anaplasmosis - 2017.  In this Table, provisional cases of selected notifiable diseases (≥1,000 cases reported during the preceding year), and selected low frequency diseases are displayed. The Table includes total number of cases reported in the United States, by region and by states, in accordance with the current method of displaying MMWR data.  Data on United States exclude counts from US territories. \r\n\r\nNote:\r\nThese are provisional cases of selected national notifiable diseases, from the National Notifiable Diseases Surveillance System (NNDSS). NNDSS data reported by the 50 states, New York City, the District of Columbia, and the U.S. territories are collated and published weekly as numbered tables printed in the back of the Morbidity and Mortality Weekly Report (MMWR). Cases reported by state health departments to CDC for weekly publication are provisional because of ongoing revision of information and delayed reporting. \r\n\r\nCase counts in this table are presented as they were published in the MMWR issues. Therefore, numbers listed in later MMWR weeks may reflect changes made to these counts as additional information becomes available. \r\n\r\nFootnotes:\r\n C.N.M.I.: Commonwealth of Northern Mariana Islands. \r\n\r\n U: Unavailable. —: No reported cases. N: Not reportable. NN: Not Nationally Notifiable. NP: Nationally notifiable but not published. Cum: Cumulative year-to-date counts. Med: Median. Max: Maximum. \r\n\r\n *Three low incidence conditions, rubella, rubella congenital, and tetanus, are in Table II to facilitate case count verification with reporting jurisdictions. \r\n\r\n† Case counts for reporting years 2016 and 2017 are provisional and subject to change. For further information on interpretation of these data, see http://wwwn.cdc.gov/nndss/document/ ProvisionalNationaNotifiableDiseasesSurveillanceData20100927.pdf. Data for tuberculosis are displayed in Table IV, which appears quarterly.\r\n\r\n§ Please refer to the MMWR publication for weekly updates to the footnote for this condition.",
+      "displayType" : "table",
+      "downloadCount" : 1112,
+      "hideFromCatalog" : false,
+      "hideFromDataJson" : false,
+      "indexUpdatedAt" : 1498150781,
+      "newBackend" : false,
+      "numberOfComments" : 0,
+      "oid" : 26229041,
+      "provenance" : "official",
+      "publicationAppendEnabled" : false,
+      "publicationDate" : 1498150666,
+      "publicationGroup" : 13996484,
+      "publicationStage" : "published",
+      "rowsUpdatedAt" : 1498138794,
+      "rowsUpdatedBy" : "2fth-98hd",
+      "tableId" : 14280337,
+      "totalTimesRated" : 0,
+      "viewCount" : 330,
+      "viewLastModified" : 1498150666,
+      "viewType" : "tabular",
+      "columns" : [ {
+        "id" : -1,
+        "name" : "sid",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":sid",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "id",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":id",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "position",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":position",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "created_at",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":created_at",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "created_meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":created_meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "updated_at",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":updated_at",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "updated_meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":updated_meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : 307619072,
+        "name" : "Reporting Area",
+        "dataTypeName" : "text",
+        "fieldName" : "reporting_area",
+        "position" : 1,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706426,
+        "width" : 179,
+        "cachedContents" : {
+          "largest" : "WYOMING",
+          "non_null" : 1608,
+          "null" : 0,
+          "top" : [ {
+            "item" : "CALIFORNIA",
+            "count" : 20
+          }, {
+            "item" : "HAWAII",
+            "count" : 19
+          }, {
+            "item" : "OREGON",
+            "count" : 18
+          }, {
+            "item" : "WASHINGTON",
+            "count" : 17
+          }, {
+            "item" : "AMER. SAMOA",
+            "count" : 16
+          }, {
+            "item" : "C.N.M.I.",
+            "count" : 15
+          }, {
+            "item" : "GUAM",
+            "count" : 14
+          }, {
+            "item" : "PUERTO RICO",
+            "count" : 13
+          }, {
+            "item" : "VIRGIN ISL.",
+            "count" : 12
+          } ],
+          "smallest" : "ALABAMA"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619073,
+        "name" : "MMWR Year",
+        "dataTypeName" : "number",
+        "fieldName" : "mmwr_year",
+        "position" : 2,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706428,
+        "width" : 149,
+        "cachedContents" : {
+          "largest" : "2017",
+          "non_null" : 1608,
+          "average" : "2017",
+          "null" : 0,
+          "top" : [ {
+            "item" : "2017",
+            "count" : 20
+          } ],
+          "smallest" : "2017",
+          "sum" : "3243336"
+        },
+        "format" : {
+          "precisionStyle" : "standard",
+          "noCommas" : "true",
+          "align" : "right"
+        }
+      }, {
+        "id" : 307619074,
+        "name" : "MMWR Week",
+        "dataTypeName" : "number",
+        "fieldName" : "mmwr_week",
+        "position" : 3,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706429,
+        "width" : 151,
+        "cachedContents" : {
+          "largest" : "24",
+          "non_null" : 1608,
+          "average" : "12.5",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "2",
+            "count" : 19
+          }, {
+            "item" : "3",
+            "count" : 18
+          }, {
+            "item" : "4",
+            "count" : 17
+          }, {
+            "item" : "5",
+            "count" : 16
+          }, {
+            "item" : "6",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "8",
+            "count" : 13
+          }, {
+            "item" : "9",
+            "count" : 12
+          }, {
+            "item" : "10",
+            "count" : 11
+          }, {
+            "item" : "11",
+            "count" : 10
+          }, {
+            "item" : "12",
+            "count" : 9
+          }, {
+            "item" : "13",
+            "count" : 8
+          }, {
+            "item" : "14",
+            "count" : 7
+          }, {
+            "item" : "15",
+            "count" : 6
+          }, {
+            "item" : "16",
+            "count" : 5
+          }, {
+            "item" : "17",
+            "count" : 4
+          }, {
+            "item" : "18",
+            "count" : 3
+          }, {
+            "item" : "19",
+            "count" : 2
+          }, {
+            "item" : "20",
+            "count" : 1
+          } ],
+          "smallest" : "1",
+          "sum" : "20100"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619075,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Current week",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_current_week",
+        "position" : 4,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706430,
+        "width" : 413,
+        "cachedContents" : {
+          "largest" : "23",
+          "non_null" : 146,
+          "average" : "2.753424657534247",
+          "null" : 1462,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "4",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          }, {
+            "item" : "6",
+            "count" : 17
+          }, {
+            "item" : "8",
+            "count" : 16
+          }, {
+            "item" : "3",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "14",
+            "count" : 13
+          }, {
+            "item" : "12",
+            "count" : 12
+          }, {
+            "item" : "10",
+            "count" : 11
+          }, {
+            "item" : "11",
+            "count" : 10
+          }, {
+            "item" : "23",
+            "count" : 9
+          }, {
+            "item" : "5",
+            "count" : 8
+          }, {
+            "item" : "21",
+            "count" : 7
+          } ],
+          "smallest" : "1",
+          "sum" : "402"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619076,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Current week, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_current_week_flag",
+        "position" : 5,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706431,
+        "width" : 428,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 1462,
+          "null" : 146,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619077,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Previous 52 weeks Med",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_previous_52_weeks_med",
+        "position" : 6,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706432,
+        "width" : 460,
+        "cachedContents" : {
+          "largest" : "15",
+          "non_null" : 1584,
+          "average" : "0.5385101010101010",
+          "null" : 24,
+          "top" : [ {
+            "item" : "13",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "3",
+            "count" : 18
+          }, {
+            "item" : "2",
+            "count" : 17
+          }, {
+            "item" : "1",
+            "count" : 16
+          }, {
+            "item" : "15",
+            "count" : 15
+          }, {
+            "item" : "14",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          } ],
+          "smallest" : "0",
+          "sum" : "853"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619078,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Previous 52 weeks Med, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_previous_52_weeks_med_flag",
+        "position" : 7,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706433,
+        "width" : 475,
+        "cachedContents" : {
+          "largest" : "-",
+          "non_null" : 24,
+          "null" : 1584,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619079,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Previous 52 weeks Max",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_previous_52_weeks_max",
+        "position" : 8,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706434,
+        "width" : 449,
+        "cachedContents" : {
+          "largest" : "139",
+          "non_null" : 1584,
+          "average" : "6.230429292929293",
+          "null" : 24,
+          "top" : [ {
+            "item" : "90",
+            "count" : 20
+          }, {
+            "item" : "8",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "1",
+            "count" : 17
+          }, {
+            "item" : "2",
+            "count" : 16
+          }, {
+            "item" : "6",
+            "count" : 15
+          }, {
+            "item" : "17",
+            "count" : 14
+          }, {
+            "item" : "7",
+            "count" : 13
+          }, {
+            "item" : "13",
+            "count" : 12
+          }, {
+            "item" : "3",
+            "count" : 11
+          }, {
+            "item" : "5",
+            "count" : 10
+          }, {
+            "item" : "25",
+            "count" : 9
+          }, {
+            "item" : "20",
+            "count" : 8
+          }, {
+            "item" : "18",
+            "count" : 7
+          }, {
+            "item" : "9",
+            "count" : 6
+          }, {
+            "item" : "10",
+            "count" : 5
+          }, {
+            "item" : "12",
+            "count" : 4
+          }, {
+            "item" : "4",
+            "count" : 3
+          }, {
+            "item" : "16",
+            "count" : 2
+          }, {
+            "item" : "91",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "9869"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619080,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Previous 52 weeks Max, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_previous_52_weeks_max_flag",
+        "position" : 9,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706435,
+        "width" : 486,
+        "cachedContents" : {
+          "largest" : "-",
+          "non_null" : 24,
+          "null" : 1584,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619081,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Cum 2017",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_cum_2017",
+        "position" : 10,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706436,
+        "width" : 381,
+        "cachedContents" : {
+          "largest" : "309",
+          "non_null" : 508,
+          "average" : "9.649606299212598",
+          "null" : 1100,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "3",
+            "count" : 19
+          }, {
+            "item" : "5",
+            "count" : 18
+          }, {
+            "item" : "2",
+            "count" : 17
+          }, {
+            "item" : "9",
+            "count" : 16
+          }, {
+            "item" : "14",
+            "count" : 15
+          }, {
+            "item" : "4",
+            "count" : 14
+          }, {
+            "item" : "16",
+            "count" : 13
+          }, {
+            "item" : "20",
+            "count" : 12
+          }, {
+            "item" : "27",
+            "count" : 11
+          }, {
+            "item" : "8",
+            "count" : 10
+          }, {
+            "item" : "7",
+            "count" : 9
+          }, {
+            "item" : "40",
+            "count" : 8
+          }, {
+            "item" : "49",
+            "count" : 7
+          }, {
+            "item" : "15",
+            "count" : 6
+          }, {
+            "item" : "12",
+            "count" : 5
+          }, {
+            "item" : "6",
+            "count" : 4
+          }, {
+            "item" : "21",
+            "count" : 3
+          }, {
+            "item" : "22",
+            "count" : 2
+          }, {
+            "item" : "13",
+            "count" : 1
+          } ],
+          "smallest" : "1",
+          "sum" : "4902"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619082,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Cum 2017, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_cum_2017_flag",
+        "position" : 11,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706437,
+        "width" : 414,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 1100,
+          "null" : 508,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619083,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Cum 2016",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_cum_2016",
+        "position" : 12,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706438,
+        "width" : 384,
+        "cachedContents" : {
+          "largest" : "368",
+          "non_null" : 644,
+          "average" : "9.610248447204969",
+          "null" : 964,
+          "top" : [ {
+            "item" : "3",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          }, {
+            "item" : "5",
+            "count" : 17
+          }, {
+            "item" : "13",
+            "count" : 16
+          }, {
+            "item" : "4",
+            "count" : 15
+          }, {
+            "item" : "14",
+            "count" : 14
+          }, {
+            "item" : "18",
+            "count" : 13
+          }, {
+            "item" : "22",
+            "count" : 12
+          }, {
+            "item" : "8",
+            "count" : 11
+          }, {
+            "item" : "7",
+            "count" : 10
+          }, {
+            "item" : "25",
+            "count" : 9
+          }, {
+            "item" : "9",
+            "count" : 8
+          }, {
+            "item" : "27",
+            "count" : 7
+          }, {
+            "item" : "10",
+            "count" : 6
+          }, {
+            "item" : "12",
+            "count" : 5
+          }, {
+            "item" : "11",
+            "count" : 4
+          }, {
+            "item" : "6",
+            "count" : 3
+          }, {
+            "item" : "15",
+            "count" : 2
+          }, {
+            "item" : "17",
+            "count" : 1
+          } ],
+          "smallest" : "1",
+          "sum" : "6189"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619084,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Ehrlichia chaffeensis, Cum 2016, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_ehrlichia_chaffeensis_cum_2016_flag",
+        "position" : 13,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706439,
+        "width" : 416,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 964,
+          "null" : 644,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619085,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Current week",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_current_week",
+        "position" : 14,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706440,
+        "width" : 443,
+        "cachedContents" : {
+          "largest" : "88",
+          "non_null" : 119,
+          "average" : "10.56302521008403",
+          "null" : 1489,
+          "top" : [ {
+            "item" : "4",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "3",
+            "count" : 18
+          }, {
+            "item" : "2",
+            "count" : 17
+          }, {
+            "item" : "5",
+            "count" : 16
+          }, {
+            "item" : "14",
+            "count" : 15
+          }, {
+            "item" : "12",
+            "count" : 14
+          }, {
+            "item" : "11",
+            "count" : 13
+          }, {
+            "item" : "8",
+            "count" : 12
+          }, {
+            "item" : "37",
+            "count" : 11
+          }, {
+            "item" : "15",
+            "count" : 10
+          }, {
+            "item" : "9",
+            "count" : 9
+          }, {
+            "item" : "6",
+            "count" : 8
+          }, {
+            "item" : "22",
+            "count" : 7
+          }, {
+            "item" : "48",
+            "count" : 6
+          }, {
+            "item" : "35",
+            "count" : 5
+          }, {
+            "item" : "55",
+            "count" : 4
+          }, {
+            "item" : "18",
+            "count" : 3
+          }, {
+            "item" : "46",
+            "count" : 2
+          }, {
+            "item" : "20",
+            "count" : 1
+          } ],
+          "smallest" : "1",
+          "sum" : "1257"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619086,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Current week, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_current_week_flag",
+        "position" : 15,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706441,
+        "width" : 465,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 1489,
+          "null" : 119,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619087,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Previous 52 weeks Med",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_previous_52_weeks_med",
+        "position" : 16,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706442,
+        "width" : 492,
+        "cachedContents" : {
+          "largest" : "57",
+          "non_null" : 1584,
+          "average" : "1.844696969696970",
+          "null" : 24,
+          "top" : [ {
+            "item" : "42",
+            "count" : 20
+          }, {
+            "item" : "19",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "8",
+            "count" : 16
+          }, {
+            "item" : "2",
+            "count" : 15
+          }, {
+            "item" : "13",
+            "count" : 14
+          }, {
+            "item" : "1",
+            "count" : 13
+          }, {
+            "item" : "11",
+            "count" : 12
+          }, {
+            "item" : "6",
+            "count" : 11
+          }, {
+            "item" : "43",
+            "count" : 10
+          }, {
+            "item" : "10",
+            "count" : 9
+          }, {
+            "item" : "14",
+            "count" : 8
+          }, {
+            "item" : "12",
+            "count" : 7
+          }, {
+            "item" : "44",
+            "count" : 6
+          }, {
+            "item" : "7",
+            "count" : 5
+          }, {
+            "item" : "45",
+            "count" : 4
+          }, {
+            "item" : "20",
+            "count" : 3
+          }, {
+            "item" : "46",
+            "count" : 2
+          }, {
+            "item" : "22",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "2922"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619088,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Previous 52 weeks Med, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_previous_52_weeks_med_flag",
+        "position" : 17,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706443,
+        "width" : 515,
+        "cachedContents" : {
+          "largest" : "-",
+          "non_null" : 24,
+          "null" : 1584,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619089,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Previous 52 weeks Max",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_previous_52_weeks_max",
+        "position" : 18,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706444,
+        "width" : 492,
+        "cachedContents" : {
+          "largest" : "261",
+          "non_null" : 1584,
+          "average" : "11.36174242424242",
+          "null" : 24,
+          "top" : [ {
+            "item" : "100",
+            "count" : 20
+          }, {
+            "item" : "4",
+            "count" : 19
+          }, {
+            "item" : "31",
+            "count" : 18
+          }, {
+            "item" : "6",
+            "count" : 17
+          }, {
+            "item" : "18",
+            "count" : 16
+          }, {
+            "item" : "22",
+            "count" : 15
+          }, {
+            "item" : "60",
+            "count" : 14
+          }, {
+            "item" : "13",
+            "count" : 13
+          }, {
+            "item" : "5",
+            "count" : 12
+          }, {
+            "item" : "1",
+            "count" : 11
+          }, {
+            "item" : "41",
+            "count" : 10
+          }, {
+            "item" : "2",
+            "count" : 9
+          }, {
+            "item" : "0",
+            "count" : 8
+          }, {
+            "item" : "3",
+            "count" : 7
+          }, {
+            "item" : "200",
+            "count" : 6
+          }, {
+            "item" : "69",
+            "count" : 5
+          }, {
+            "item" : "61",
+            "count" : 4
+          }, {
+            "item" : "55",
+            "count" : 3
+          }, {
+            "item" : "42",
+            "count" : 2
+          }, {
+            "item" : "201",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "17997"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619090,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Previous 52 weeks Max, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_previous_52_weeks_max_flag",
+        "position" : 19,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706445,
+        "width" : 507,
+        "cachedContents" : {
+          "largest" : "-",
+          "non_null" : 24,
+          "null" : 1584,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619091,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Cum 2017",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_cum_2017",
+        "position" : 20,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706446,
+        "width" : 426,
+        "cachedContents" : {
+          "largest" : "857",
+          "non_null" : 408,
+          "average" : "25.69852941176471",
+          "null" : 1200,
+          "top" : [ {
+            "item" : "4",
+            "count" : 20
+          }, {
+            "item" : "6",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          }, {
+            "item" : "7",
+            "count" : 17
+          }, {
+            "item" : "2",
+            "count" : 16
+          }, {
+            "item" : "8",
+            "count" : 15
+          }, {
+            "item" : "5",
+            "count" : 14
+          }, {
+            "item" : "9",
+            "count" : 13
+          }, {
+            "item" : "14",
+            "count" : 12
+          }, {
+            "item" : "3",
+            "count" : 11
+          }, {
+            "item" : "13",
+            "count" : 10
+          }, {
+            "item" : "10",
+            "count" : 9
+          }, {
+            "item" : "11",
+            "count" : 8
+          }, {
+            "item" : "23",
+            "count" : 7
+          }, {
+            "item" : "73",
+            "count" : 6
+          }, {
+            "item" : "240",
+            "count" : 5
+          }, {
+            "item" : "57",
+            "count" : 4
+          }, {
+            "item" : "305",
+            "count" : 3
+          }, {
+            "item" : "39",
+            "count" : 2
+          }, {
+            "item" : "254",
+            "count" : 1
+          } ],
+          "smallest" : "1",
+          "sum" : "10485"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619092,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Cum 2017, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_cum_2017_flag",
+        "position" : 21,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706447,
+        "width" : 445,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 1200,
+          "null" : 408,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619093,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Cum 2016",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_cum_2016",
+        "position" : 22,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706448,
+        "width" : 423,
+        "cachedContents" : {
+          "largest" : "1251",
+          "non_null" : 559,
+          "average" : "30.24150268336315",
+          "null" : 1049,
+          "top" : [ {
+            "item" : "9",
+            "count" : 20
+          }, {
+            "item" : "7",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          }, {
+            "item" : "6",
+            "count" : 17
+          }, {
+            "item" : "11",
+            "count" : 16
+          }, {
+            "item" : "2",
+            "count" : 15
+          }, {
+            "item" : "3",
+            "count" : 14
+          }, {
+            "item" : "13",
+            "count" : 13
+          }, {
+            "item" : "10",
+            "count" : 12
+          }, {
+            "item" : "5",
+            "count" : 11
+          }, {
+            "item" : "4",
+            "count" : 10
+          }, {
+            "item" : "8",
+            "count" : 9
+          }, {
+            "item" : "12",
+            "count" : 8
+          }, {
+            "item" : "14",
+            "count" : 7
+          }, {
+            "item" : "24",
+            "count" : 6
+          }, {
+            "item" : "36",
+            "count" : 5
+          }, {
+            "item" : "39",
+            "count" : 4
+          }, {
+            "item" : "290",
+            "count" : 3
+          }, {
+            "item" : "281",
+            "count" : 2
+          }, {
+            "item" : "15",
+            "count" : 1
+          } ],
+          "smallest" : "1",
+          "sum" : "16905"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619094,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Anaplasma phagocytophilum, Cum 2016, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_anaplasma_phagocytophilum_cum_2016_flag",
+        "position" : 23,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706449,
+        "width" : 445,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 1049,
+          "null" : 559,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619095,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Current week",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_current_week",
+        "position" : 24,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706450,
+        "width" : 369,
+        "cachedContents" : {
+          "largest" : "2",
+          "non_null" : 23,
+          "average" : "1.043478260869565",
+          "null" : 1585,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "2",
+            "count" : 19
+          } ],
+          "smallest" : "1",
+          "sum" : "24"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619096,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Current week, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_current_week_flag",
+        "position" : 25,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706451,
+        "width" : 397,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 1585,
+          "null" : 23,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619097,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Previous 52 weeks Med",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_previous_52_weeks_med",
+        "position" : 26,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706452,
+        "width" : 418,
+        "cachedContents" : {
+          "largest" : "2",
+          "non_null" : 1584,
+          "average" : "0.04482323232323232",
+          "null" : 24,
+          "top" : [ {
+            "item" : "2",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          } ],
+          "smallest" : "0",
+          "sum" : "71"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619098,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Previous 52 weeks Med, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_previous_52_weeks_med_flag",
+        "position" : 27,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706453,
+        "width" : 441,
+        "cachedContents" : {
+          "largest" : "-",
+          "non_null" : 24,
+          "null" : 1584,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619099,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Previous 52 weeks Max",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_previous_52_weeks_max",
+        "position" : 28,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706454,
+        "width" : 417,
+        "cachedContents" : {
+          "largest" : "17",
+          "non_null" : 1584,
+          "average" : "0.9936868686868687",
+          "null" : 24,
+          "top" : [ {
+            "item" : "9",
+            "count" : 20
+          }, {
+            "item" : "2",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "1",
+            "count" : 17
+          }, {
+            "item" : "3",
+            "count" : 16
+          }, {
+            "item" : "5",
+            "count" : 15
+          }, {
+            "item" : "10",
+            "count" : 14
+          }, {
+            "item" : "6",
+            "count" : 13
+          }, {
+            "item" : "4",
+            "count" : 12
+          }, {
+            "item" : "11",
+            "count" : 11
+          }, {
+            "item" : "7",
+            "count" : 10
+          }, {
+            "item" : "12",
+            "count" : 9
+          }, {
+            "item" : "16",
+            "count" : 8
+          }, {
+            "item" : "8",
+            "count" : 7
+          }, {
+            "item" : "17",
+            "count" : 6
+          } ],
+          "smallest" : "0",
+          "sum" : "1574"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619100,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Previous 52 weeks Max, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_previous_52_weeks_max_flag",
+        "position" : 29,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706455,
+        "width" : 442,
+        "cachedContents" : {
+          "largest" : "-",
+          "non_null" : 24,
+          "null" : 1584,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619101,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Cum 2017",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_cum_2017",
+        "position" : 30,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706456,
+        "width" : 358,
+        "cachedContents" : {
+          "largest" : "24",
+          "non_null" : 212,
+          "average" : "2.150943396226415",
+          "null" : 1396,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "2",
+            "count" : 19
+          }, {
+            "item" : "3",
+            "count" : 18
+          }, {
+            "item" : "4",
+            "count" : 17
+          }, {
+            "item" : "5",
+            "count" : 16
+          }, {
+            "item" : "6",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "9",
+            "count" : 13
+          }, {
+            "item" : "12",
+            "count" : 12
+          }, {
+            "item" : "13",
+            "count" : 11
+          }, {
+            "item" : "17",
+            "count" : 10
+          }, {
+            "item" : "21",
+            "count" : 9
+          }, {
+            "item" : "24",
+            "count" : 8
+          }, {
+            "item" : "8",
+            "count" : 7
+          } ],
+          "smallest" : "1",
+          "sum" : "456"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619102,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Cum 2017, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_cum_2017_flag",
+        "position" : 31,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706457,
+        "width" : 377,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 1396,
+          "null" : 212,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619103,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Cum 2016",
+        "dataTypeName" : "number",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_cum_2016",
+        "position" : 32,
+        "renderTypeName" : "number",
+        "tableColumnId" : 42706458,
+        "width" : 354,
+        "cachedContents" : {
+          "largest" : "51",
+          "non_null" : 238,
+          "average" : "4.184873949579832",
+          "null" : 1370,
+          "top" : [ {
+            "item" : "2",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "3",
+            "count" : 18
+          }, {
+            "item" : "4",
+            "count" : 17
+          }, {
+            "item" : "5",
+            "count" : 16
+          }, {
+            "item" : "7",
+            "count" : 15
+          }, {
+            "item" : "10",
+            "count" : 14
+          }, {
+            "item" : "12",
+            "count" : 13
+          }, {
+            "item" : "16",
+            "count" : 12
+          }, {
+            "item" : "21",
+            "count" : 11
+          }, {
+            "item" : "6",
+            "count" : 10
+          }, {
+            "item" : "8",
+            "count" : 9
+          }, {
+            "item" : "22",
+            "count" : 8
+          }, {
+            "item" : "9",
+            "count" : 7
+          }, {
+            "item" : "34",
+            "count" : 6
+          }, {
+            "item" : "15",
+            "count" : 5
+          }, {
+            "item" : "11",
+            "count" : 4
+          }, {
+            "item" : "37",
+            "count" : 3
+          }, {
+            "item" : "40",
+            "count" : 2
+          }, {
+            "item" : "19",
+            "count" : 1
+          } ],
+          "smallest" : "1",
+          "sum" : "996"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619104,
+        "name" : "Ehrlichiosis and Anaplasmosis§, Undetermined, Cum 2016, flag",
+        "dataTypeName" : "text",
+        "fieldName" : "ehrlichiosis_and_anaplasmosis_undetermined_cum_2016_flag",
+        "position" : 33,
+        "renderTypeName" : "text",
+        "tableColumnId" : 42706459,
+        "width" : 373,
+        "cachedContents" : {
+          "largest" : "N",
+          "non_null" : 1370,
+          "null" : 238,
+          "top" : [ {
+            "item" : "-",
+            "count" : 20
+          }, {
+            "item" : "N",
+            "count" : 19
+          } ],
+          "smallest" : "-"
+        },
+        "format" : { }
+      }, {
+        "id" : 307619105,
+        "name" : "Location 1",
+        "dataTypeName" : "location",
+        "fieldName" : "location_1",
+        "position" : 34,
+        "renderTypeName" : "location",
+        "tableColumnId" : 42706460,
+        "width" : 183,
+        "cachedContents" : {
+          "largest" : {
+            "latitude" : "43.23558",
+            "human_address" : "{\"address\":\"\",\"city\":\"\",\"state\":\"WYOMING\",\"zip\":\"\"}",
+            "longitude" : "-108.110518"
+          },
+          "non_null" : 1608,
+          "null" : 0,
+          "top" : [ {
+            "item" : {
+              "human_address" : "{\"address\":\"\",\"city\":\"\",\"state\":\"\",\"zip\":\"\"}"
+            },
+            "count" : 20
+          } ],
+          "smallest" : {
+            "human_address" : "{\"address\":\"\",\"city\":\"\",\"state\":\"\",\"zip\":\"\"}"
+          }
+        },
+        "format" : { },
+        "subColumnTypes" : [ "human_address", "latitude", "longitude", "machine_address", "needs_recoding" ]
+      }, {
+        "id" : 307619106,
+        "name" : "Location 2",
+        "dataTypeName" : "location",
+        "fieldName" : "location_2",
+        "position" : 35,
+        "renderTypeName" : "location",
+        "tableColumnId" : 42706461,
+        "width" : 166,
+        "cachedContents" : {
+          "non_null" : 0,
+          "null" : 1608
+        },
+        "format" : { },
+        "subColumnTypes" : [ "human_address", "latitude", "longitude", "machine_address", "needs_recoding" ]
+      } ],
+      "grants" : [ {
+        "inherited" : false,
+        "type" : "viewer",
+        "flags" : [ "public" ]
+      } ],
+      "metadata" : {
+        "rdfSubject" : "0",
+        "custom_fields" : {
+          "Common Core" : {
+            "Contact Email" : "cdcinfo@cdc.gov",
+            "Contact Name" : "CDC INFO",
+            "Program Code" : "009:020",
+            "Bureau Code" : "009:00"
+          }
+        },
+        "availableDisplayTypes" : [ "table", "fatrow", "page" ],
+        "rowLabel" : "",
+        "renderTypeConfig" : {
+          "visible" : {
+            "table" : true
+          }
+        }
+      },
+      "owner" : {
+        "id" : "2fth-98hd",
+        "displayName" : "wja0@cdc.gov",
+        "roleName" : "editor",
+        "screenName" : "wja0@cdc.gov",
+        "rights" : [ "create_datasets", "view_domain", "create_pages", "view_goals", "view_dashboards", "view_story", "view_unpublished_story" ]
+      },
+      "query" : { },
+      "rights" : [ "read" ],
+      "tableAuthor" : {
+        "id" : "2fth-98hd",
+        "displayName" : "wja0@cdc.gov",
+        "roleName" : "editor",
+        "screenName" : "wja0@cdc.gov",
+        "rights" : [ "create_datasets", "view_domain", "create_pages", "view_goals", "view_dashboards", "view_story", "view_unpublished_story" ]
+      },
+      "tags" : [ "2017", "mmwr", "nndss", "wonder", "nedss", "netss", "ehrlichiosis and anaplasmosis", "ehrlichia chaffeensis", "anaplasma phagocytophilum", "undetermined" ],
+      "flags" : [ "default", "restorable", "restorePossibleForType" ]
+    }
+  },
+  "data" : [ [ 1, "0BF7F57E-B97C-4279-9F2E-0510605A929D", 1, 1484321320, "866709", 1484321320, "866709", "{\n  \"invalidCells\" : {\n    \"42706461\" : \"UNITED STATES\"\n  }\n}", "UNITED STATES", "2017", "1", null, "-", "13", null, "90", null, null, "-", "3", null, "4", null, "42", null, "198", null, "4", null, "9", null, "1", null, "2", null, "9", null, "1", null, null, "-", [ "{\"address\":\"\",\"city\":\"\",\"state\":\"\",\"zip\":\"\"}", null, null, null, true ], [ null, null, null, null, null ] ]
+, [ 2, "5E538BB2-292F-442A-AD89-9E1A66C7DFFE", 2, 1484321320, "866709", 1484321320, "866709", "{\n  \"invalidCells\" : {\n    \"42706461\" : \"NEW ENGLAND\"\n  }\n}", "NEW ENGLAND", "2017", "1", null, "-", "0", null, "8", null, null, "-", null, "-", null, "-", "19", null, "100", null, null, "-", "7", null, null, "-", "0", null, "2", null, null, "-", null, "-", [ "{\"address\":\"\",\"city\":\"\",\"state\":\"\",\"zip\":\"\"}", null, null, null, true ], [ null, null, null, null, null ] ]
+, [ 9, "E6513B65-2622-429A-94DD-2575926BF09C", 9, 1484321320, "866709", 1484321320, "866709", "{\n  \"invalidCells\" : {\n    \"42706461\" : \"MID. ATLANTIC\"\n  }\n}", "MID. ATLANTIC", "2017", "1", null, "-", "3", null, "17", null, null, "-", null, "-", "4", null, "13", null, "60", null, "4", null, "1", null, "1", null, "0", null, "3", null, "1", null, null, "-", [ "{\"address\":\"\",\"city\":\"\",\"state\":\"\",\"zip\":\"\"}", null, null, null, true ], [ null, null, null, null, null ] ]
+, [ 12, "472267C9-BC0D-4F0F-8FAF-D121856E6D81", 12, 1484321320, "866709", 1484321320, "866709", "{\n  \"invalidCells\" : {\n    \"42706461\" : \"NEW YORK CITY\"\n  }\n}", "NEW YORK CITY", "2017", "1", null, "-", "0", null, "3", null, null, "-", null, "-", "4", null, "1", null, "5", null, "4", null, null, "-", "1", null, "0", null, "1", null, "1", null, null, "-", [ "{\"address\":\"\",\"city\":\"\",\"state\":\"\",\"zip\":\"\"}", null, null, null, true ], [ null, null, null, null, null ] ]
+  ]
+  }
+ }
+}
