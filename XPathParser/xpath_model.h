@@ -220,7 +220,7 @@ static inline void xpn_print_node(XPathNode* node, int depth, bool print_return)
             break;
         }
         case xnt_variable: {
-            printf("$%s", node->string);
+            printf("@.%s", node->string);
             break;
         }
         case xnt_predicate: {
@@ -276,7 +276,7 @@ static inline void xpn_print_jnode(XPathNode* node, int depth, bool print_return
             break;
         }
         case xnt_variable: {
-            printf("$%s", node->string);
+            printf("@.%s", node->string);
             break;
         }
         case xnt_predicate: {
