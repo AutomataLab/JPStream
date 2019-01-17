@@ -2965,6 +2965,17 @@ int automata(void)
     int n=-1;
     get_multixpath(xmlPath); 
     printf("the number of sub-queries is %d\n",top_XPath+1);
+
+    if(debug_flag==2)
+    {
+        int x;
+        for(x=0;x<=top_XPath;x++)
+        {
+            printf("the %dth subpath is %s\n", x, XPath[x]);
+        }
+        return -1;
+    }
+
     int j,k;  
     int i,rc;
     

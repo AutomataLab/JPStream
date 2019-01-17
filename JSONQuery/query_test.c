@@ -1,6 +1,15 @@
 #include "query.h"
 #include "global.h"
 #include <stdio.h>
+#include "input.h"
+
+void Test0()
+{
+    initialization();
+    get_parameters_from_config("config");
+    debug_flag = 2;
+    automata();
+}
 
 void Test1()
 {
@@ -118,10 +127,11 @@ void Test4()
 
 int main()
 {
-    Test1();
+    Test0();
+    /*Test1();
     Test2();
     Test3();
-    Test4();
+    Test4();*/
     return 0;
 }
 
