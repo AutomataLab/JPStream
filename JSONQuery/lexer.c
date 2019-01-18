@@ -88,7 +88,7 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                         state = 1;
                         break;
                     case ' ':
-                    case '       ':  //jump space
+                    case '\t':  //jump space
                         pToken->text.len = p - start + 1;
                         pToken->text.p = start + pToken->text.len;
                         start = pToken->text.p;
@@ -135,7 +135,7 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                         pToken->text.p = start + pToken->text.len;
                         start = pToken->text.p;
 
-                        while(*(p+1)==' '||*(p+1)=='        ') //ignore space
+                        while(*(p+1)==' '||*(p+1)=='\t') //ignore space
                         {
                             p++;
                             pToken->text.len = p - start + 1;
@@ -172,7 +172,7 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                     case ']':
                     case ',':
                     case ' ':
-                    case '       ':
+                    case '\t':
                    	{
                         int tempcount = p-start;
                         templen = tempcount;

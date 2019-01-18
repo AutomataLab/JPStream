@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include "semi_structure.h"
 #include "basic.h"
 

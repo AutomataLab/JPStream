@@ -1,6 +1,7 @@
 #include "query.h"
 #include "global.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include "input.h"
 
 void Test0()

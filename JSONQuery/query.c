@@ -1700,45 +1700,45 @@ static inline void key(int thread_num, tuple_array* current_states, char* key_te
 
 static inline void obj_e(int thread_num, stack_tag* syn_stack)
 {
-	update_syntax_info(thread_num, syn_stack, NULL, POP);
+	update_syntax_info(thread_num, syn_stack, 0, POP);
 }
 
 static inline void val_obj_e(int thread_num, tuple_array* current_states, stack_tag* syn_stack, query_stack* q_stack)
 {
-	update_syntax_info(thread_num, syn_stack, NULL, POP);
+	update_syntax_info(thread_num, syn_stack, 0, POP);
 	update_query_info(thread_num, current_states, 0, syn_stack, q_stack, POP);
-	update_syntax_info(thread_num, syn_stack, NULL, POP);
+	update_syntax_info(thread_num, syn_stack, 0, POP);
 }
 
 static inline void elt_obj_e(int thread_num, stack_tag* syn_stack)
 {
-	update_syntax_info(thread_num, syn_stack, NULL, POP);
+	update_syntax_info(thread_num, syn_stack, 0, POP);
 }
 
 static inline void ary_e(int thread_num, char* array_text, tuple_array* current_states, stack_tag* syn_stack, query_stack* q_stack)
 {
 	update_query_info(thread_num, current_states, 0, syn_stack, q_stack, POP);
-	update_syntax_info(thread_num, syn_stack, NULL, POP);
+	update_syntax_info(thread_num, syn_stack, 0, POP);
 }
 
 static inline void val_ary_e(int thread_num, tuple_array* current_states, stack_tag* syn_stack, query_stack* q_stack)
 {
 	update_query_info(thread_num, current_states, 0, syn_stack, q_stack, POP);
-	update_syntax_info(thread_num, syn_stack, NULL, POP);
+	update_syntax_info(thread_num, syn_stack, 0, POP);
 	update_query_info(thread_num, current_states, 0, syn_stack, q_stack, POP);
-    update_syntax_info(thread_num, syn_stack, NULL, POP);
+    update_syntax_info(thread_num, syn_stack, 0, POP);
 }
 
 static inline void elt_ary_e(int thread_num,tuple_array* current_states, stack_tag* syn_stack, query_stack* q_stack)
 {
 	update_query_info(thread_num, current_states, 0, syn_stack, q_stack, POP);
-	update_syntax_info(thread_num, syn_stack, NULL, POP);
+	update_syntax_info(thread_num, syn_stack, 0, POP);
 }
 
 static inline void val_pmt(int thread_num, tuple_array* current_states, char* text, stack_tag* syn_stack, query_stack* q_stack)
 {
 	update_query_info(thread_num, current_states, 0, syn_stack, q_stack, POP);
-	update_syntax_info(thread_num, syn_stack, NULL, POP);
+	update_syntax_info(thread_num, syn_stack, 0, POP);
 }
 
 //get top element from syntax stack
@@ -1746,7 +1746,7 @@ static inline int top_syntax(stack_tag* syn_stack)
 {
 	if(syn_stack->top_stack_tag>-1)
 	    return syn_stack->element[syn_stack->top_stack_tag];
-	else return NULL;
+	else return 0;
 }
 
 //get second top element from syntax stack
@@ -1754,7 +1754,7 @@ static inline int top_syntax_second(stack_tag* syn_stack)
 {
 	if(syn_stack->top_stack_tag>0)
 	    return syn_stack->element[syn_stack->top_stack_tag-1];
-	else return NULL;
+	else return 0;
 }
 
 //get current total number of segments
