@@ -1,18 +1,17 @@
 random.json
-$.root[?(@.index&&@.guid)].friends[?(@.name)].id
+$.root[?(@.index&&@.guid)].friends[?(@.name)].id   output_number: outputs[2].top_output = 42 thread_num = 16
 
 wiki.json
-$.root[*].title
-$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property
-$.root[*].claims.P16[?(@.id&&@.type)].qualifiers.P580[?(@.snaktype)].hash
+$.root[*].title   output_number: outputs[0].top_output = 15 thread_num = 16
+$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property   output_number: outputs[2].top_output = 79 thread_num = 64
 
 bb.json
-$.root.products[?(@.sku)&&(@.productId)].categoryPath[?(@.name)].id
-$.root.products[*].productId
+$.root.products[?(@.sku)&&(@.productId)].categoryPath[?(@.name)].id  output_number: outputs[2].top_output = 77 thread_num = 64
+$.root.products[*].productId   output_number: outputs[0].top_output = 25 thread_num = 16
 
-tt.json
-$.root[?(@.id)&&(@.user.screen_name)].quoted_status.entities.user_mentions[?(@.indices)&&(@.id_str)].id
-$.root[?(@.id)&&(@.user.screen_name)].quoted_status.entities.user_mentions[?(@.indices)&&(@.id_str)].id
+twitter.json
+$.root[?(@.id)].quoted_status.entities.user_mentions[?(@.indices)&&(@.id_str)].id   output_number: outputs[2].top_output = 0 thread_num = 16
+$.root[?(@.text)&&(@.contributors)].id    output_number: outputs[2].top_output = 9 thread_num = 16
 
 rowstest.json
-$.root.meta.view.columns[?(@.id)&&(@.name)&&(@.cachedContents)].position
+$.root.meta.view.columns[?(@.id)&&(@.name)&&(@.cachedContents)].position  output_number: outputs[2].top_output = 188 thread_num = 64
