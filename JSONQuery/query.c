@@ -917,13 +917,7 @@ void createTree1(int thread_num)
 }
 
 /***************************************************************************************************************************************************************************************
-Function: tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, value_tuple *vt_arr, child_tuple *ct_arr, root_tuple *rt_arr);
-Description: push current_states into stack, then update current_states based on input string. 
-Input: current state and stack information
-Return: updated current states
-*****************************************************************************************************************************************************************************************/
-/***************************************************************************************************************************************************************************************
-Function: tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, value_tuple *vt_arr, child_tuple *ct_arr, root_tuple *rt_arr);
+Function: tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack);
 Description: push current_states into stack, then update current_states based on input string. 
 Input: current state and stack information
 Return: updated current states
