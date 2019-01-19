@@ -922,10 +922,19 @@ Description: push current_states into stack, then update current_states based on
 Input: current state and stack information
 Return: updated current states
 *****************************************************************************************************************************************************************************************/
-static inline tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, value_tuple *vt_arr, child_tuple *ct_arr, root_tuple *rt_arr)
+/***************************************************************************************************************************************************************************************
+Function: tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, value_tuple *vt_arr, child_tuple *ct_arr, root_tuple *rt_arr);
+Description: push current_states into stack, then update current_states based on input string. 
+Input: current state and stack information
+Return: updated current states
+*****************************************************************************************************************************************************************************************/
+static inline tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack)
 {
+	value_tuple *vt_arr = q_stack->vt;
+	child_tuple *ct_arr = q_stack->ct; 
+	root_tuple *rt_arr = q_stack->rt;
+	
     int i,j,k;
-
     int top_root_children=-1;
     int tag_zero=0;
     int tag_initiate=0;
@@ -1208,92 +1217,14 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
                         child_index = 2*stateMachine[automata_position].end[k] - 1;
                     if(current_counter_flag == 1&&(stateMachine[automata_position].low>prior_counter || stateMachine[automata_position].high < prior_counter))// || (prior_counter-stateMachine[automata_position].low)%2!=0))
                         continue;
-
                     if(current_counter_flag == 0&&(stateMachine[automata_position].high < prior_counter))
                         continue;
-
-                    int aa;
-                    aa = next_states.from;
-                    top_root_children = next_states.to;
-                    for(; aa<=top_root_children; aa++)
-                    {
-                        if(vt_arr->values[aa]==stateMachine[automata_position].end[k])
-                            break;
-                    }
-                    if(aa<=top_root_children) //under current node
-                    {
-                        int current = (++ct_arr->child_count);
-                        ct_arr->children[current] = stateMachine[automata_position].start[k];
-                        //add child node
-                        vt_arr->to[aa] = current;
-                        int vtvalues = vt_arr->values[aa];
-                        parent_values[vtvalues][++top_parent_values[vtvalues]] = automata_value;
-                        if(tag_first_layer == 1)
-                        {
-                            current = (++rt_arr->root_count);
-                            rt_arr->root[current] = vt_arr->values[i];
-                            root_values[vtvalues][++top_root_values[vtvalues]] = vt_arr->values[i];
-                            vt_arr->tor[aa] = current;
-                        }
-                        else
-                        {
-                            //traverse all root nodes for its parent and add them into its root node list
-                            int bb;
-                            for(bb = vt_arr->fromr[i]; bb <= vt_arr->tor[i]; bb++)
-                            {
-                                current = (++rt_arr->root_count);
-                                rt_arr->root[current] = rt_arr->root[bb];
-                                root_values[vtvalues][++top_root_values[vtvalues]] = rt_arr->root[bb];
-                                vt_arr->tor[aa] = current;
-                            }
-                        }
-                        break;
-                    }
-                    else //create new node
-                    {
-                        int from = (++ct_arr->child_count);
-                        int to = from;
-                        ct_arr->children[from] =automata_value;
-                        int current = (++vt_arr->value_count);
-                        vt_arr->values[current] = stateMachine[automata_position].end[k];
-                        int vtvalues = vt_arr->values[current];
-                        parent_values[vtvalues][++top_parent_values[vtvalues]] = automata_value;
-                        vt_arr->from[current] = from;
-                        vt_arr->to[current] = to;
-                        vt_arr->counter[current] = current_counter;
-                        vt_arr->flag[current] = current_counter_flag;
-                        if(thread_num>0&&strcmp(str,"array")==0)
-                            vt_arr->flag[current] = 1;
-                        next_states.to = current;
-                        if(tag_first_layer == 1)
-                        {
-                            int current1 = (++rt_arr->root_count);
-                            rt_arr->root[current1] = vt_arr->values[i];
-                            root_values[vtvalues][++top_root_values[vtvalues]] = vt_arr->values[i];
-                            vt_arr->fromr[current] = current1;
-                            vt_arr->tor[current] = current1;
-                        }
-                        else
-                        {
-                            //traverse all root nodes for its parent and add them into its root node list
-                            int bb;
-                            for(bb = vt_arr->fromr[i]; bb <= vt_arr->tor[i]; bb++)
-                            {
-                                int current1 = (++rt_arr->root_count);
-                                rt_arr->root[current1] = rt_arr->root[bb];
-                                root_values[vtvalues][++top_root_values[vtvalues]] = rt_arr->root[bb];
-                                vt_arr->tor[current] = current1;
-                                if(bb == vt_arr->fromr[i])
-                                {
-                                    vt_arr->fromr[current] = current1;
-                                }
-                            }
-                        }
-                        break;
-                    }
+                    break;
                 }
             }
-            if(k>stateMachine[automata_position].n_transitions) //next state is 0
+            int found = 1;
+            if(k>stateMachine[automata_position].n_transitions)  found = 0; //next state is 0
+            
             {
                 int aa;
                 aa = next_states.from;
@@ -1301,7 +1232,9 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
 
                 for(; aa<=top_root_children; aa++)
                 {
-                    if(vt_arr->values[aa]==0)
+                    if(found==0&&vt_arr->values[aa]==0)
+                        break;
+                    else if(vt_arr->values[aa]==stateMachine[automata_position].end[k])
                         break;
                 }
                 if(aa<=top_root_children)
@@ -1339,7 +1272,8 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
                     int to = from;
                     ct_arr->children[from] = automata_value;
                     int current = (++vt_arr->value_count);
-                    vt_arr->values[current] = 0;
+                    if(found==0) vt_arr->values[current] = 0;
+                    else vt_arr->values[current] = stateMachine[automata_position].end[k];
                     int vtvalues = vt_arr->values[aa];
                     parent_values[vtvalues][++top_parent_values[vtvalues]] = automata_value;
                     vt_arr->from[current] = from;
@@ -1654,7 +1588,7 @@ static inline void update_query_info(int thread_num, tuple_array* current_states
 {
 	if(operation == PUSH)
 	{
-		tuple_array next_states = pushing(thread_num, key_text, current_states, syn_stack, q_stack->vt, q_stack->ct, q_stack->rt);			
+		tuple_array next_states = pushing(thread_num, key_text, current_states, syn_stack, q_stack);			
 		if(runtime==1)
         {
             generate_constraints(key_text, current_states, &next_states, q_stack->vt);
