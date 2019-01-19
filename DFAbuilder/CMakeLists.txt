@@ -6,4 +6,3 @@ file(GLOB lib_source_files
 )
 
 add_library(${PROJECT_NAME} STATIC ${lib_source_files})
-add_subdirectory(test)
