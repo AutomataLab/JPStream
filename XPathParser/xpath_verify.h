@@ -154,14 +154,14 @@ static inline XPathValue xpv_Calculate(XPathNode* node, XPathKeyValuePair* table
 
 
 
-XPathNode* modify_ref(XPathNode* node) {
+static inline XPathNode* xpv_ModifyRef(XPathNode* node) {
     XPathNode* ret = 0;
     if (node->left) {
-        ret = modify_ref(node->left);
+        ret = xpv_ModifyRef(node->left);
         if (ret != NULL) node->left = ret;
     }
     if (node->right) {
-        ret = modify_ref(node->right);
+        ret = xpv_ModifyRef(node->right);
         if (ret != NULL) node->right = ret;
     }
     if (node->node_type == xnt_reference) {
@@ -172,7 +172,7 @@ XPathNode* modify_ref(XPathNode* node) {
     }
     if (node->node_type == xnt_concat) {
         if (node->left->node_type == xnt_reference) {
-            char* name = malloc(sizeof(char) * (strlen(node->right->string) + 1));
+            char* name = (char*) malloc(sizeof(char) * (strlen(node->right->string) + 1));
             strcpy(name, node->right->string);
             XPathNode* new_node = xpn_CreateVariable(name);
             free(node->left);
@@ -182,7 +182,7 @@ XPathNode* modify_ref(XPathNode* node) {
             return new_node;
         } 
         if (node->left->node_type == xnt_variable) {
-            char* name = malloc(sizeof(char) * (
+            char* name = (char*) malloc(sizeof(char) * (
                 strlen(node->right->string) + strlen(node->left->string) + 2));
             strcpy(name, node->left->string);
             strcat(name, ".");
