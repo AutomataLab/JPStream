@@ -916,42 +916,249 @@ void createTree1(int thread_num)
 	start_tree[thread_num].top_tree=-1;
 }
 
+/***********************************************************************************************
+Function: int get_starting_states(int* start, int* end, char* str);
+Description: get possible starting states for the current key. 
+Input: start -- pointer for starting states; end -- pointer for states after reading str; 
+str -- transition string;
+Return: the number of possible starting states
+************************************************************************************************/
+static inline int get_starting_states(int* start, int* end, char* str)
+{
+	int count = -1;
+	int i, j, k;
+	for(i=0; i<=top_tags; i++)
+    {
+        if(strcmp(tags[i].tagname,str)==0)
+        {
+            for(j=0; j<=tags[i].top_point; j++)
+            {
+                start[++count]=tags[i].start[j];
+                end[count]=tags[i].end[j];
+            }
+            break;
+        }
+    }
+    if(count==-1)
+    {
+        for(j=machineCount+2; j>=0; j=j-2) //all possible start states
+        {
+            start[++count]=j/2;
+            int automata_value = j/2;
+            int automata_position = 2*automata_value - 1;
+            if(automata_value == 0) automata_position = 0;
+            if(automata_position<=machineCount)
+            {
+                for(k=0; k<=stateMachine[automata_position].n_transitions; k++)
+                {
+                    if((strcmp(stateMachine[automata_position].str[k],"*")==0&&stateMachine[automata_position].start[k]==automata_value)||(strcmp(stateMachine[automata_position].str[k],str)==0&&stateMachine[automata_position].start[k]==automata_value))
+                    {
+                        end[count] = stateMachine[automata_position].end[k];
+                                break;
+                    }
+                }
+                if(k>stateMachine[automata_position].n_transitions)
+                    end[count]=0;
+            }
+            else end[count] = 0;
+        }
+    }
+    return count;
+}
+
+
 /***************************************************************************************************************************************************************************************
-Function: tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack);
-Description: push current_states into stack, then update current_states based on input string. 
-Input: current state and stack information
-Return: updated current states
+Function: void initialize_multi_paths(int thread_num, char *str, tuple_array *current_states, tuple_array* next_states, stack_tag *stack_tag, query_stack* q_stack, int* start, int* end, int count);
+Description: initialize stack for multiple paths
 *****************************************************************************************************************************************************************************************/
-static inline tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack)
+static inline void initialize_multi_paths(int thread_num,char *str, tuple_array *current_states, tuple_array* next_states, stack_tag *stack_tag, query_stack* q_stack, int* start, int* end, int count)
+{
+    value_tuple *vt_arr = q_stack->vt;
+	child_tuple *ct_arr = q_stack->ct; 
+	root_tuple *rt_arr = q_stack->rt;
+	
+    int i,j,k;
+    
+    //temporary variables for ct_array (pointers to parent node) and rt_array (root for current node)
+    int parent_values[MAX_SIZE][MAX_SIZE];
+    int top_parent_values[MAX_SIZE];
+
+    int root_values[MAX_SIZE][MAX_SIZE];
+    int top_root_values[MAX_SIZE];
+
+    int tempccount = ct_arr->child_count;
+    int temprcount = rt_arr->root_count;
+	
+	vt_arr->value_count=-1;
+    ct_arr->child_count=-1;
+    rt_arr->root_count = -1;
+    //create current_states
+    for(i=0; i<=count; i++)
+    {
+        int vt_index = (++vt_arr->value_count);
+        vt_arr->values[vt_index] = start[i];
+        vt_arr->from[vt_index] = -1;
+        vt_arr->fromr[vt_index] = -1;
+        int m_index = 2*start[i]-1;
+    }
+    current_states->from = 0;
+    current_states->to = vt_arr->value_count;
+    next_states->from = current_states->to + 1;
+    next_states->to = next_states->from - 1;
+    //create next_states
+    for(i=0; i<=count; i++)
+    {
+        for(j=next_states->from; j<=next_states->to; j++)
+        {
+            if(vt_arr->values[j]==end[i])
+            {
+                break;
+            }
+        }
+        if(j<=next_states->to)
+        {
+            int current = (++ct_arr->child_count);
+            ct_arr->children[current] = start[i];
+            vt_arr->to[j] = current;
+            int vtvalues = vt_arr->values[j];
+            parent_values[vtvalues][++top_parent_values[vtvalues]] = start[i];
+            current = (++rt_arr->root_count);
+            rt_arr->root[current] = start[i];
+            root_values[vtvalues][++top_root_values[vtvalues]] = start[i];
+            vt_arr->tor[j] = current;
+        }
+        else
+        {
+            int from = (++ct_arr->child_count);
+            int to = from;
+            ct_arr->children[from] = start[i];
+            int current = (++vt_arr->value_count);
+            vt_arr->values[current] = end[i];
+            int vtvalues = vt_arr->values[current];
+            top_parent_values[vtvalues] = 0;
+            parent_values[vtvalues][top_parent_values[vtvalues]] = start[i];
+            vt_arr->from[current] = from;
+            vt_arr->to[current] = to;
+            next_states->to = current;
+            from = (++rt_array[thread_num].root_count);
+            to = from;
+            rt_array[thread_num].root[from] = start[i];
+            top_root_values[vtvalues] = 0;
+            root_values[vtvalues][top_root_values[vtvalues]] = start[i];
+            vt_arr->fromr[current] = from;
+            vt_arr->tor[current] = to;
+            next_states->tor = current;
+        }
+    }
+
+    ct_arr->child_count = tempccount;
+    rt_arr->root_count = temprcount;
+    int froms = next_states->from;
+    int tos = next_states->to;
+    while(froms<=tos) {
+        int cvalue = vt_arr->values[froms];
+        int cfrom = -1;
+        int cto = -1;
+        for(j=0; j<=top_parent_values[cvalue]; j++)
+        {
+            ct_arr->children[++ct_arr->child_count] = parent_values[cvalue][j];
+            if(j==0) {
+                cfrom = ct_arr->child_count;
+                cto = ct_arr->child_count;
+            }
+            else cto = ct_arr->child_count;
+        }
+        vt_arr->from[froms] = cfrom;
+        vt_arr->to[froms] = cto;
+        int rfrom = -1;
+        int rto = -1;
+        for(j=0; j<=top_root_values[cvalue]; j++)
+        {
+            rt_arr->root[++rt_arr->root_count] = root_values[cvalue][j];
+            if(j==0) {
+                rfrom = rt_arr->root_count;
+                rto = rt_arr->root_count;
+            }
+            else rto = rt_arr->root_count;
+        }
+        vt_arr->fromr[froms] = rfrom;
+        vt_arr->tor[froms] = rto;
+        froms++;
+    }
+    stack_tag->tuple_arrs[stack_tag->top_stack_tag]=*current_states;	
+}
+
+/***************************************************************************************************************************************************************************************
+Function: void initialize_multi_paths(char *str, tuple_array *current_states, tuple_array* next_states, stack_tag *stack_tag, query_stack* q_stack, int* start, int* end, int count);
+Description: initialize stack for single paths
+*****************************************************************************************************************************************************************************************/
+static inline void initialize_single_paths(char *str, tuple_array *current_states, tuple_array* next_states, stack_tag *stack_tag, query_stack* q_stack, int* start, int* end, int count)
+{
+	value_tuple *vt_arr = q_stack->vt;
+	child_tuple *ct_arr = q_stack->ct; 
+	root_tuple *rt_arr = q_stack->rt;
+	
+	vt_arr->value_count=-1;
+    ct_arr->child_count=-1;
+    rt_arr->root_count = -1;
+    
+    current_states->from = 0;
+    current_states->to = 0;
+    vt_arr->value_count = 0;
+    vt_arr->values[0] = start[count];
+    vt_arr->from[0] = -1;
+    vt_arr->to[0] = -1;
+    vt_arr->fromr[0] = -1;
+    vt_arr->tor[0] = -1;
+    vt_arr->flag[0] = 1;
+    vt_arr->counter[0] = 0;
+
+    int m_index = 2*start[count]-1;
+
+    next_states->from = 1;
+    next_states->to = 1;
+    vt_arr->value_count = 1;
+    vt_arr->values[1] = end[count];
+    vt_arr->from[1] = 0;
+    vt_arr->to[1] = 0;
+    vt_arr->flag[1] = 1;
+    vt_arr->counter[1] = 0;
+    ct_arr->child_count = 0;
+    ct_arr->children[0] = start[count];
+    int vtvalues = vt_arr->values[1];
+    rt_arr->root_count = 0;
+    rt_arr->root[0] = start[count];
+    vt_arr->from[0] = -1;
+    vt_arr->fromr[1] = 0;
+    vt_arr->tor[1] = 0;
+    stack_tag->tuple_arrs[stack_tag->top_stack_tag]=*current_states;
+}
+
+/***************************************************************************************************************************************************************************************
+Function: tuple_array push_empty(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack, tuple_array* next_states);
+Description: push current_states into stack, then update current_states based on input string. 
+Input: called by pushing() when current state is empty
+*****************************************************************************************************************************************************************************************/
+static inline void push_empty(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack, tuple_array* next_states)
 {
 	value_tuple *vt_arr = q_stack->vt;
 	child_tuple *ct_arr = q_stack->ct; 
 	root_tuple *rt_arr = q_stack->rt;
 	
     int i,j,k;
-    int top_root_children=-1;
-    int tag_zero=0;
-    int tag_initiate=0;
+    
+    //temporary variables for ct_array (pointers to parent node) and rt_array (root for current node)
+    int parent_values[MAX_SIZE][MAX_SIZE];
+    int top_parent_values[MAX_SIZE];
 
-    tuple_array next_states;
-    next_states.from = 0;
-    next_states.to = -1;
+    int root_values[MAX_SIZE][MAX_SIZE];
+    int top_root_values[MAX_SIZE];
 
-    int parent_values[30][30];
-    int top_parent_values[30];
-
-    int root_values[30][30];
-    int top_root_values[30];
-
-    for(i=0; i<30; i++)
-        top_root_values[i] = -1;
-    for(i=0; i<30; i++)
-        top_parent_values[i] = -1;
     int tempccount = ct_arr->child_count;
     int temprcount = rt_arr->root_count;
     //getting all possible starting states
     //initiate finish tree
-    if(current_states->from== -1)
+    if(current_states->from== -1) //empty stack at beginning
     {
         int start[MAX_SIZE];
         int end[MAX_SIZE];
@@ -983,46 +1190,10 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
                 }
             }
         }
-        else
+        else if(thread_num!=0)
         {
         	//get possible starting states
-            for(i=0; i<=top_tags; i++)
-            {
-                if(strcmp(tags[i].tagname,str)==0)
-                {
-                    for(j=0; j<=tags[i].top_point; j++)
-                    {
-                        start[++count]=tags[i].start[j];
-                        end[count]=tags[i].end[j];
-                        //break;
-                    }
-                    break;
-                }
-            }
-            if(count==-1)
-            {
-                for(j=machineCount+2; j>=0; j=j-2) //all possible start states
-                {
-                    start[++count]=j/2;
-                    int automata_value = j/2;
-                    int automata_position = 2*automata_value - 1;
-                    if(automata_value == 0) automata_position = 0;
-                    if(automata_position<=machineCount)
-                    {
-                        for(k=0; k<=stateMachine[automata_position].n_transitions; k++)
-                        {
-                            if((strcmp(stateMachine[automata_position].str[k],"*")==0&&stateMachine[automata_position].start[k]==automata_value)||(strcmp(stateMachine[automata_position].str[k],str)==0&&stateMachine[automata_position].start[k]==automata_value))
-                            {
-                                end[count] = stateMachine[automata_position].end[k];
-                                break;
-                            }
-                        }
-                        if(k>stateMachine[automata_position].n_transitions)
-                            end[count]=0;
-                    }
-                    else end[count] = 0;
-                }
-            }
+        	count = get_starting_states(start, end, str);
             //record segment
             int seg_index = (++tsegs[thread_num].num_segs);
             tsegs[thread_num].ele[seg_index].num_values = -1;
@@ -1034,147 +1205,46 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
             tsegs[thread_num].ele[seg_index].start_tree_sp = start_tree[thread_num].top_tree;
 
         }
-        if(count>=1)
+        if(count>=1)  //multiple execution paths
         {
-            vt_arr->value_count=-1;
-            ct_arr->child_count=-1;
-            rt_arr->root_count = -1;
-            //create current_states
-            for(i=0; i<=count; i++)
-            {
-                int vt_index = (++vt_arr->value_count);
-                vt_arr->values[vt_index] = start[i];
-                vt_arr->from[vt_index] = -1;
-                vt_arr->fromr[vt_index] = -1;
-                int m_index = 2*start[i]-1;
-            }
-            current_states->from = 0;
-            current_states->to = vt_arr->value_count;
-            next_states.from = current_states->to + 1;
-            next_states.to = next_states.from - 1;
-            //create next_states
-            for(i=0; i<=count; i++)
-            {
-                for(j=next_states.from; j<=next_states.to; j++)
-                {
-                    if(vt_arr->values[j]==end[i])
-                    {
-                        break;
-                    }
-                }
-                if(j<=next_states.to)
-                {
-                    int current = (++ct_arr->child_count);
-                    ct_arr->children[current] = start[i];
-                    vt_arr->to[j] = current;
-                    int vtvalues = vt_arr->values[j];
-                    parent_values[vtvalues][++top_parent_values[vtvalues]] = start[i];
-                    current = (++rt_arr->root_count);
-                    rt_arr->root[current] = start[i];
-                    root_values[vtvalues][++top_root_values[vtvalues]] = start[i];
-                    vt_arr->tor[j] = current;
-                }
-                else
-                {
-                    int from = (++ct_arr->child_count);
-                    int to = from;
-                    ct_arr->children[from] = start[i];
-                    int current = (++vt_arr->value_count);
-                    vt_arr->values[current] = end[i];
-                    int vtvalues = vt_arr->values[current];
-                    parent_values[vtvalues][++top_parent_values[vtvalues]] = start[i];
-                    vt_arr->from[current] = from;
-                    vt_arr->to[current] = to;
-                    next_states.to = current;
-                    from = (++rt_array[thread_num].root_count);
-                    to = from;
-                    rt_array[thread_num].root[from] = start[i];
-                    root_values[vtvalues][++top_root_values[vtvalues]] = start[i];
-                    vt_arr->fromr[current] = from;
-                    vt_arr->tor[current] = to;
-                    next_states.tor = current;
-                }
-            }
-
-            ct_arr->child_count = tempccount;
-            rt_arr->root_count = temprcount;
-            int froms = next_states.from;
-            int tos = next_states.to;
-            while(froms<=tos) {
-                int cvalue = vt_arr->values[froms];
-                int cfrom = -1;;
-                int cto = -1;
-                for(j=0; j<=top_parent_values[cvalue]; j++)
-                {
-                    ct_arr->children[++ct_arr->child_count] = parent_values[cvalue][j];
-                    if(j==0) {
-                        cfrom = ct_arr->child_count;
-                        cto = ct_arr->child_count;
-                    }
-                    else cto = ct_arr->child_count;
-                }
-                vt_arr->from[froms] = cfrom;
-                vt_arr->to[froms] = cto;
-                int rfrom = -1;
-                int rto = -1;
-                for(j=0; j<=top_root_values[cvalue]; j++)
-                {
-                    rt_arr->root[++rt_arr->root_count] = root_values[cvalue][j];
-                    if(j==0) {
-                        rfrom = rt_arr->root_count;
-                        rto = rt_arr->root_count;
-                    }
-                    else rto = rt_arr->root_count;
-                }
-                vt_arr->fromr[froms] = rfrom;
-                vt_arr->tor[froms] = rto;
-                froms++;
-            }
-            stack_tag->tuple_arrs[stack_tag->top_stack_tag]=*current_states;
-            return next_states;
+        	initialize_multi_paths(thread_num, str, current_states, next_states, stack_tag, q_stack, start, end, count);
         }
-        if(count==0)
+        if(count==0) //only one single path
         {
-            current_states->from = 0;
-            current_states->to = 0;
-            vt_arr->value_count = 0;
-            vt_arr->values[0] = start[count];
-            vt_arr->from[0] = -1;
-            vt_arr->to[0] = -1;
-            vt_arr->fromr[0] = -1;
-            vt_arr->tor[0] = -1;
-            vt_arr->flag[0] = 1;
-            vt_arr->counter[0] = 0;
-
-            int m_index = 2*start[count]-1;
-
-            next_states.from = 1;
-            next_states.to = 1;
-            vt_arr->value_count = 1;
-            vt_arr->values[1] = end[count];
-            vt_arr->from[1] = 0;
-            vt_arr->to[1] = 0;
-
-            vt_arr->flag[1] = 1;
-            vt_arr->counter[1] = 0;
-
-            ct_arr->child_count = 0;
-            ct_arr->children[0] = start[count];
-            int vtvalues = vt_arr->values[1];
-            rt_arr->root_count = 0;
-            rt_arr->root[0] = start[count];
-            vt_arr->from[0] = -1;
-            vt_arr->fromr[1] = 0;
-            vt_arr->tor[1] = 0;
-            stack_tag->tuple_arrs[stack_tag->top_stack_tag]=*current_states;
-            return next_states;
+        	initialize_single_paths(str, current_states, next_states, stack_tag, q_stack, start, end, count);
         }
     }
+}
+
+/***************************************************************************************************************************************************************************************
+Function: tuple_array push_regular(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack, tuple_array* next_states);
+Description: push current_states into stack, then update current_states based on input string. 
+Input: called by pushing() when current states are not empty
+*****************************************************************************************************************************************************************************************/
+static inline void push_regular(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack, tuple_array* next_states)
+{
+	value_tuple *vt_arr = q_stack->vt;
+	child_tuple *ct_arr = q_stack->ct; 
+	root_tuple *rt_arr = q_stack->rt;
+	
+    int i,j,k;
+    int top_root_children=-1;
+    
+    //temporary variables for ct_array (pointers to parent node) and rt_array (root for current node)
+    int parent_values[MAX_SIZE][MAX_SIZE];
+    int top_parent_values[MAX_SIZE];
+
+    int root_values[MAX_SIZE][MAX_SIZE];
+    int top_root_values[MAX_SIZE];
+
+    int tempccount = ct_arr->child_count;
+    int temprcount = rt_arr->root_count;
+    
     //push str into finish tree
     i = current_states->from;
     int children=current_states->to;
-    next_states.from = children+1;
-    next_states.to = children;
+    next_states->from = children+1;
+    next_states->to = children;
     int top_value=0;
     int tag_first_layer = 1; //0-- not first layer, 1 -- first layer
     if(vt_arr->fromr[i]==-1) {
@@ -1217,12 +1287,11 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
                 }
             }
             int found = 1;
-            if(k>stateMachine[automata_position].n_transitions)  found = 0; //next state is 0
-            
+            if(k>stateMachine[automata_position].n_transitions)  found = 0; //next state is 0      
             {
                 int aa;
-                aa = next_states.from;
-                top_root_children = next_states.to;
+                aa = next_states->from;
+                top_root_children = next_states->to;
 
                 for(; aa<=top_root_children; aa++)
                 {
@@ -1258,7 +1327,6 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
                             vt_arr->tor[aa] = current;
                         }
                     }
-
                 }
                 else
                 {
@@ -1269,19 +1337,21 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
                     if(found==0) vt_arr->values[current] = 0;
                     else vt_arr->values[current] = stateMachine[automata_position].end[k];
                     int vtvalues = vt_arr->values[aa];
-                    parent_values[vtvalues][++top_parent_values[vtvalues]] = automata_value;
+                    top_parent_values[vtvalues] = 0;
+                    parent_values[vtvalues][top_parent_values[vtvalues]] = automata_value;
                     vt_arr->from[current] = from;
                     vt_arr->to[current] = to;
                     vt_arr->counter[current] = current_counter;
                     vt_arr->flag[current] = current_counter_flag;
                     if(thread_num>0&&strcmp(str,"array")==0)
                         vt_arr->flag[current] = 1;
-                    next_states.to = current;
+                    next_states->to = current;
                     if(tag_first_layer == 1)
                     {
                         int current1 = (++rt_arr->root_count);
                         rt_arr->root[current1] = vt_arr->values[i];
-                        root_values[vtvalues][++top_root_values[vtvalues]] = vt_arr->values[i];
+                        top_root_values[vtvalues] = 0;
+                        root_values[vtvalues][top_root_values[vtvalues]] = vt_arr->values[i];
                         vt_arr->fromr[current] = current1;
                         vt_arr->tor[current] = current1;
                     }
@@ -1292,7 +1362,8 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
                         {
                             int current1 = (++rt_arr->root_count);
                             rt_arr->root[current1] = rt_arr->root[bb];
-                            root_values[vtvalues][++top_root_values[vtvalues]] = rt_arr->root[bb];
+                            top_root_values[vtvalues] = 0;
+                            root_values[vtvalues][top_root_values[vtvalues]] = rt_arr->root[bb];
                             vt_arr->tor[current] = current1;
                             if(bb == vt_arr->fromr[i])
                             {
@@ -1304,11 +1375,10 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
             }
         }
     }
-    
     ct_arr->child_count = tempccount;
     rt_arr->root_count = temprcount;
-    int froms = next_states.from;
-    int tos = next_states.to;
+    int froms = next_states->from;
+    int tos = next_states->to;
     while(froms<=tos) {
         int cvalue = vt_arr->values[froms];
         int cfrom = -1;;
@@ -1339,9 +1409,26 @@ static inline tuple_array pushing(int thread_num, char *str, tuple_array *curren
         vt_arr->tor[froms] = rto;
         froms++;
     }
-
     stack_tag->tuple_arrs[stack_tag->top_stack_tag]=*current_states;
-    return next_states;
+}
+
+/***************************************************************************************************************************************************************************************
+Function: tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *syn_stack, query_stack* q_stack);
+Description: push current_states into stack, then update current_states based on input string. 
+Input: current state and stack information
+Return: updated current states
+*****************************************************************************************************************************************************************************************/
+static inline tuple_array pushing(int thread_num, char *str, tuple_array *current_states,stack_tag *syn_stack, query_stack* q_stack)
+{
+    tuple_array next_states;
+    next_states.from = 0;
+    next_states.to = -1;
+    if(current_states->from== -1)
+    {
+    	push_empty(thread_num, str, current_states, syn_stack, q_stack, &next_states);
+	}
+	else push_regular(thread_num, str, current_states, syn_stack, q_stack, &next_states);
+	return next_states;
 }
 
 /* following two functions handle unmatched ending symbols */
