@@ -16,8 +16,23 @@ extern "C" {
 #include "scanner_j.h"
 }
 
+#include <vector>
+#include <string>
+
 using namespace std;
 using namespace dragontooth;
+
+struct StackElement {
+    
+};
+
+struct StackContext {
+    XPathNode* root;
+    vector<StackElement> st;
+
+};
+
+
 
 extern "C" {
 
@@ -33,8 +48,16 @@ XPathNode* xpb_Analysis(const char* data) {
     return root;
 }
 
+static void construct_dfa(XPathNode* root, StackContext* ctx) {
+
+}
+
 static void create_jsonpath_dfa(const char* json_path, RegexModel* model) {
-    
+    XPathNode* root = xpb_Analysis(json_path);
+    xpv_ModifyRef(root);
+    xpn_PrintJSON(root);
+
+
     model->input_max = 10;
 }
 
@@ -61,7 +84,7 @@ JQ_DFA* xpb_Create(const char* json_path) {
     delete start;
     delete builder;
     delete mixer;
-    return NULL;
+    return create_dfa(dfa);
 }
 
 
