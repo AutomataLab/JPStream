@@ -71,8 +71,8 @@ Predicate: Number ':' Number {$$ = xpn_CreateRange($1, $3);}
 
 IndexList: Number
     | STRING  { $$ = xpn_CreateString($1); }
-    | IndexList Number  { $$ = xpn_CreateConcat($1, $2); }
-    | IndexList STRING  { $$ = xpn_CreateConcat($1, xpn_CreateString($2)); }
+    | IndexList ',' Number  { $$ = xpn_CreateConcat($1, $3); }
+    | IndexList ',' STRING  { $$ = xpn_CreateConcat($1, xpn_CreateString($3)); }
     ;
 
 Expr: Expr OR Expr  { $$ = xpn_CreateOperator(xot_or, $1, $3); }
@@ -99,7 +99,6 @@ Expr: Expr OR Expr  { $$ = xpn_CreateOperator(xot_or, $1, $3); }
 Number: NUMBER { $$ = xpn_CreateNumber($1); }
     | '-' NUMBER { $$ = xpn_CreateNumber(-$2); }
     ;
-
 
 %%
 
