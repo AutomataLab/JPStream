@@ -309,6 +309,7 @@ static inline void xpn_print_jnode(XPathNode* node, int depth, bool print_return
             break;
         }
         default:
+            printf("Unknown node");
             break;
     }
     if (print_return) printf("\n");

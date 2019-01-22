@@ -1,12 +1,12 @@
 #ifndef __XPATH_BUILDER_H__
 #define __XPATH_BUILDER_H__
 
-#include "dfa.h"
-#include "xpath_model.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "dfa.h"
+#include "xpath_model.h"
 
 extern XPathNode* xpb_Analysis(const char* data);
 

@@ -42,7 +42,28 @@ int test_verify() {
 }
 
 
+int test_xpb_Create() {
+    JQ_DFA* dfa = xpb_Create("$.root[?(@.index && @.guid.uuid)].friends[?(@.name)].id");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.root.id");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$..root.id");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.*.root");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$..*.root");
+    if (dfa == NULL) return 1;
+
+    return 0;
+}
+
+
 int main() {
+    if (test_xpb_Create()) return 1;
     if (test1()) return 1;
     if (test_verify()) return 1;
 

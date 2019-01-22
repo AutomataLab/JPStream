@@ -107,7 +107,7 @@ public:
         out << "RegexModel" << std::endl;
         out << "input_max = " << that.input_max << std::endl;
         for (int i = 0; i < that.size(); ++i) {
-            out << that.id_names[i+1] << "(" << that.id_array[i+1] << ")" << std::endl;
+            // out << that.id_names[i+1] << "(" << that.id_array[i+1] << ")" << std::endl;
             out << *(that.at(i));
             out << std::endl;
         }

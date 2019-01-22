@@ -63,7 +63,10 @@ public:
 			int l;
 			if ((l = isStopState(i)) != 0) printf("#%d",l);
 			for (int j = 1; j< input_max; ++j) {
-				printf("\ts%d",nextState(i,j));
+				if (nextState(i,j) != 0)
+					printf("\ts%d",nextState(i,j));
+				else
+					printf("\t");
 			}
 			printf("\n");
 		}

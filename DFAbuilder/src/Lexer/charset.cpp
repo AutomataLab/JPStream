@@ -17,46 +17,35 @@ CharSet::CharSet(const CharSet& copy) {
 
 CharSet::CharSet(const std::string& _str) {
     this->str = _str;
-	regex_char last = 0;
-	this->eclass_sum = 1;
-	bool isConnector = false;
-	for (auto i = str.begin(); i != str.end(); ++i)
-	{
-		if (i == str.begin() && (*i == '^')) {
-			negate = true;
-		}
-		else {
-			if (*i == '-') {
-				if (last == 0 || isConnector){
-					// throw exception("error, \'-\' is not right");
-				}
-
-				isConnector = true;
-			}
-			else {
-				regex_char c = *i;
-				if (c == '\\') {
-					c = CharEscape(i);
-				}
-
-				if (isConnector) {
-					insert(last,c);
-					last = 0;
-					isConnector = false;
-				}
-				else {
-					if (last != 0) {
-						insert(last);
-						last = 0;
-					}
-					last = c;
-				}
-			}
-		}
-	}
-	if (last != 0) {
-		insert(last);
-	}
+    regex_char last = 0;
+    this->eclass_sum = 1;
+    bool isConnector = false;
+    for (auto i = str.begin(); i != str.end(); ++i) {
+        if (i == str.begin() && (*i == '^')) {
+            negate = true;
+        } else {
+            if (*i == '-') {
+                if (last == 0 || isConnector) {
+                    // throw exception("error, \'-\' is not right");
+                }
+                isConnector = true;
+            } else {
+                regex_char c = *i;
+                if (c == '\\') c = EscapeChar(i, str.end());
+                if (isConnector) {
+                    insert(last, c);
+                    last = 0;
+                    isConnector = false;
+                } else {
+                    if (last != 0) insert(last);
+                    last = c;
+                }
+            }
+        }
+    }
+    if (last != 0) {
+        insert(last);
+    }
 }
 
 void CharSet::insert(regex_char p, regex_char q) {
@@ -136,4 +125,4 @@ bool operator==(const charset_value& q, const charset_value& p) {
 bool CharSet::operator==(const CharSet& p) {
     return (this->charset == p.charset);
 }
-}
+}  // namespace dragontooth

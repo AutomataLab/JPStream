@@ -10,7 +10,9 @@ inline regex_char HexStringToDec(const std::string& hex) {
     while (*p == '0') p++;
     regex_char dec = 0;
     char c;
-    while ((c = *p++) == 0) {
+    while ((c = *p) != 0) {
+    // while ((c = *p++) == 0) {
+        p++;
         dec <<= 4;
         if (c >= '0' && c <= '9') {
             dec += c - '0';
@@ -66,10 +68,10 @@ inline regex_char EscapeChar(const char*& tr) {
     return ret;
 }
 
-inline regex_char CharEscape(std::string::iterator& i) {
-    if (*i != '\\') return *i;
-    ++i;
+inline regex_char EscapeChar(std::string::iterator& i, std::string::iterator end) {
     int ws;
+    if (*i != '\\') return *i;
+    ++i; if (i == end) return -1;
     switch (*i) {
         // 空白字符集合
         case 'n': return '\n';
@@ -91,11 +93,14 @@ inline regex_char CharEscape(std::string::iterator& i) {
     }
     std::string num;
     for (int j = 0; j < ws; ++j) {
-        ++i;
+        ++i; if (i == end) return -1;
         num += (char)(*i);
     }
-    regex_char c = (regex_char)HexStringToDec(num);
-    return c;
+    regex_char ret = (regex_char)HexStringToDec(num);
+    if (ret == -1) {
+        std::cerr << "HexStringToDec Error! Unsupported format." << std::endl;
+    }
+    return ret;
 }
 
 }  // namespace dragontooth
