@@ -41,9 +41,29 @@ int test_verify() {
     return 0;
 }
 
-
 int test_xpb_Create() {
-    JQ_DFA* dfa = xpb_Create("$.root[?(@.index && @.guid.uuid)].friends[?(@.name)].id");
+    JQ_DFA* dfa = xpb_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.root[*].title");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.root.products[*].productId");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.root[?(@.id)].quoted_status.entities.user_mentions[?(@.indices&&@.id_str)].id");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.root[?(@.text&&@.contributors)].id");
+    if (dfa == NULL) return 1;
+
+    dfa = xpb_Create("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position");
     if (dfa == NULL) return 1;
 
     dfa = xpb_Create("$.root.id");
