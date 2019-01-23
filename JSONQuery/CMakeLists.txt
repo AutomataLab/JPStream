@@ -5,5 +5,5 @@ file(GLOB source_files
     )
 
 add_executable(${PROJECT_NAME} ${source_files})
-target_link_libraries(${PROJECT_NAME} DFAbuilder XPathParser pthread )
+target_link_libraries(${PROJECT_NAME} XPathParser DFAbuilder pthread )
 

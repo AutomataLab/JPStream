@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "input.h"
+#include "xpath_verify.h"
+#include "xpath_builder.h"
 
 void Test0()
 {
@@ -246,6 +248,12 @@ void Test8()
     if(debug_flag==1) print_debug_info();
 }
 
+void Test9()
+{
+    JQ_DFA* dfa = xpb_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id");
+    printf("1 (3) => %d\n", jqd_nextState(dfa, 1, 3));
+}
+
 int main()
 {
     Test0();
@@ -257,6 +265,7 @@ int main()
     Test6();
     Test7();
     Test8();
+    Test9();
     return 0;
 }
 

@@ -230,7 +230,7 @@ struct StackContext {
                     construct_filter(p->left);
                     break;
                 }
-                default:
+                    default:
                     break;
                 }
             }
@@ -279,6 +279,9 @@ static JQ_DFA* create_dfa(DFACompressed* cpd_dfa) {
         for (int j = 0; j < dfa->inputs_num; ++j ) {
             dfa->table[i * dfa->inputs_num + j] = cpd_dfa->nextState(i, j);
         }
+    }
+    for (int i = 0; i < dfa->states_num; ++i) {
+        dfa->stop_state[i] = cpd_dfa->isStopState(i);
     }
     return dfa;
 }
