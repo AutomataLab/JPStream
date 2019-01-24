@@ -1,3 +1,6 @@
+#ifndef __SEMI_STRUCTURE_H__
+#define __SEMI_STRUCTURE_H__
+
 /*data structure for elements in semi-structure file*/
 
 typedef struct
@@ -32,3 +35,5 @@ char* convertTokenTypeToStr(xml_TokenType type); //get the type for each element
 int xml_initText(xml_Text *pText, char *s); //init text
 int xml_initToken(xml_Token *pToken, xml_Text *pText); //init token
 char * convertTokenTypeToStr(xml_TokenType type);
+
+#endif // !__SEMI_STRUCTURE_H__

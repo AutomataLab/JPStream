@@ -1,8 +1,10 @@
-#define MAX_THREAD 70
-#define MAX_LINE 100
+#ifndef __GLOBAL_H__
+#define __GLOBAL_H__
+
 #define MAX_SIZE 500
 #define MAX_THREAD 70
 #define MAX_LINE 100
+#define MAX_FILE 1000
 /*data structure for files in each thread*/
 extern char * buffFiles[MAX_THREAD]; 
 
@@ -15,7 +17,6 @@ typedef struct outputele{
 
 extern outputele outputs[MAX_THREAD];
 extern int goggle_flag;
-extern int debug_flag;
 
 /*data structure for automata*/
 typedef struct{
@@ -112,3 +113,5 @@ extern int statistic_flag;
 extern int debug_flag;
 extern int percentage;
 extern int runtime;
+
+#endif // !__GLOBAL_H__

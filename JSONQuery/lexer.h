@@ -1,3 +1,6 @@
+#ifndef __LEXER_H__
+#define __LEXER_H__
+
 //#include "basic.h"
 //#include "global.h"
 #include "semi_structure.h"
@@ -20,3 +23,5 @@ typedef struct token_info{
 }token_info; 
 
 int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_text); //getting the next token from JSON data
+
+#endif // !__LEXER_H__

@@ -29,10 +29,7 @@ It could also divide it into several parts and deal with each part in parallel.
 int temp_err = 0;
 int runtime = 0;
 int percentage = 1;
-
 /*data structure for each thread*/
-#define MAX_THREAD 70
-#define MAX_LINE 100
 pthread_t thread[MAX_THREAD]; 
 int thread_args[MAX_THREAD];
 int finish_args[MAX_THREAD];
@@ -57,10 +54,7 @@ int num_threads;
 char* file_name;
 char* xmlPath;
 char* jsonPath;
-int warmup_flag;
 int pversion;
-int statistic_flag;
-int debug_flag;
 
 typedef struct thread_info
 {
@@ -78,7 +72,7 @@ typedef struct thread_info
 thread_info tinfo[MAX_THREAD];
 double reexecution_time[MAX_THREAD];
 
-#define MAX_FILE 1000
+
  Automata stateMachine[MAX_SIZE];   //save automata for XPath
 
  int stateCount=0; //the number of states for XPath

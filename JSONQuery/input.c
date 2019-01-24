@@ -1,22 +1,10 @@
 #include <malloc.h>
-#include <sys/file.h>
 #include <stdio.h>
 #include <string.h>
 #include "basic.h"
 #include "global.h"
 #include "input.h"
 
-#define MAX_FILE 1000
-int choose;
-int num_threads;
-char* file_name;
-char* xmlPath;
-char* jsonPath;
-int warmup_flag;
-int pversion;
-int statistic_flag;
-int debug_flag;
-int percentage;
 
 /*********************************************************
 Function: void get_parameters_from_config(char* config_file);

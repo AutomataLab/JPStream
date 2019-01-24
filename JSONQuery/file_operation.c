@@ -1,13 +1,10 @@
 #include <malloc.h>
-#include <sys/file.h>
 #include <stdio.h>
 #include <string.h>
 #include "file_operation.h"
 #include "basic.h"
 #include "global.h"
 
-//extern char * buffFiles[MAX_THREAD]; 
-//extern outputele outputs[MAX_THREAD];
 
 /*************************************************
 Function: int split_file(char* file_name,int n);
@@ -18,16 +15,16 @@ Return: the number of threads(start with 0); -1--can't open the JSON file
 int split_file(char* file_name,int n)
 {
 	FILE *fp;
-	long i,j,k; off_t one_size;
-	long size;
+	long i,j,k;
+	long size, one_size;
 	fp = fopen (file_name,"rb");
 	if (fp==NULL) 
 	{ 
 	    return -1; 
 	}
-	fseeko (fp, 0, SEEK_END); 
-	size=ftello (fp);
-	rewind(fp);
+	fseek (fp, 0, SEEK_END);
+    size=ftell (fp);
+    rewind(fp); 
 	one_size=(size/n)+1;
 	n=n-1;
 	char ch=-1;
