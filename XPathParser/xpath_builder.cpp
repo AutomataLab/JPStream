@@ -33,6 +33,14 @@ typedef enum SEType {
 } SEType;
 
 
+static char* str_copy(const char* src) {
+    int len = strlen(src);
+    char* buffer = (char*) malloc(len+1);
+    strcpy(buffer, src);
+    buffer[len] = '\0';
+    return buffer;
+}
+
 struct StackElement {
     SEType stype;
     union {
@@ -65,14 +73,6 @@ struct StackElement {
         }
     }
 
-private:
-    static char* str_copy(const char* src) {
-        int len = strlen(src);
-        char* buffer = (char*) malloc(len+1);
-        strcpy(buffer, src);
-        buffer[len] = '\0';
-        return buffer;
-    }
 };
 
 struct StackContext {
@@ -259,21 +259,22 @@ XPathNode* xpb_Analysis(const char* data) {
 }
 
 
-static void create_jsonpath_dfa(const char* json_path, RegexModel* model) {
+static StackContext* create_jsonpath_dfa(const char* json_path, RegexModel* model) {
     printf("\noriginal: %s\n", json_path);
     XPathNode* root = xpb_Analysis(json_path);
     printf("-------------------\n");
 
-    StackContext ctx(model, root);
-    ctx.construct_dfa(root);
-    ctx.create_dfa();
+    StackContext* ctx = new StackContext(model, root);
+    ctx->construct_dfa(root);
+    ctx->create_dfa();
 
     printf("-------------------\n");
-    model->input_max = ctx.input_mapping.size();
-    ctx.print_header();
+    model->input_max = ctx->input_mapping.size();
+    ctx->print_header();
+    return ctx;
 }
 
-static JQ_DFA* create_dfa(DFACompressed* cpd_dfa) {
+static JQ_DFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
     JQ_DFA* dfa = jqd_Create(cpd_dfa->getStateSum(), cpd_dfa->getInputSize(), 0);
     for (int i = 0; i < dfa->states_num; ++i) {
         for (int j = 0; j < dfa->inputs_num; ++j ) {
@@ -283,13 +284,18 @@ static JQ_DFA* create_dfa(DFACompressed* cpd_dfa) {
     for (int i = 0; i < dfa->states_num; ++i) {
         dfa->stop_state[i] = cpd_dfa->isStopState(i);
     }
+    dfa->names[1] = str_copy("other");
+    dfa->names[2] = str_copy("array");
+    for (int i = 3; i < dfa->inputs_num; ++i) {
+        dfa->names[i] = str_copy(ctx->input_mapping[i].c_str());
+    }
     return dfa;
 }
 
 
 JQ_DFA* xpb_Create(const char* json_path) {
     RegexModel* model = new RegexModel();
-    create_jsonpath_dfa(json_path, model);
+    StackContext* ctx = create_jsonpath_dfa(json_path, model);
 
     SetConverter* start = new SetConverter();
     RegexBuilder* builder = new RegexBuilder();
@@ -301,11 +307,13 @@ JQ_DFA* xpb_Create(const char* json_path) {
     DFACompressed* dfa = (DFACompressed*)(data->main_dfa);
     dfa->print();
 
+    JQ_DFA* m_dfa = create_dfa(ctx, dfa);
     delete model;
     delete start;
     delete builder;
     delete mixer;
-    return create_dfa(dfa);
+    delete ctx;
+    return m_dfa;
 }
 
 

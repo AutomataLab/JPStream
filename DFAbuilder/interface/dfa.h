@@ -73,7 +73,13 @@ static inline JQ_index_pair jqd_getArrayIndex(JQ_DFA* dfa, uint32_t array_id) {
     return dfa->array_index[array_id];
 }
 
+static inline uint32_t jqd_getStatesNum(JQ_DFA* dfa) {
+    return dfa->states_num;
+}
 
+static inline uint32_t jqd_getInputsNum(JQ_DFA* dfa) {
+    return dfa->inputs_num;
+}
 #ifdef __cplusplus
 }
 #endif
