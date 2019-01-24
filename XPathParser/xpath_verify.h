@@ -121,6 +121,7 @@ static inline XPathValue xpv_Opt2(XPathOperatorType opt, XPathValue v1, XPathVal
             v.number = (long long int)(v1.number) % (long long int)(v2.number);
             return v;
     }
+    return v;
 }
 
 

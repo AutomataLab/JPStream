@@ -2,7 +2,7 @@
 #define __GLOBAL_H__
 
 #define MAX_SIZE 500
-#define MAX_THREAD 70
+#define MAX_THREAD 80
 #define MAX_LINE 100
 #define MAX_FILE 1000
 /*data structure for files in each thread*/

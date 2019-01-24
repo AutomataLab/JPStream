@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "input.h"
-#include "xpath_verify.h"
-#include "xpath_builder.h"
+// #include "xpath_verify.h"
+// #include "xpath_builder.h"
 
 void Test0()
 {
@@ -248,13 +248,13 @@ void Test8()
     if(debug_flag==1) print_debug_info();
 }
 
-void Test9()
-{
-    JQ_DFA* dfa = xpb_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id");
-    printf("1 (3) => %d\n", jqd_nextState(dfa, 1, 3));
-    for (int i = 1; i < dfa->inputs_num; ++i)
-        printf("str: %s\n", jqd_getName(dfa, i));
-}
+// void Test9()
+// {
+//     JQ_DFA* dfa = xpb_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id");
+//     printf("1 (3) => %d\n", jqd_nextState(dfa, 1, 3));
+//     for (int i = 1; i < dfa->inputs_num; ++i)
+//         printf("str: %s\n", jqd_getName(dfa, i));
+// }
 
 int main()
 {
@@ -267,7 +267,7 @@ int main()
     Test6();
     Test7();
     Test8();
-    Test9();
+    // Test9();
     return 0;
 }
 

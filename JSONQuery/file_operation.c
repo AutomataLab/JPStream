@@ -110,7 +110,7 @@ int split_file(char* file_name,int n)
 		        buffFiles[n][j]='\0';  
 		    }
 	    }  
-	   // fclose(fp);
+	   fclose(fp);
 	    return n;
 	}
 

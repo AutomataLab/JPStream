@@ -355,6 +355,7 @@ char* ReadXPath(char* xpath_name)
 		}
 	}
 	free(buf);
+    fclose(fp);
     return xpath;
 }
 
@@ -2988,7 +2989,7 @@ int automata(void)
     int j,k;  
     int i,rc;
     
-    for(i=0;i<=400;i++)
+    for(i=0;i<=MAX_SIZE;i++)
     {
     	stateMachine[i].n_transitions=-1;
 	}
