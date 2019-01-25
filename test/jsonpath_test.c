@@ -42,40 +42,47 @@ int test_verify() {
 }
 
 int test_xpb_Create() {
-    JQ_DFA* dfa = xpb_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id");
+    JQ_CONTEXT ctx;
+    JQ_DFA* dfa;
+
+    dfa = xpb_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
+    jqc_print(&ctx);
+    if (dfa == NULL) return 1;
+    
+    dfa = xpb_Create("$.root[12:20].title", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.root[*].title");
+    dfa = xpb_Create("$.root.id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property");
+    dfa = xpb_Create("$..root.id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id");
+    dfa = xpb_Create("$.*.root", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.root.products[*].productId");
+    dfa = xpb_Create("$..*.root", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.root[?(@.id)].quoted_status.entities.user_mentions[?(@.indices&&@.id_str)].id");
+    dfa = xpb_Create("$.root[*].title", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.root[?(@.text&&@.contributors)].id");
+    dfa = xpb_Create("$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position");
+    dfa = xpb_Create("$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.root.id");
+    dfa = xpb_Create("$.root.products[*].productId", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$..root.id");
+    dfa = xpb_Create("$.root[?(@.id)].quoted_status.entities.user_mentions[?(@.indices&&@.id_str)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$.*.root");
+    dfa = xpb_Create("$.root[?(@.text&&@.contributors)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = xpb_Create("$..*.root");
+    dfa = xpb_Create("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position", &ctx);
     if (dfa == NULL) return 1;
 
     return 0;

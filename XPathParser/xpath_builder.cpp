@@ -82,8 +82,14 @@ struct StackContext {
     unordered_map<string, int> name_mapping;
     // 0 is end, 1 is other, 2 is array 3-n are names
     vector<string> input_mapping;
+    vector<XPathNode*> filter_trees;
+    vector< pair<int, int> > array_range;
 
-    StackContext(RegexModel* model, XPathNode* root) : model(model), root(root), st(0), input_mapping(3) {}
+    map<int, vector<int> > states_mapping;
+    int state_handle_now;
+    vector<XPathNode*> tree_mapping;
+
+    StackContext(RegexModel* model, XPathNode* root) : model(model), root(root), st(0), input_mapping(3), array_range(0) {}
     ~StackContext() {}
 
     void print() {
@@ -122,7 +128,7 @@ struct StackContext {
             }
         
         RegexList* list = new RegexList();
-    
+
         for (auto& se: st) {
             switch (se.stype) {
                 case set_dot_all: { 
@@ -152,6 +158,8 @@ struct StackContext {
             }
         }
         model->Add(list);
+        array_range.push_back({0,0});
+        tree_mapping.push_back(NULL);
     }
 
     void construct_filter(XPathNode* node) {
@@ -165,6 +173,8 @@ struct StackContext {
                 st.push_back({set_dot_property, token.c_str()});
             }
             create_dfa();
+            states_mapping[state_handle_now].push_back(model->size()-1);
+            tree_mapping[state_handle_now] = filter_trees.back();
             for (int i = 0; i < count; ++i)
                 st.pop_back();
         }
@@ -215,6 +225,8 @@ struct StackContext {
                     if (p->right) end = p->right->number;
                     else end = INT_MAX;
                     st.push_back({set_array_index, begin, end});
+                    create_dfa();
+                    array_range[model->size()-1] = {begin, end};
                     break;
                 }
                 // [*]
@@ -227,10 +239,14 @@ struct StackContext {
                     st.push_back({set_array_all});
                     create_dfa();
                     xpv_ModifyRef(p);
+                    state_handle_now = model->size()-1;
+                    states_mapping[state_handle_now] = vector<int>(0);
+                    filter_trees.push_back(p->left);
+                    tree_mapping[state_handle_now] = filter_trees.back();
                     construct_filter(p->left);
                     break;
                 }
-                    default:
+                default:
                     break;
                 }
             }
@@ -240,6 +256,7 @@ struct StackContext {
             break;
         }
     }
+
 
 };
 
@@ -258,31 +275,23 @@ XPathNode* xpb_Analysis(const char* data) {
     return root;
 }
 
-
-static StackContext* create_jsonpath_dfa(const char* json_path, RegexModel* model) {
-    printf("\noriginal: %s\n", json_path);
-    XPathNode* root = xpb_Analysis(json_path);
-    printf("-------------------\n");
-
-    StackContext* ctx = new StackContext(model, root);
-    ctx->construct_dfa(root);
-    ctx->create_dfa();
-
-    printf("-------------------\n");
-    model->input_max = ctx->input_mapping.size();
-    ctx->print_header();
-    return ctx;
-}
-
 static JQ_DFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
-    JQ_DFA* dfa = jqd_Create(cpd_dfa->getStateSum(), cpd_dfa->getInputSize(), 0);
+    JQ_DFA* dfa = jqd_Create(cpd_dfa->getStateSum(), cpd_dfa->getInputSize());
     for (int i = 0; i < dfa->states_num; ++i) {
         for (int j = 0; j < dfa->inputs_num; ++j ) {
             dfa->table[i * dfa->inputs_num + j] = cpd_dfa->nextState(i, j);
         }
     }
     for (int i = 0; i < dfa->states_num; ++i) {
-        dfa->stop_state[i] = cpd_dfa->isStopState(i);
+        int stop_state = cpd_dfa->isStopState(i);
+        dfa->stop_state[i] = stop_state;
+        if (stop_state) {
+            auto pair = ctx->array_range[stop_state-1];
+            if (pair.first || pair.second) {
+                dfa->array_index[i] = {pair.first, pair.second};
+                dfa->stop_state[i] = 0;
+            }
+        }
     }
     dfa->names[1] = str_copy("other");
     dfa->names[2] = str_copy("array");
@@ -292,10 +301,49 @@ static JQ_DFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
     return dfa;
 }
 
+static int acc_id2state(DFACompressed* cpd_dfa, int acc) {
+    for (int i = 0; i < cpd_dfa->getStateSum(); ++i) {
+        if (acc == cpd_dfa->isStopState(i)) {
+            return i;
+        }
+    }
+    return -1;
+} 
 
-JQ_DFA* xpb_Create(const char* json_path) {
+static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_CONTEXT* context) {
+    context->states_num = cpd_dfa->getStateSum();
+    context->subtrees = (XPathNode**) calloc(sizeof(XPathNode*), cpd_dfa->getStateSum()+1);
+    context->states_mapping = (JQ_IntVerPair*) calloc(sizeof(JQ_IntVerPair), cpd_dfa->getStateSum()+1);
+    for (int i = 0; i < cpd_dfa->getStateSum(); ++i) {
+        int acc = cpd_dfa->isStopState(i);
+        if (acc) {
+            context->subtrees[i] = ctx->tree_mapping[acc-1];
+            const auto& vec = ctx->states_mapping[acc-1];
+            context->states_mapping[i].value_size = vec.size();
+            if (!vec.empty()) {
+                context->states_mapping[i].value = (int*)calloc(sizeof(int), vec.size());
+                for (int j = 0; j < vec.size(); ++j) {
+                    context->states_mapping[i].value[j] = acc_id2state(cpd_dfa, vec[j]+1);
+                }
+            }
+        }
+    }
+}
+
+JQ_DFA* xpb_Create(const char* json_path, JQ_CONTEXT* context) {
+    printf("\noriginal: %s\n", json_path);
+    XPathNode* root = xpb_Analysis(json_path);
+    return xpb_CreateFromAST(root, context);
+}
+
+JQ_DFA* xpb_CreateFromAST(XPathNode* json_path, JQ_CONTEXT* context) {
     RegexModel* model = new RegexModel();
-    StackContext* ctx = create_jsonpath_dfa(json_path, model);
+
+    StackContext* ctx = new StackContext(model, json_path);
+    ctx->construct_dfa(json_path);
+    ctx->create_dfa();
+    printf("-------------------\n");
+    model->input_max = ctx->input_mapping.size();
 
     SetConverter* start = new SetConverter();
     RegexBuilder* builder = new RegexBuilder();
@@ -305,9 +353,12 @@ JQ_DFA* xpb_Create(const char* json_path) {
     RegexModel* data = start->ExecuteAll<RegexModel>(model);
     // cout << *data << endl;
     DFACompressed* dfa = (DFACompressed*)(data->main_dfa);
-    dfa->print();
+    // dfa->print();
 
     JQ_DFA* m_dfa = create_dfa(ctx, dfa);
+    create_context(ctx, dfa, context);
+    jqd_print(m_dfa);
+
     delete model;
     delete start;
     delete builder;
@@ -319,6 +370,10 @@ JQ_DFA* xpb_Create(const char* json_path) {
 
 JQ_DFA* xpb_CreateMultiple(int num, const char* json_path[]) {
     // TODO: Implement merging multiple JSON Query DFAs
+    return NULL;
+}
+
+JQ_DFA* xpb_CreateMultipleFromAST(int num, XPathNode* json_path[]) {
     return NULL;
 }
 

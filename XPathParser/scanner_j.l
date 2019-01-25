@@ -15,6 +15,7 @@ static char* makestring(const char* data, int len);
 %option yylineno
 %option reentrant noyywrap
 %option prefix="j"
+%option never-interactive
 
 
 NCNameStartChar [A-Z]|"_"|[a-z]
