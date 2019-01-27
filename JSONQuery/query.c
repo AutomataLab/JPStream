@@ -2606,14 +2606,14 @@ void gather_predicate_info()
                 if(stateMachine[i].start[k]==stateMachine[i].end[k]) output_values[top_output_indexes]=0;
             }
         }
-        /*if(stateMachine[i].isoutput==1||stateMachine[i].isoutput == 2)
-            stateMachine[i].isoutput=0;*/
+        //if(stateMachine[i].isoutput==1||stateMachine[i].isoutput == 2)
+          //  stateMachine[i].isoutput=0;
     }
-    int in=0;
+    /*int in=0;
     for(in=0;in<=top_output_indexes;in++)
     {
         stateMachine[output_indexes[in]].isoutput=output_values[in];
-    }
+    }*/
 	
 	for(i=1;i<=machineCount;i=i+2)
     {
@@ -2986,13 +2986,18 @@ void load_dfa(JQ_DFA* dfa)
         stateMachine[2*stateCount-1].n_transitions = -1;
         stateMachine[2*stateCount-1].isoutput = 0;
         stateMachine[2*stateCount-1].low = 0;
-        stateMachine[2*stateCount-1].high = 0; 
+        stateMachine[2*stateCount-1].high = 0;
+        int stop_state =  jqd_getStopState(dfa, stateCount); //needs remove
+        if(stop_state>0&&state != dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 2; //needs remove
         if(state == dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 1;
         for(input = 2; input < dfa->inputs_num; input++)
         {
             int next_state = jqd_nextState(dfa, state, input);
             if(next_state>0)
             {
+                //int stop_state =  jqd_getStopState(dfa, next_state); //needs remove
+                //if(stop_state>0) stateMachine[2*stop_state-1].isoutput = 2;   //needs remove
+                //printf("stop state %d state %d\n", jqd_getStopState(dfa, next_state),next_state);
                 int index = (++stateMachine[2*stateCount-1].n_transitions);
                 stateMachine[2*stateCount-1].start[index] = state;
                 stateMachine[2*stateCount-1].end[index] = next_state;
