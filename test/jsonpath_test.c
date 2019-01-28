@@ -1,5 +1,6 @@
 #include "jsonpath_model.h"
 #include "jsonpath_evaluator.h"
+#include "jsonpath_parser.h"
 #include "dfa_builder.h"
 
 #define EXPECT_EQ(a, b) if ((a) != (b)) { printf("Expect %s == %s failed.\n", #a, #b); return 1; }
@@ -41,48 +42,48 @@ int test_verify() {
     return 0;
 }
 
-int test_jpb_Create() {
+int test_dfa_Create() {
     JQ_CONTEXT ctx;
     JQ_DFA* dfa;
 
-    dfa = jpb_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
-    jqc_print(&ctx);
+    dfa = dfa_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
+    dfa_print(&ctx);
     if (dfa == NULL) return 1;
     
-    dfa = jpb_Create("$.root[12:20].title", &ctx);
+    dfa = dfa_Create("$.root[12:20].title", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.root.id", &ctx);
+    dfa = dfa_Create("$.root.id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$..root.id", &ctx);
+    dfa = dfa_Create("$..root.id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.*.root", &ctx);
+    dfa = dfa_Create("$.*.root", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$..*.root", &ctx);
+    dfa = dfa_Create("$..*.root", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.root[*].title", &ctx);
+    dfa = dfa_Create("$.root[*].title", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property", &ctx);
+    dfa = dfa_Create("$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id", &ctx);
+    dfa = dfa_Create("$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.root.products[*].productId", &ctx);
+    dfa = dfa_Create("$.root.products[*].productId", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.root[?(@.id)].quoted_status.entities.user_mentions[?(@.indices&&@.id_str)].id", &ctx);
+    dfa = dfa_Create("$.root[?(@.id)].quoted_status.entities.user_mentions[?(@.indices&&@.id_str)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.root[?(@.text&&@.contributors)].id", &ctx);
+    dfa = dfa_Create("$.root[?(@.text&&@.contributors)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = jpb_Create("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position", &ctx);
+    dfa = dfa_Create("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position", &ctx);
     if (dfa == NULL) return 1;
 
     return 0;
@@ -90,7 +91,7 @@ int test_jpb_Create() {
 
 
 int main() {
-    if (test_jpb_Create()) return 1;
+    if (test_dfa_Create()) return 1;
     if (test1()) return 1;
     if (test_verify()) return 1;
 

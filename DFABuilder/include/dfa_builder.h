@@ -19,28 +19,28 @@ typedef struct JQ_CONTEXT {
     JQ_IntVerPair* states_mapping;
 } JQ_CONTEXT;
 
-extern JQ_DFA* jpb_Create(const char* json_path, JQ_CONTEXT* context);
+extern JQ_DFA* dfa_Create(const char* json_path, JQ_CONTEXT* context);
 
-extern JQ_DFA* jpb_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context);
+extern JQ_DFA* dfa_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context);
     
-// extern JQ_DFA* jpb_CreateMultiple(int num, const char* json_path[]);
+// extern JQ_DFA* dfa_CreateMultiple(int num, const char* json_path[]);
 
-// extern JQ_DFA* jpb_CreateMultipleFromAST(int num, JSONPathNode* json_path[]);
+// extern JQ_DFA* dfa_CreateMultipleFromAST(int num, JSONPathNode* json_path[]);
 
-static inline JSONPathNode* jqc_getSubtree(JQ_CONTEXT* ctx, int stop_state) {
+static inline JSONPathNode* dfa_getSubtree(JQ_CONTEXT* ctx, int stop_state) {
     return ctx->subtrees[stop_state];
 }
 
-static inline int jqc_getSizeOfMapping(JQ_CONTEXT* ctx, int stop_state) {
+static inline int dfa_getSizeOfMapping(JQ_CONTEXT* ctx, int stop_state) {
     return ctx->states_mapping[stop_state].value_size;
 }
 
-static inline int* jqc_getValueOfMapping(JQ_CONTEXT* ctx, int stop_state) {
+static inline int* dfa_getValueOfMapping(JQ_CONTEXT* ctx, int stop_state) {
     return ctx->states_mapping[stop_state].value;
 }
 
 
-static inline void jqc_print(JQ_CONTEXT* ctx) {
+static inline void dfa_print(JQ_CONTEXT* ctx) {
     for (int i = 0; i < ctx->states_num; ++i) {
         if (ctx->subtrees[i]) {
             printf("state %d:\n", i);
@@ -50,8 +50,8 @@ static inline void jqc_print(JQ_CONTEXT* ctx) {
     printf("-----------------------\n");
     for (int i = 0; i < ctx->states_num; ++i) {
         printf("\t%d:", i);
-        int* vec = jqc_getValueOfMapping(ctx, i);
-        for (int j = 0; j < jqc_getSizeOfMapping(ctx, i); ++j)
+        int* vec = dfa_getValueOfMapping(ctx, i);
+        for (int j = 0; j < dfa_getSizeOfMapping(ctx, i); ++j)
             printf("\t%d", vec[j]);
         printf("\n");
     }

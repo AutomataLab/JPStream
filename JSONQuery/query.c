@@ -25,9 +25,9 @@ It could also divide it into several parts and deal with each part in parallel.
 #include "constraint.h"
 #include "query.h"
 #include "global.h"
-#include "xpath_model.h"
-#include "xpath_verify.h"
-#include "xpath_builder.h"
+#include "jsonpath_model.h"
+#include "jsonpath_evaluator.h"
+#include "dfa_builder.h"
 
 int temp_err = 0;
 int runtime = 0;
@@ -3052,7 +3052,7 @@ void load_dfa(JQ_DFA* dfa)
 int automata()
 {
     JQ_CONTEXT ctx;
-    JQ_DFA* dfa = xpb_Create(xmlPath, &ctx);
+    JQ_DFA* dfa = dfa_Create(xmlPath, &ctx);
     if (dfa == NULL) return 0;
     load_dfa(dfa);
     

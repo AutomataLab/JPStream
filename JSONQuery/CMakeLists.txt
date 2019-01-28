@@ -5,6 +5,5 @@ file(GLOB source_files
     )
 
 add_executable(${PROJECT_NAME} ${source_files})
-# target_link_libraries(${PROJECT_NAME} JSONPathParser DFABuilder pthread )
-target_link_libraries(${PROJECT_NAME} pthread )
+target_link_libraries(${PROJECT_NAME} DFABuilder JSONPathParser pthread )
 

@@ -11,7 +11,7 @@ target_link_libraries(dfa_test DFABuilder)
 add_test(NAME DFATest COMMAND dfa_test)
 
 add_executable(jsonpath_test ${CMAKE_CURRENT_SOURCE_DIR}/jsonpath_test.c)
-target_link_libraries(jsonpath_test JSONPathParser DFABuilder)
+target_link_libraries(jsonpath_test DFABuilder JSONPathParser)
 add_test(NAME JSONPathTest COMMAND jsonpath_test)
 
 add_custom_target(run_test ALL

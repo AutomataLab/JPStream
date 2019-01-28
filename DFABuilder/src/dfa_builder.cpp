@@ -314,13 +314,13 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_CONTEXT
     }
 }
 
-JQ_DFA* jpb_Create(const char* json_path, JQ_CONTEXT* context) {
+JQ_DFA* dfa_Create(const char* json_path, JQ_CONTEXT* context) {
     printf("\noriginal: %s\n", json_path);
     JSONPathNode* root = jpp_Analysis(json_path);
-    return jpb_CreateFromAST(root, context);
+    return dfa_CreateFromAST(root, context);
 }
 
-JQ_DFA* jpb_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
+JQ_DFA* dfa_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
     RegexModel* model = new RegexModel();
 
     StackContext* ctx = new StackContext(model, json_path);
@@ -352,12 +352,12 @@ JQ_DFA* jpb_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
 }
 
 
-JQ_DFA* jpb_CreateMultiple(int num, const char* json_path[]) {
+JQ_DFA* dfa_CreateMultiple(int num, const char* json_path[]) {
     // TODO: Implement merging multiple JSON Query DFAs
     return NULL;
 }
 
-JQ_DFA* jpb_CreateMultipleFromAST(int num, JSONPathNode* json_path[]) {
+JQ_DFA* dfa_CreateMultipleFromAST(int num, JSONPathNode* json_path[]) {
     return NULL;
 }
 

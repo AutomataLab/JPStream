@@ -252,7 +252,7 @@ void Test8()
 
 // void Test9()
 // {
-//     JQ_DFA* dfa = jpb_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id");
+//     JQ_DFA* dfa = dfa_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id");
 //     printf("1 (3) => %d\n", jqd_nextState(dfa, 1, 3));
 //     for (int i = 1; i < dfa->inputs_num; ++i)
 //         printf("str: %s\n", jqd_getName(dfa, i));
