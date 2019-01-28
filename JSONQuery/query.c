@@ -25,6 +25,9 @@ It could also divide it into several parts and deal with each part in parallel.
 #include "constraint.h"
 #include "query.h"
 #include "global.h"
+#include "xpath_model.h"
+#include "xpath_verify.h"
+#include "xpath_builder.h"
 
 int temp_err = 0;
 int runtime = 0;
@@ -271,9 +274,9 @@ typedef struct oiele{
 oiele output_indexes[MAX_THREAD];
 
 typedef struct root_outputs{
-    tuple_array roots[20][MAX_SIZE][100];
-    int top_roots[20][MAX_SIZE];
-    int thread_id[500];
+    tuple_array roots[20][MAX_SIZE/5][100/5];
+    int top_roots[20][MAX_SIZE/5];
+    int thread_id[500/5];
     int supplement[6];
 }root_outputs;
 root_outputs rot[MAX_THREAD];
@@ -2603,14 +2606,14 @@ void gather_predicate_info()
                 if(stateMachine[i].start[k]==stateMachine[i].end[k]) output_values[top_output_indexes]=0;
             }
         }
-        if(stateMachine[i].isoutput==1||stateMachine[i].isoutput == 2)
-            stateMachine[i].isoutput=0;
+        //if(stateMachine[i].isoutput==1||stateMachine[i].isoutput == 2)
+          //  stateMachine[i].isoutput=0;
     }
-    int in=0;
+    /*int in=0;
     for(in=0;in<=top_output_indexes;in++)
     {
         stateMachine[output_indexes[in]].isoutput=output_values[in];
-    }
+    }*/
 	
 	for(i=1;i<=machineCount;i=i+2)
     {
@@ -2967,8 +2970,97 @@ int execute_query()
     return 1;
 }
 
+//load dfa into query engine
+void load_dfa(JQ_DFA* dfa)
+{
+    int i,j,k;
+    int state,input;
+    for(i=0;i<MAX_SIZE;i++)
+    {
+        stateMachine[i].n_transitions=-1;
+    }
+    stateCount = 0; machineCount = 0;
+    for(state = 1; state < dfa->states_num; state++)
+    {
+        ++stateCount; ++machineCount;
+        stateMachine[2*stateCount-1].n_transitions = -1;
+        stateMachine[2*stateCount-1].isoutput = 0;
+        stateMachine[2*stateCount-1].low = 0;
+        stateMachine[2*stateCount-1].high = 0;
+        int stop_state =  jqd_getStopState(dfa, stateCount); //needs remove
+        if(stop_state>0&&state != dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 2; //needs remove
+        if(state == dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 1;
+        for(input = 2; input < dfa->inputs_num; input++)
+        {
+            int next_state = jqd_nextState(dfa, state, input);
+            if(next_state>0)
+            {
+                //int stop_state =  jqd_getStopState(dfa, next_state); //needs remove
+                //if(stop_state>0) stateMachine[2*stop_state-1].isoutput = 2;   //needs remove
+                //printf("stop state %d state %d\n", jqd_getStopState(dfa, next_state),next_state);
+                int index = (++stateMachine[2*stateCount-1].n_transitions);
+                stateMachine[2*stateCount-1].start[index] = state;
+                stateMachine[2*stateCount-1].end[index] = next_state;
+                char* transition = jqd_getName(dfa, input);
+                strcopy(transition, stateMachine[2*stateCount-1].str[index]);
+                if(input==2 && next_state!=0)
+                {
+                    JQ_index_pair pair = jqd_getArrayIndex(dfa, state);
+                    stateMachine[2*stateCount-1].low = pair.lower;
+                    stateMachine[2*stateCount-1].high = pair.upper;
+                }
+            }
+        }
+        int last_state = jqd_nextState(dfa, state, 1); ///printf("last_state %d\n",last_state);
+        if(last_state>0)
+        {
+            int last_index = (++stateMachine[2*stateCount-1].n_transitions);
+            stateMachine[2*stateCount-1].start[last_index] = state;
+            stateMachine[2*stateCount-1].end[last_index] = last_state;
+            strcopy("*", stateMachine[2*stateCount-1].str[last_index]);
+        }
+    }
+    machineCount = 2*machineCount-2;
+    /*stateMachine[17].isoutput = 1;
+    stateMachine[19].isoutput = 0;
+    stateMachine[21].isoutput = 0;*/
+    char *out = " is an output";
+    for(i=1;i<=machineCount;i=i+2)
+    {
+            printf("%d ",i);
+            printf("low %d high %d", stateMachine[i].low, stateMachine[i].high);
+            for(k=0;k<=stateMachine[i].n_transitions;k++)
+            {
+                printf("start %d",stateMachine[i].start[k]);
+                printf(" (str:%s",stateMachine[i].str[k]);
+                if(stateMachine[i].isoutput==1)
+                {
+                    printf("%s",out);
+                }
+                if(stateMachine[i].isoutput==2)
+                {
+                    printf("%s %s",out,"special output");
+                }
+                printf(") end %d;",stateMachine[i].end[k]);
+                if(stateMachine[2*stateMachine[i].end[k]-1].isoutput==1)
+                    printf("%s",out);
+            }
+            printf("\n");
+    }
+}
+
+int automata()
+{
+    JQ_CONTEXT ctx;
+    JQ_DFA* dfa = xpb_Create(xmlPath, &ctx);
+    if (dfa == NULL) return 0;
+    load_dfa(dfa);
+    
+    return 1;
+}
+
 /*********************************************************************************************/
-int automata(void)
+int automata1(void)
 {
     int ret = 0;
     int choose=-1;
