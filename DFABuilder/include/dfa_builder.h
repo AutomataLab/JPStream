@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "dfa.h"
-#include "xpath_model.h"
+#include "jsonpath_model.h"
 
 typedef struct JQ_IntVerPair {
     int* value;
@@ -15,21 +15,19 @@ typedef struct JQ_IntVerPair {
 
 typedef struct JQ_CONTEXT {
     int states_num;
-    XPathNode** subtrees;
+    JSONPathNode** subtrees;
     JQ_IntVerPair* states_mapping;
 } JQ_CONTEXT;
 
-extern XPathNode* xpb_Analysis(const char* data);
+extern JQ_DFA* jpb_Create(const char* json_path, JQ_CONTEXT* context);
 
-extern JQ_DFA* xpb_Create(const char* json_path, JQ_CONTEXT* context);
-
-extern JQ_DFA* xpb_CreateFromAST(XPathNode* json_path, JQ_CONTEXT* context);
+extern JQ_DFA* jpb_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context);
     
-// extern JQ_DFA* xpb_CreateMultiple(int num, const char* json_path[]);
+// extern JQ_DFA* jpb_CreateMultiple(int num, const char* json_path[]);
 
-// extern JQ_DFA* xpb_CreateMultipleFromAST(int num, XPathNode* json_path[]);
+// extern JQ_DFA* jpb_CreateMultipleFromAST(int num, JSONPathNode* json_path[]);
 
-static inline XPathNode* jqc_getSubtree(JQ_CONTEXT* ctx, int stop_state) {
+static inline JSONPathNode* jqc_getSubtree(JQ_CONTEXT* ctx, int stop_state) {
     return ctx->subtrees[stop_state];
 }
 
@@ -46,7 +44,7 @@ static inline void jqc_print(JQ_CONTEXT* ctx) {
     for (int i = 0; i < ctx->states_num; ++i) {
         if (ctx->subtrees[i]) {
             printf("state %d:\n", i);
-            xpn_PrintJSON(ctx->subtrees[i]);
+            jpn_Print(ctx->subtrees[i]);
         }
     }
     printf("-----------------------\n");

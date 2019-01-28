@@ -1,4 +1,4 @@
-project("XPathParser")
+project("JSONPathParser")
 
 ## Flex/Bison configuration
 find_package(BISON REQUIRED)
@@ -16,14 +16,6 @@ BISON_TARGET(PARSER ${CMAKE_CURRENT_SOURCE_DIR}/parser_j.y
 ${CMAKE_CURRENT_BINARY_DIR}/parser_j.c COMPILE_FLAGS "-d -v -t")
 ADD_FLEX_BISON_DEPENDENCY(SCANNER PARSER)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/DFAbuilder/include
-    ${CMAKE_SOURCE_DIR}/DFAbuilder/interface
-    )
 
-file(GLOB lib_source_files
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-)
-
-add_library(${PROJECT_NAME} STATIC ${lib_source_files} ${BISON_PARSER_OUTPUTS} ${FLEX_SCANNER_OUTPUTS})
+add_library(${PROJECT_NAME} STATIC ${BISON_PARSER_OUTPUTS} ${FLEX_SCANNER_OUTPUTS})
 

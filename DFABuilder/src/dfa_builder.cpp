@@ -1,4 +1,4 @@
-#include "xpath_builder.h"
+#include "dfa_builder.h"
 #include "pass.hpp"
 #include "Lexer/dfa_compressed.hpp"
 #include "Lexer/ecset_converter.hpp"
@@ -8,13 +8,9 @@
 #include "Lexer/set_converter.hpp"
 #include "Lexer/regex_model.hpp"
 
-#include "xpath_model.h"
-#include "xpath_verify.h"
-
-extern "C" {
-#include "parser_j.h"
-#include "scanner_j.h"
-}
+#include "jsonpath_model.h"
+#include "jsonpath_evaluator.h"
+#include "jsonpath_parser.h"
 
 #include <vector>
 #include <string>
@@ -77,19 +73,19 @@ struct StackElement {
 
 struct StackContext {
     RegexModel* model;
-    XPathNode* root;
+    JSONPathNode* root;
     vector<StackElement> st;
     unordered_map<string, int> name_mapping;
     // 0 is end, 1 is other, 2 is array 3-n are names
     vector<string> input_mapping;
-    vector<XPathNode*> filter_trees;
+    vector<JSONPathNode*> filter_trees;
     vector< pair<int, int> > array_range;
 
     map<int, vector<int> > states_mapping;
     int state_handle_now;
-    vector<XPathNode*> tree_mapping;
+    vector<JSONPathNode*> tree_mapping;
 
-    StackContext(RegexModel* model, XPathNode* root) : model(model), root(root), st(0), input_mapping(3), array_range(0) {}
+    StackContext(RegexModel* model, JSONPathNode* root) : model(model), root(root), st(0), input_mapping(3), array_range(0) {}
     ~StackContext() {}
 
     void print() {
@@ -162,8 +158,8 @@ struct StackContext {
         tree_mapping.push_back(NULL);
     }
 
-    void construct_filter(XPathNode* node) {
-        if (node->node_type == xnt_variable) {
+    void construct_filter(JSONPathNode* node) {
+        if (node->node_type == jnt_variable) {
             std::string str(node->string);
             std::istringstream tokenStream(str);
             std::string token;
@@ -188,37 +184,37 @@ struct StackContext {
 
     }
 
-    void construct_dfa(XPathNode* node) {
+    void construct_dfa(JSONPathNode* node) {
         if (node->left) {
             construct_dfa(node->left);
         }
 
         switch (node->node_type) {
-        case xnt_concat: {
+        case jnt_concat: {
             // .*
-            if (node->right && node->right->node_type == xnt_wildcard)
+            if (node->right && node->right->node_type == jnt_wildcard)
                 st.push_back({set_dot_all});
             // .property
-            if (node->right && node->right->node_type == xnt_id) 
+            if (node->right && node->right->node_type == jnt_id) 
                 st.push_back({set_dot_property, node->right->string});
             break;
         }
-        case xnt_parent_concat: {
+        case jnt_parent_concat: {
             // ..*
-            if (node->right && node->right->node_type == xnt_wildcard) 
+            if (node->right && node->right->node_type == jnt_wildcard) 
                 st.push_back({set_parent_all});
             // ..property
-            if (node->right && node->right->node_type == xnt_id) 
+            if (node->right && node->right->node_type == jnt_id) 
                 st.push_back({set_parent_property, node->right->string});
             break;
         }
-        case xnt_predicate: {
+        case jnt_predicate: {
             // []
-            XPathNode* p = node->right;
+            JSONPathNode* p = node->right;
             if (p) {
                 switch (p->node_type) {
                 // [start:end]
-                case xnt_range: {
+                case jnt_range: {
                     int begin, end;
                     if (p->left) begin = p->left->number;
                     else begin = INT_MIN;
@@ -230,15 +226,15 @@ struct StackContext {
                     break;
                 }
                 // [*]
-                case xnt_wildcard: {
+                case jnt_wildcard: {
                     st.push_back({set_array_all});
                     break;
                 }
                 // [?()]
-                case xnt_fliter: {
+                case jnt_fliter: {
                     st.push_back({set_array_all});
                     create_dfa();
-                    xpv_ModifyRef(p);
+                    jpe_ModifyRef(p);
                     state_handle_now = model->size()-1;
                     states_mapping[state_handle_now] = vector<int>(0);
                     filter_trees.push_back(p->left);
@@ -262,18 +258,6 @@ struct StackContext {
 
 
 extern "C" {
-
-XPathNode* xpb_Analysis(const char* data) {
-    XPathNode* root;
-    yyscan_t sc;
-    int res;
-    jlex_init(&sc);
-    YY_BUFFER_STATE buffer = j_scan_string(data, sc);
-    res = jparse(sc, &root);
-    j_delete_buffer(buffer, sc);
-    jlex_destroy(sc);
-    return root;
-}
 
 static JQ_DFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
     JQ_DFA* dfa = jqd_Create(cpd_dfa->getStateSum(), cpd_dfa->getInputSize());
@@ -312,7 +296,7 @@ static int acc_id2state(DFACompressed* cpd_dfa, int acc) {
 
 static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_CONTEXT* context) {
     context->states_num = cpd_dfa->getStateSum();
-    context->subtrees = (XPathNode**) calloc(sizeof(XPathNode*), cpd_dfa->getStateSum()+1);
+    context->subtrees = (JSONPathNode**) calloc(sizeof(JSONPathNode*), cpd_dfa->getStateSum()+1);
     context->states_mapping = (JQ_IntVerPair*) calloc(sizeof(JQ_IntVerPair), cpd_dfa->getStateSum()+1);
     for (int i = 0; i < cpd_dfa->getStateSum(); ++i) {
         int acc = cpd_dfa->isStopState(i);
@@ -330,13 +314,13 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_CONTEXT
     }
 }
 
-JQ_DFA* xpb_Create(const char* json_path, JQ_CONTEXT* context) {
+JQ_DFA* jpb_Create(const char* json_path, JQ_CONTEXT* context) {
     printf("\noriginal: %s\n", json_path);
-    XPathNode* root = xpb_Analysis(json_path);
-    return xpb_CreateFromAST(root, context);
+    JSONPathNode* root = jpp_Analysis(json_path);
+    return jpb_CreateFromAST(root, context);
 }
 
-JQ_DFA* xpb_CreateFromAST(XPathNode* json_path, JQ_CONTEXT* context) {
+JQ_DFA* jpb_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
     RegexModel* model = new RegexModel();
 
     StackContext* ctx = new StackContext(model, json_path);
@@ -368,12 +352,12 @@ JQ_DFA* xpb_CreateFromAST(XPathNode* json_path, JQ_CONTEXT* context) {
 }
 
 
-JQ_DFA* xpb_CreateMultiple(int num, const char* json_path[]) {
+JQ_DFA* jpb_CreateMultiple(int num, const char* json_path[]) {
     // TODO: Implement merging multiple JSON Query DFAs
     return NULL;
 }
 
-JQ_DFA* xpb_CreateMultipleFromAST(int num, XPathNode* json_path[]) {
+JQ_DFA* jpb_CreateMultipleFromAST(int num, JSONPathNode* json_path[]) {
     return NULL;
 }
 

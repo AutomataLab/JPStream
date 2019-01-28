@@ -1,4 +1,4 @@
-project("DFAbuilder")
+project("DFABuilder")
 
 file(GLOB lib_source_files
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
