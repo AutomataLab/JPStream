@@ -2987,9 +2987,10 @@ void load_dfa(JQ_DFA* dfa)
         stateMachine[2*stateCount-1].isoutput = 0;
         stateMachine[2*stateCount-1].low = 0;
         stateMachine[2*stateCount-1].high = 0;
-        int stop_state =  jqd_getStopState(dfa, stateCount); //needs remove
-        if(stop_state>0&&state != dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 2; //needs remove
-        if(state == dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 1;
+        int stop_state =  jqd_getAcceptType(dfa, stateCount); //needs remove
+        stateMachine[2*stateCount-1].isoutput = stop_state; 
+        //if(stop_state>0&&state != dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 2; //needs remove
+        //if(state == dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 1;
         for(input = 2; input < dfa->inputs_num; input++)
         {
             int next_state = jqd_nextState(dfa, state, input);
