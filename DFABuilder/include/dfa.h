@@ -18,15 +18,20 @@ typedef struct JQ_DFA {
     uint32_t states_num, inputs_num;
     int32_t* table; // states_num x inputs_num
     int32_t* stop_state; // states_num
+    int32_t* accept_type; // states_num : 1 is output & 2 is predicate
     JQ_index_pair* array_index; // states_num
     char** names; // inputs_num
 } JQ_DFA;
+
+#define JQ_DFA_OUTPUT_TYPE (1)
+#define JQ_DFA_PREDICATE_TYPE (2)
 
 static inline void jqd_Ctor(JQ_DFA* dfa, uint32_t states_num, uint32_t inputs_num) {
     dfa->states_num = states_num;
     dfa->inputs_num = inputs_num;
     dfa->table = (int32_t*) calloc(sizeof(int32_t), states_num * inputs_num);
     dfa->stop_state = (int32_t*) calloc(sizeof(int32_t), states_num);
+    dfa->accept_type = (int32_t*) calloc(sizeof(int32_t), states_num);
     dfa->array_index = (JQ_index_pair*) calloc(sizeof(JQ_index_pair), states_num);
     dfa->names = (char**) calloc(sizeof(char*), inputs_num);
 }   
@@ -64,6 +69,10 @@ static inline int32_t jqd_getStopState(JQ_DFA* dfa, uint32_t state) {
     return dfa->stop_state[state];
 }
 
+static inline int32_t jqd_getAcceptType(JQ_DFA* dfa, uint32_t state) {
+    return dfa->accept_type[state];
+}
+
 static inline const char* jqd_getName(JQ_DFA* dfa, uint32_t input) {
     return dfa->names[input];
 }
@@ -85,9 +94,9 @@ static inline void jqd_print(JQ_DFA* dfa) {
     uint32_t inputs = jqd_getInputsNum(dfa);
     uint32_t states = jqd_getStatesNum(dfa);
 
-    printf("\tother\tarray");
+    printf("\t%-8.7s%-8.7s", "other", "array");
     for (int i = 3; i < inputs; ++i) {
-        printf("\t%s", jqd_getName(dfa, i));
+        printf("%-8.7s", jqd_getName(dfa, i));
     }
     printf("\n");
 
@@ -98,8 +107,13 @@ static inline void jqd_print(JQ_DFA* dfa) {
     for (int i = 1; i< states; ++i) {
         printf("s%d",i);
         int l;
-        if ((l = jqd_getStopState(dfa, i)) != 0) 
+        if ((l = jqd_getStopState(dfa, i)) != 0) {
             printf("#%d",l);
+            if (jqd_getAcceptType(dfa, i) == JQ_DFA_OUTPUT_TYPE) 
+                printf("!");
+            else
+                printf("*");
+        }
         for (int j = 1; j< inputs; ++j) {
             int next = jqd_nextState(dfa, i, j);
             if (next != 0)
