@@ -189,6 +189,8 @@ int top_x_mapping=-1;
 #define KY 6
 #define PRI 7
 
+#define SPECIAL -2
+
 typedef struct child_tuple
 {
 	int children[500];
@@ -1132,6 +1134,98 @@ static inline void initialize_single_paths(char *str, tuple_array *current_state
     stack_tag->tuple_arrs[stack_tag->top_stack_tag]=*current_states;
 }
 
+static inline void branket_output(int thread_num, char* start_text, tuple_array *current_states, query_stack* q_stack)
+{
+	value_tuple *vt_arr = q_stack->vt;
+	root_tuple *rt_arr = q_stack->rt;
+	int tempk;
+        char valuet[100]; int has = 0; //printf("start\n");
+    for(tempk=current_states->from; tempk<=current_states->to; tempk++)
+    {
+        int values = vt_arr->values[tempk];  
+        if(values!=0&&stateMachine[2*values-1].isoutput ==2) //&&(values==4||values==8)
+        {   //printf("value %d %d\n", values, stateMachine[2*values-1].isoutput);
+            if(thread_num>0&&outputs[thread_num].top_output<10) 
+                printf("values %d %s segment %d thread %d top %d\n", values, start_text, tsegs[thread_num].num_segs, thread_num, outputs[thread_num].top_output); 
+            int top_output = (outputs[thread_num].top_output);
+            //if(has==0){
+            top_output = (++outputs[thread_num].top_output);
+            strcopy(start_text, outputs[thread_num].output[top_output]);
+            sprintf(valuet, "%d", values);
+            int text_length = strlen(outputs[thread_num].output[top_output]);
+            int value_length = strlen(valuet);
+            int xb = 0;
+            outputs[thread_num].output[top_output][text_length] = ' ';
+            for(xb=0; xb<=value_length; xb++)
+               outputs[thread_num].output[top_output][text_length+xb+1] = valuet[xb];
+            outputs[thread_num].output[top_output][text_length+xb+1] = '\0';
+            has = 1; 
+            //}
+            /*else{
+
+            }*/
+            /*if(thread_num==0)
+            {
+                int ttop = rot[0].top_roots[0][1];
+                if(top_output ==  rot[0].roots[0][1][ttop].to + 1) rot[0].roots[0][1][ttop].to++;
+                else{
+                    ttop = (++rot[0].top_roots[0][1]);  
+                    rot[0].roots[0][1][ttop].from = top_output;
+                    rot[0].roots[0][1][ttop].to = top_output; 
+                    rot[0].thread_id[ttop] = 0;  
+                }
+            }*/
+            if(vt_arr->fromr[tempk]==-1){
+                int segment_index = tsegs[thread_num].num_segs;
+                int temp_state = values;
+                int temp_top = rot[thread_num].top_roots[segment_index][temp_state];
+                if(temp_top>-1)
+                {
+                    if(top_output ==  rot[thread_num].roots[segment_index][temp_state][temp_top].to + 1)
+                    {
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].to++;
+                    }
+                    else {
+                        temp_top = (++rot[thread_num].top_roots[segment_index][temp_state]);
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;
+                    }
+                }
+                else
+                {
+                    temp_top = (++rot[thread_num].top_roots[segment_index][temp_state]);
+                    rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
+                    rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;
+                } 
+            }//int xb; 
+            for(xb = vt_arr->fromr[tempk]; vt_arr->fromr[tempk]!=-1&&xb <=vt_arr->tor[tempk]; xb++)
+            { ///  if(thread_num>0) printf("add %d tempk %d xb%d value %d\n", rt_arr->root[xb], tempk, xb, values); 
+			    int segment_index = tsegs[thread_num].num_segs;
+                int temp_state = rt_arr->root[xb];
+                int temp_top = rot[thread_num].top_roots[segment_index][temp_state];
+                if(temp_top>-1)
+                {
+                    if(top_output ==  rot[thread_num].roots[segment_index][temp_state][temp_top].to + 1)
+                    {
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].to++;
+                    }
+                    else {
+                        temp_top = (++rot[thread_num].top_roots[segment_index][temp_state]);
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;
+                    }
+                }
+                else
+                {
+                    temp_top = (++rot[thread_num].top_roots[segment_index][temp_state]);
+                    rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
+                    rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;
+                }
+            }
+        }
+    } //printf("end\n");
+}
+
 /***************************************************************************************************************************************************************************************
 Function: tuple_array push_empty(int thread_num, char *str, tuple_array *current_states,stack_tag *stack_tag, query_stack* q_stack, tuple_array* next_states);
 Description: push current_states into stack, then update current_states based on input string. 
@@ -1154,6 +1248,7 @@ static inline void push_empty(int thread_num, char *str, tuple_array *current_st
 
     int tempccount = ct_arr->child_count;
     int temprcount = rt_arr->root_count;
+    int special_tag = 0;
     //getting all possible starting states
     //initiate finish tree
     if(current_states->from== -1) //empty stack at beginning
@@ -1193,14 +1288,20 @@ static inline void push_empty(int thread_num, char *str, tuple_array *current_st
         	//get possible starting states
         	count = get_starting_states(start, end, str);
             //record segment
-            int seg_index = (++tsegs[thread_num].num_segs);
+           int seg_index = (tsegs[thread_num].num_segs);
+            special_tag = tsegs[thread_num].ele[seg_index].num_values;
             tsegs[thread_num].ele[seg_index].num_values = -1;
+            
             for(j=0; j<=count; j++)
             {
                 int n_value = (++tsegs[thread_num].ele[seg_index].num_values);
                 tsegs[thread_num].ele[seg_index].values[n_value] = start[j];
             }
-            tsegs[thread_num].ele[seg_index].start_tree_sp = start_tree[thread_num].top_tree;
+            //tsegs[thread_num].ele[seg_index].start_tree_sp = start_tree[thread_num].top_tree;
+            /*if(special == SPECIAL)
+            {
+                branket_output(thread_num, "{", current_states,  q_stack);  //if(thread_num==1) printf("***(((((((thread %d quickly add %s top %d\n", thread_num, str, outputs[thread_num].top_output);
+            }*/
 
         }
         if(count>=1)  //multiple execution paths
@@ -1210,6 +1311,10 @@ static inline void push_empty(int thread_num, char *str, tuple_array *current_st
         if(count==0) //only one single path
         {
         	initialize_single_paths(str, current_states, next_states, stack_tag, q_stack, start, end, count);
+        }
+        if(thread_num>0&&special_tag == SPECIAL)  //cs 299
+        {
+                branket_output(thread_num, "{", current_states,  q_stack);  //if(thread_num==1) printf("***(((((((thread %d quickly add %s top %d\n", thread_num, str, outputs[thread_num].top_output);
         }
     }
 }
@@ -1488,6 +1593,7 @@ static inline void predicate_output(int thread_num, char* start_text, tuple_arra
 	value_tuple *vt_arr = q_stack->vt;
 	root_tuple *rt_arr = q_stack->rt;
 	int tempk;
+        int has_tag = 0;
     for(tempk=current_states->from; tempk<=current_states->to; tempk++)
     {
         int values = vt_arr->values[tempk];
@@ -1496,11 +1602,15 @@ static inline void predicate_output(int thread_num, char* start_text, tuple_arra
             strcopy("array", start_text);
             if(stateMachine[2*values-1].isoutput == 2)
             {
-                sprintf(start_text, "%d", values);
+                sprintf(start_text, "%d", values);  
             }
             if(strcmp(start_text,"array")!=0) {
-                int top_output = (++outputs[thread_num].top_output);
+                int top_output = outputs[thread_num].top_output;
+                if(has_tag==0){
+                 top_output = (++outputs[thread_num].top_output);
                 strcopy(start_text, outputs[thread_num].output[top_output]);
+                 has_tag = 1;
+                }
                 int xb;
                 for(xb = vt_arr->fromr[tempk]; xb <=vt_arr->tor[tempk]; xb++)
                 {
@@ -1513,7 +1623,7 @@ static inline void predicate_output(int thread_num, char* start_text, tuple_arra
                         {
                             rot[thread_num].roots[segment_index][temp_state][temp_top].to++;
                         }
-                        else {
+                        else {//printf("differences ori %s prev %s top %s prev %d\n", start_text, outputs[thread_num].output[rot[thread_num].roots[segment_index][temp_state][temp_top].to],outputs[thread_num].output[top_output-1], rot[thread_num].roots[segment_index][temp_state][temp_top].to);
                             temp_top = (++rot[thread_num].top_roots[segment_index][temp_state]);
                             rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
                             rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;
@@ -1567,21 +1677,41 @@ static inline void array_output(int thread_num, char * start_text, tuple_array *
     }
 }
 
+
 static inline void query_output(int thread_num, char* start_text, tuple_array *current_states, query_stack* q_stack)
 {
 	value_tuple *vt_arr = q_stack->vt;
 	root_tuple *rt_arr = q_stack->rt;
 	int tempk;
+        int has_tag = 0;
     for(tempk=current_states->from; tempk<=current_states->to; tempk++)
     {
         int values = vt_arr->values[tempk];
         if(values!=0&&stateMachine[2*values-1].isoutput ==1&&(stateMachine[2*values-1].low==0||(vt_arr->counter[values]>=stateMachine[2*values-1].low&&vt_arr->counter[values]<=stateMachine[2*values-1].high)))  //cs 299
         {
-            int top_output = (++outputs[thread_num].top_output);
+            int append = 0;
+            int prev_top_output = outputs[thread_num].top_output;
+            int prev_output_length = strlen(outputs[thread_num].output[prev_top_output]);
+            if(outputs[thread_num].output[prev_top_output][prev_output_length-1] != ' '&&outputs[thread_num].output[prev_top_output][prev_output_length-1] != '}'&&outputs[thread_num].output[prev_top_output][prev_output_length-1] != ']') append = 1;
+            int top_output = prev_top_output; append = 9; 
+            if(has_tag==0){
+            if(append == 1) top_output = prev_top_output;
+            else top_output = (++outputs[thread_num].top_output);
             int tl = strlen(start_text);
-            start_text[tl] = '"';
+            start_text[tl] = ' ';
             start_text[tl+1] = '\0';
-            strcopy(start_text, outputs[thread_num].output[top_output]);
+            if(append == 1){ printf("append %s\n",outputs[thread_num].output[prev_top_output]);
+               int prev = prev_output_length, new;
+               outputs[thread_num].output[top_output][prev++] = ' '; 
+               for(new = 0; new <= tl+1; new++, prev++)
+                   outputs[thread_num].output[top_output][prev] = start_text[new];
+               outputs[thread_num].output[top_output][prev] = '\0';  
+            } 
+            else strcopy(start_text, outputs[thread_num].output[top_output]);
+            if(strcmp("dd3b100831dd1763 ", start_text)==0) printf("special thread %d %s %d seg %d\n", thread_num, start_text, values,tsegs[thread_num].num_segs); 
+            has_tag = 1;
+            }
+            if(append !=1){
             int xb;
             for(xb = vt_arr->fromr[tempk]; xb <=vt_arr->tor[tempk]; xb++)
             {
@@ -1592,12 +1722,12 @@ static inline void query_output(int thread_num, char* start_text, tuple_array *c
                 {
                     if(top_output ==  rot[thread_num].roots[segment_index][temp_state][temp_top].to + 1)
                     {
-                        rot[thread_num].roots[segment_index][temp_state][temp_top].to++;
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].to++; 
                     }
                     else {
                         temp_top = (++rot[thread_num].top_roots[segment_index][temp_state]);
                         rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
-                        rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;  
                     }
                 }
                 else
@@ -1606,6 +1736,60 @@ static inline void query_output(int thread_num, char* start_text, tuple_array *c
                     rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
                     rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;
                 }
+            }
+            }
+        }
+
+        if(values!=0&&stateMachine[2*values-1].isoutput ==2&&(stateMachine[2*values-1].low==0||(vt_arr->counter[values]>=stateMachine[2*values-1].low&&vt_arr->counter[values]<=stateMachine[2*values-1].high)))  //cs 299
+        {
+            int append = 1;
+            int prev_top_output = outputs[thread_num].top_output;
+            int prev_output_length = strlen(outputs[thread_num].output[prev_top_output]);
+            if(outputs[thread_num].output[prev_top_output][prev_output_length-1] != ' '&&outputs[thread_num].output[prev_top_output][prev_output_length-1] != '}'&&outputs[thread_num].output[prev_top_output][prev_output_length-1] != ']') append = 1;
+            int top_output = prev_top_output; //append = 9; 
+            if(has_tag==0){
+            if(append == 1) top_output = prev_top_output;
+            else top_output = (++outputs[thread_num].top_output);
+            int tl = strlen(start_text);
+            start_text[tl] = ' ';
+            start_text[tl+1] = '\0';
+            if(append == 1){ //printf("append %s\n",outputs[thread_num].output[prev_top_output]);
+               int prev = prev_output_length, new;
+               outputs[thread_num].output[top_output][prev++] = ' '; 
+               for(new = 0; new <= tl+1; new++, prev++)
+                   outputs[thread_num].output[top_output][prev] = start_text[new];
+               outputs[thread_num].output[top_output][prev] = '\0';  
+            } 
+            else strcopy(start_text, outputs[thread_num].output[top_output]);
+           // if(strcmp("dd3b100831dd1763 ", start_text)==0) printf("special thread %d %s %d seg %d\n", thread_num, start_text, values,tsegs[thread_num].num_segs); 
+            has_tag = 1;
+            }
+            if(append !=1){
+            int xb;
+            for(xb = vt_arr->fromr[tempk]; xb <=vt_arr->tor[tempk]; xb++)
+            {
+                int segment_index = tsegs[thread_num].num_segs;
+                int temp_state = rt_arr->root[xb];
+                int temp_top = rot[thread_num].top_roots[segment_index][temp_state];
+                if(temp_top>-1)
+                {
+                    if(top_output ==  rot[thread_num].roots[segment_index][temp_state][temp_top].to + 1)
+                    {
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].to++; 
+                    }
+                    else {
+                        temp_top = (++rot[thread_num].top_roots[segment_index][temp_state]);
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
+                        rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;  
+                    }
+                }
+                else
+                {
+                    temp_top = (++rot[thread_num].top_roots[segment_index][temp_state]);
+                    rot[thread_num].roots[segment_index][temp_state][temp_top].from = top_output;
+                    rot[thread_num].roots[segment_index][temp_state][temp_top].to = top_output;
+                }
+            }
             }
         }
     }
@@ -1801,7 +1985,7 @@ static inline void parser_info_initialization(tuple_array* current_states, stack
 {
 	current_states->from=-1;
 	syn_stack->top_stack_tag = -1;
-    tsegs[thread_num].num_segs = -1;
+    tsegs[thread_num].num_segs = -1;  //-1
     tsegs[thread_num].ele[0].start = 0;
     q_stack->ct->child_count = -1;
     q_stack->vt->value_count = -1;
@@ -1889,21 +2073,25 @@ int streaming_automata(xml_Text *pText, xml_Token *pToken)
 		{
 			case LCB:
 				obj_s(thread_num, &syn_stack);
+                                branket_output(thread_num, "{", &current_states, &q_stack);
 				break;
 			case RCB:
 				if(syn_stack.top_stack_tag == 0)
 				{
+                                        branket_output(thread_num, "}", &current_states, &q_stack);
 					obj_e(thread_num, &syn_stack);
                     update_counter(&current_states, &q_stack);
 				}
 				else if(syn_stack.top_stack_tag > 0)
 				{
-					if(top_syntax_second(&syn_stack)==KEY)
-					{
+					if(top_syntax_second(&syn_stack)==KEY)		
+                                        {
+                                                branket_output(thread_num, "}", &current_states, &q_stack);
 						val_obj_e(thread_num, &current_states, &syn_stack, &q_stack);
 					}
 					else if(top_syntax_second(&syn_stack)==LBRACKET)
 					{
+                                                branket_output(thread_num, "}", &current_states, &q_stack);
 						elt_obj_e(thread_num, &syn_stack);
 						update_counter(&current_states, &q_stack);
 					}
@@ -1912,10 +2100,10 @@ int streaming_automata(xml_Text *pText, xml_Token *pToken)
 			case LB:
 				ary_s(thread_num, &current_states, &syn_stack, &q_stack);
 				//predicate output
-                predicate_output(thread_num, text, &current_states, &q_stack);
+                //predicate_output(thread_num, text, &current_states, &q_stack);
                 break;
             case RB:
-                if(syn_stack.top_stack_tag >= 0) array_output(thread_num, text, &current_states, &q_stack);
+                //if(syn_stack.top_stack_tag >= 0) array_output(thread_num, text, &current_states, &q_stack);
                 if(syn_stack.top_stack_tag == 0)
 				{
 					ary_e(thread_num, "array", &current_states, &syn_stack, &q_stack);
@@ -1964,6 +2152,42 @@ int streaming_automata(xml_Text *pText, xml_Token *pToken)
     return 0;
 }
 
+static inline void segment_add_obj(int thread_id)
+{   printf("%d special\n",thread_id);
+    tsegs[thread_id].ele[++tsegs[thread_id].num_segs].num_values = SPECIAL;
+    tsegs[thread_id].ele[tsegs[thread_id].num_segs].start_tree_sp = start_tree[thread_id].top_tree;
+}
+
+static inline void segment_update_obj(int thread_id)
+{
+    tsegs[thread_id].ele[tsegs[thread_id].num_segs].num_values = SPECIAL;
+    //tsegs[thread_id].ele[tsegs[thread_id].num_segs].start_tree_sp = start_tree[thread_num].top_tree;
+}
+
+static inline void segment_add_normal(int thread_id)
+{
+    tsegs[thread_id].ele[++tsegs[thread_id].num_segs].num_values = -1;
+    tsegs[thread_id].ele[tsegs[thread_id].num_segs].start_tree_sp = start_tree[thread_id].top_tree;
+}
+
+static inline void segment_update_normal(int thread_id)
+{
+    tsegs[thread_id].ele[tsegs[thread_id].num_segs].num_values = -1;
+    //tsegs[thread_id].ele[tsegs[thread_id].num_segs].start_tree_sp = start_tree[thread_num].top_tree;
+}
+
+static inline void segment_add_ending(int thread_id)
+{
+    ++tsegs[thread_id].num_segs;
+    tsegs[thread_id].ele[tsegs[thread_id].num_segs].start_tree_sp = start_tree[thread_id].top_tree;
+}
+
+static inline void segment_update_ending(int thread_id)
+{
+    //++tsegs[thread_id].num_segs;
+    tsegs[thread_id].ele[tsegs[thread_id].num_segs].start_tree_sp = start_tree[thread_id].top_tree;
+}
+
 /************************************************************************************************************************************************
 Function: int parallel_automata(xml_Text *pText, xml_Token *pToken, int thread_num);
 Description: execute streaming compilation in parallel; inputs are separated into different chunks; both syntax stack and query stack are used.
@@ -1990,19 +2214,31 @@ int parallel_automata(xml_Text *pText, xml_Token *pToken, int thread_num)
     q_stack.ct = &ct_arr;
     q_stack.rt = &rt_arr;
     parser_info_initialization(&current_states, &syn_stack, &q_stack, thread_num);
+    start_tree[thread_num].top_tree = -1;
     int pre_segment; 
 	int lex = lexer(pText, pToken, &tInfo, text);
+        int new_segment = 1;  //1--requires a new segment 0--use the current segment 2--temporary
 	while(lex!=-1)
 	{
 		switch(lex)
 		{
 			case LCB:
 				obj_s(thread_num, &syn_stack);
+                                if(new_segment == 1) {segment_add_obj(thread_num); new_segment = 0; if(thread_num==1) printf("{!!!!!!!\n");}
+                                else if(new_segment == 2) {segment_update_obj(thread_num); new_segment = 0; if(thread_num==1) printf("{!!!!!!!\n");}
+                                else branket_output(thread_num, "{", &current_states, &q_stack);
+                                //////printf("new segment %d\n", new_segment);
 				break;
 			case RCB:
 				if(syn_stack.top_stack_tag == -1)  //unmatched ending symbol 
 			    {
 					record_unmatched_symbol(thread_num, &current_states, RBRACE);
+                                        if(new_segment == 0||new_segment==1){
+                                            segment_add_ending(thread_num);
+                                            new_segment = 2; //if(thread_num==5) printf("}!!!!!!!\n");
+                                        }
+                                        ///else segment_update_ending(thread_num);
+                                        if(thread_num==5) printf("}!!!!!!! %d segflag %d starttree %d total %d\n",tsegs[thread_num].num_segs, new_segment, start_tree[thread_num].element[start_tree[thread_num].top_tree],start_tree[thread_num].top_tree);
 					//syntax feasible path inference
                     if(syn_stack_back.top_stack_tag==-1){
                         syntax_inference(&syn_stack_back, tInfo.current);
@@ -2010,21 +2246,24 @@ int parallel_automata(xml_Text *pText, xml_Token *pToken, int thread_num)
 				}
 				else if(syn_stack.top_stack_tag == 0)
 				{
+                                        branket_output(thread_num, "}", &current_states, &q_stack);
 					obj_e(thread_num, &syn_stack);
 					if(syn_stack_back.top_stack_tag==-1){
                         syntax_inference(&syn_stack_back, tInfo.current);
                     }
                     update_counter(&current_states, &q_stack);
-                    record_unmatched_symbol(thread_num, &current_states, OBJECT);
+                    record_unmatched_symbol(thread_num, &current_states, OBJECT);   //might be fine? Let's see
 				}
 				else if(syn_stack.top_stack_tag > 0)
 				{
 					if(top_syntax_second(&syn_stack)==KEY)
 					{
+                                                branket_output(thread_num, "}", &current_states, &q_stack);
 						val_obj_e(thread_num, &current_states, &syn_stack, &q_stack);
 					}
 					else if(top_syntax_second(&syn_stack)==LBRACKET)
 					{
+                                                branket_output(thread_num, "}", &current_states, &q_stack);
 						elt_obj_e(thread_num, &syn_stack);
 						update_counter(&current_states, &q_stack);
 					}
@@ -2032,21 +2271,29 @@ int parallel_automata(xml_Text *pText, xml_Token *pToken, int thread_num)
 				break;
 			case LB:
 				pre_segment = get_current_segment(thread_num);
+                                if(new_segment == 1) {segment_add_normal(thread_num); new_segment = 0;}
+                                else if(new_segment == 2) {segment_update_normal(thread_num); new_segment = 0;}
 				ary_s(thread_num, &current_states, &syn_stack, &q_stack);
 				//predicate output
-                predicate_output(thread_num, text, &current_states, &q_stack);
+                //predicate_output(thread_num, text, &current_states, &q_stack);
                 update_segment_position(thread_num, pre_segment, &tInfo);
                 break;
             case RB:
             	if(syn_stack.top_stack_tag == -1)  //unmatched ending symbol 
 				{
 					record_unmatched_symbol(thread_num, &current_states, RBRACKET);
+                                        if(new_segment == 0||new_segment==1){
+                                            segment_add_ending(thread_num);
+                                            new_segment = 2;  //if(thread_num==5) printf("]!!!!!!!\n");
+                                        }
+                                        ///else segment_update_ending(thread_num);
+                                        if(thread_num==5) printf("]!!!!!!! %d %d start tree %d top %d \n",tsegs[thread_num].num_segs, new_segment, start_tree[thread_num].element[start_tree[thread_num].top_tree], start_tree[thread_num].top_tree);
 					//syntax feasible path inference
                     if(syn_stack_back.top_stack_tag==-1){
                         syntax_inference(&syn_stack_back, tInfo.current);
                     }
 				}
-                if(syn_stack.top_stack_tag >= 0) array_output(thread_num, text, &current_states, &q_stack);
+               // if(syn_stack.top_stack_tag >= 0) array_output(thread_num, text, &current_states, &q_stack);
                 if(syn_stack.top_stack_tag == 0)
 				{
 					ary_e(thread_num, "array", &current_states, &syn_stack, &q_stack);
@@ -2073,6 +2320,8 @@ int parallel_automata(xml_Text *pText, xml_Token *pToken, int thread_num)
 			    break;
 			case KY:
 				pre_segment = get_current_segment(thread_num);
+                                if(new_segment == 1) {segment_add_normal(thread_num); new_segment = 0;}
+                                else if(new_segment == 2) {segment_update_normal(thread_num); new_segment = 0;}
 				key(thread_num, &current_states, text, &syn_stack, &q_stack);
                 //temporary output
                 predicate_output(thread_num, text, &current_states, &q_stack);
@@ -2082,6 +2331,10 @@ int parallel_automata(xml_Text *pText, xml_Token *pToken, int thread_num)
             	if(syn_stack.top_stack_tag==-1)
 				{
 					record_unmatched_primitive(thread_num, &current_states, text);
+                                        if(new_segment == 0){
+                                            segment_add_ending(thread_num);
+                                            new_segment = 2;
+                                        }
 				}
 				else if(syn_stack.top_stack_tag >= 0)
 			    {
@@ -2180,6 +2433,7 @@ static inline void collect_final_outputs_for_units(int thread_num, int segment_n
 	j = segment_no;
 	for(k=0;i>0&&k<=tsegs[i].ele[j].num_values;k++)
 	{
+                printf("%d %d value*** %d\n", i, j,q_stack->vt->values[current_states->from]); 
 		if(tsegs[i].ele[j].values[k]==q_stack->vt->values[current_states->from])
 		{
             int tvalue = q_stack->vt->values[current_states->from];
@@ -2193,7 +2447,7 @@ static inline void collect_final_outputs_for_units(int thread_num, int segment_n
             int times = tcounter;
             for(xk = 0; xk <= rot[i].top_roots[j][tvalue] && times <=thigh; xk++)
             { 
-                if(times>=tlow && times<=thigh){
+                if(times>=tlow && times<=thigh){  //printf("output thread %d value %d from %d to %d\n", i, tvalue, rot[0].roots[0][1][rot[0].top_roots[0][1]].from, rot[0].roots[0][1][rot[0].top_roots[0][1]].to);  
                     int ttop = (++rot[0].top_roots[0][1]);
                     tuple_array ttuple;
                     rot[0].roots[0][1][ttop] = rot[i].roots[j][tvalue][xk];
@@ -2259,6 +2513,8 @@ static inline void merge_stack(tuple_array *current_states, stack_tag* src_syn_s
 	}
 }
 
+void generate_final_outputs();
+
 /****************************************************
 Function: void merge(int n)
 Description: merge results generated from all threads
@@ -2267,9 +2523,10 @@ void merge(int n)
 {
     int error_tag = 0;
     rot[0].top_roots[0][1] = -1;
-	int i,j,k;
+	int i,j,k,l;
 	tuple_array current_states;
 	get_current_states(0, &current_states);  //0 is the first thread
+        generate_final_outputs();  //adjust for separated objects cs 299
 	///iterate through all threads sequentially except for the first one
     for(i=1;i<=n;i++)
 	{  
@@ -2278,17 +2535,35 @@ void merge(int n)
         int tag_for_curly  = 0;
         //segment combination
         //iterate through each unit (automata restarts)
+                printf("end value type is %d\n", start_tree[i].element[unmatched_ending_index].value);
 		for(j=0;j<=tsegs[i].num_segs||unmatched_ending_index<=start_tree[i].top_tree;j++)
 		{
+                        //unmatched_ending_index = tsegs[i].ele[j].start_tree_sp;
+                        printf("%d %d\n", unmatched_ending_index, tsegs[i].ele[j].start_tree_sp);
 			int unmatched_ending_index_end;
-			if(j<=tsegs[i].num_segs) unmatched_ending_index_end = tsegs[i].ele[j].start_tree_sp;
+			if(j<tsegs[i].num_segs) unmatched_ending_index_end = tsegs[i].ele[j+1].start_tree_sp-1;    //previous logic is wrong!  cs 299
 			else unmatched_ending_index_end = start_tree[i].top_tree;
 			//process unmatched ending symbols
+                        printf("thread %d seg %d start %d end %d\n", i, j, unmatched_ending_index, unmatched_ending_index_end);
 			while(unmatched_ending_index<=unmatched_ending_index_end)
 			{
 				int unmatched_ending_symbol = start_tree[i].element[unmatched_ending_index].value;
-				if(unmatched_ending_symbol == RBRACE)
+				if(i==5) printf("%%%%!!!!!!! unmatched %d segment %d %d\n", unmatched_ending_symbol, j, start_tree[i].top_tree);
+                                if(unmatched_ending_symbol == RBRACE)
 				{
+                                        printf("branket %d %d %d\n", i, j, unmatched_ending_index_end);
+                                        int current_v = vt_array[0].values[current_states.from];
+                                        if(stateMachine[2*current_v-1].isoutput>0){
+                                            strcopy("} ", outputs[0].output[++outputs[0].top_output]);
+                                            char currentv[MAX_LINE];
+                                            sprintf(currentv, "%d", current_v);
+                                            int slen = 2;
+                                            for(l=0;l<strlen(currentv);l++)
+                                                outputs[0].output[outputs[0].top_output][slen+l] = currentv[l];
+                                             outputs[0].output[outputs[0].top_output][slen+l]='\0'; 
+                                            printf("output } %d %s\n", outputs[0].top_output, outputs[0].output[outputs[0].top_output]);
+                                        }
+                                    //    branket_output(0, "}", &current_states, &qstack[0]);  //branket_output
 					if(stack_tags[0].top_stack_tag==0)
 					{
 						obj_e(0, &stack_tags[0]);
@@ -2296,15 +2571,16 @@ void merge(int n)
 					else if(stack_tags[0].top_stack_tag>0)
 					{
 						if(top_syntax_second(&stack_tags[0])==KEY)
-						{
+						{       if(i==5) printf("key\n");
 							val_obj_e(0, &current_states, &stack_tags[0], &qstack[0]);
 						}
 						else if(top_syntax_second(&stack_tags[0])==LBRACKET)
-						{
+						{       if(i==5) printf("[\n");
 							elt_obj_e(0, &stack_tags[0]);
 							update_counter(&current_states, &qstack[0]);
 						}
 					}
+                                        printf("branket %d %d %d value %d\n", i, j, unmatched_ending_index_end, vt_array[0].values[current_states.from]);
 				}
 				else if(unmatched_ending_symbol==PRIMITIVE ||unmatched_ending_symbol==OBJECT || unmatched_ending_symbol==ARRAY)
 				{
@@ -2322,7 +2598,7 @@ void merge(int n)
 				    }
                     else if(unmatched_ending_symbol==PRIMITIVE&&top_syntax(&stack_tags[0])==LBRACKET)
                     {
-                    	add_final_output(&current_states, start_tree[i].element[unmatched_ending_index].text, &qstack[0]);
+                    	add_final_output(&current_states, start_tree[i].element[unmatched_ending_index].text, &qstack[0]); printf("primitive %s\n", start_tree[i].element[unmatched_ending_index].text);
                     } 
 				}
                 else if(unmatched_ending_symbol=RBRACKET)
@@ -2363,6 +2639,7 @@ void merge(int n)
                 buffFiles[n+1] =substring(buffFiles[i],tsegs[i].ele[j].start, tsegs[i].ele[j].end+1);
                 reprocess(n, &temp_err, &current_states);
             }
+                generate_final_outputs();  //adjust for separated object cs 299
 		}
 	    
         int tempi = i;
@@ -2395,17 +2672,18 @@ void generate_final_outputs()
         thread_no = rot[0].thread_id[i];
         if(from == -2)
         {
-            top_output = (++outputs[0].top_output);
-            strcopy("]", outputs[0].output[top_output]); 
+            //strcopy("]", outputs[0].output[top_output]); 
             continue;
-        }
+        } //printf("cycle\n");
         while(from <= to)
         {
             top_output = (++outputs[0].top_output);
-            strcopy(outputs[thread_no].output[from], outputs[0].output[top_output]);
+            strcopy(outputs[thread_no].output[from], outputs[0].output[top_output]);  //printf("%s %d %s\n",outputs[thread_no].output[from], from, outputs[thread_no].output[from-1]);
             from++;
         }
     }
+    rot[0].top_roots[0][1] = -1;
+    
     printf("the number of final outputs are %d\n", outputs[0].top_output);
 }
 
@@ -2537,7 +2815,7 @@ int writing_results()
 {
 	int ret;
 	printf("writting final results into %s\n", "result_0.txt");
-    if(top_pstate>-1)
+    if(1==2&&top_pstate>-1)
         ret = write_file_with_predicates("result_0.txt", num_threads-1);
     else  ret = write_file("result_0.txt");
     printf("finish writing final results, please check the relevant file\n");
@@ -2691,6 +2969,127 @@ Function: vvoid filter_output_predicates();
 Description: extract final outputs for JSONPath with predicates
 ***************************************************************/
 void filter_output_predicates()
+{
+    printf("%d\n", outputs[0].top_output);
+    predicate_states tpstate[50];
+    int top_tpstate = top_pstate;
+    int i,j,k,l,current_pstate = -1;
+    int satisfy = 0;
+    for(i=0;i<=top_tpstate;i++)
+    {
+        tpstate[i] = pstate[i];
+    }
+    predicate_stacks[0].top_predicate_stack = -1;
+    int tempo_state = 0;
+    outputs[1].top_output = -1;  //save the temporary output
+    outputs[2].top_output = -1;  //save the final output
+    int start = 0;
+    int end = outputs[0].top_output+1;
+    int start_out_index = -1;
+
+    char temp_buffer[100][500];
+    int top_temp_buffer = -1;
+    int start_temp = 0;
+    int end_temp = outputs[1].top_output;
+
+    int counter = 0;
+    int top_testoutput = 0;
+    //iterate through every output element from outputs[0]
+    char* key;
+    char* value;
+    for(i = start; i < end; i++)
+    {
+        int len_output = strlen(outputs[0].output[i]);
+        for(j=0; j<len_output; j++)
+        {
+        	if(outputs[0].output[i][j]==' ') break;
+		}
+		if(j==len_output||j==(len_output-1))
+		{
+			key = NULL; //substring(outputs[i].output[j],0,j);
+			value = substring(outputs[0].output[i],0,j); //printf("value %s %s\n", value, outputs[0].output[i]);
+		}
+		else
+		{
+			key = substring(outputs[0].output[i],0,j);
+            if(outputs[0].output[i][len_output-1]==' ')
+                value = substring(outputs[0].output[i],j+1,len_output-1); 
+            else value = substring(outputs[0].output[i],j+1,len_output); 
+                        //printf("key %s value %s %s\n", key, value, outputs[0].output[i]);
+		}
+        
+        if(key!=NULL&&strcmp(key, "{")==0)
+        {
+        	//printf("value %d %s\n",atoi(value), outputs[0].output[i]);
+        	for(j=0;j<=top_tpstate;j++)
+            {
+                if(tpstate[j].state==atoi(value)) break;
+            }
+            if(j<=top_tpstate)  //find an array with predicates
+            {
+            	//find the item and push this item into stack
+                predicate_stacks[0].predicate_stack[++predicate_stacks[0].top_predicate_stack] = j; //we can also push state into stack directly, then call API to fetch the list
+                predicate_stacks[0].start[predicate_stacks[0].top_predicate_stack] = outputs[1].top_output;  //start position in release buffer
+			}
+		}
+		else if(key!=NULL&&strcmp(key, "}")==0)
+		{
+			int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
+			int prior = predicate_stacks[0].start[index];
+            //verify results need to use Xiaofan's API
+            for(k=0;k<=tpstate[index].top_condition_list;k++)
+            {
+                if(tpstate[index].condition_value[k]!=1)
+                {
+                    break;
+                }
+            }
+            if(k>tpstate[index].top_condition_list)
+               satisfy = 1;
+		    else satisfy = 0;
+		    if(satisfy == 0)
+		    {
+		    	outputs[1].top_output = prior; //clean buffer
+			}
+			else
+			{
+				for(j=prior+1;j<=outputs[1].top_output;j++)  //release buffer
+                {
+                	strcopy(outputs[1].output[j], outputs[2].output[++outputs[2].top_output]);
+                }
+                outputs[1].top_output = prior;
+			}
+                        //set back
+                         for(k=0;k<=tpstate[index].top_condition_list;k++)
+                         {
+                             tpstate[index].condition_value[k] = 0;   
+                         } 
+			--predicate_stacks[0].top_predicate_stack; //pop out
+		}
+		else if(key!=NULL)  //use key as predicate state
+		{
+			int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
+			for(k=0;k<=tpstate[index].top_condition_list;k++)
+            {
+                    if(tpstate[index].condition_list[k]==atoi(key))   
+                    {
+                    	if(value!=NULL)
+                            tpstate[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
+                        break;
+                    }
+            }
+		}
+		else if(key==NULL) //temporary output
+		{       
+		      strcopy(value,outputs[1].output[++outputs[1].top_output]);  //printf("%s\n", value);
+                }
+
+    }
+    printf("number of final outputs is %d\n", outputs[2].top_output);
+}
+
+
+void filter_output_predicates0()
 {
     printf("%d\n", outputs[0].top_output);
     predicate_states tpstate[50];
@@ -2940,19 +3339,16 @@ int execute_query()
             return 0;
         }
 	}
-
-	for (i = 0; i <= n; i++)
+        for (i = 0; i <= n; i++)
         pthread_join(thread[i], NULL);
-	// thread_wait(n);
-    // this is unsafe because the out of order instruction execution(sleep may help but it's unnecessary). 
-    // On the other hand, didn't call pthread_join will cause thread resource leak.
-    
+	//thread_wait(n);
+	
 	//merging phase
 	printf("All the subthread ended, now the program is merging its results.\n");
 	printf("begin merging results\n");
 	merge(n);
 	printf("finish merging these results.\n");
-	generate_final_outputs();
+	///generate_final_outputs();
 	
 	//filtering phase
 	if(top_pstate>-1)
@@ -2993,9 +3389,7 @@ void load_dfa(JQ_DFA* dfa)
         stateMachine[2*stateCount-1].low = 0;
         stateMachine[2*stateCount-1].high = 0;
         int stop_state =  jqd_getAcceptType(dfa, stateCount); //needs remove
-        stateMachine[2*stateCount-1].isoutput = stop_state; 
-        //if(stop_state>0&&state != dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 2; //needs remove
-        //if(state == dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 1;
+        stateMachine[2*stateCount-1].isoutput = stop_state;
         for(input = 2; input < dfa->inputs_num; input++)
         {
             int next_state = jqd_nextState(dfa, state, input);
