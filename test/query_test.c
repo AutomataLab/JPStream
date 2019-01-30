@@ -25,7 +25,7 @@ void Test1()
     //jsonPath = "$.root[*].entities.hashtags[*].text"; 
     num_threads = 16;
     pversion = 0;
-    warmup_flag = 1;
+    warmup_flag = 0;
     debug_flag = 0;
     percentage = 1;
     xmlPath = jsonPath;
@@ -56,7 +56,7 @@ void Test2()
     //jsonPath = "$.root[?(@.id)&&(@.user.screen_name)].quoted_status.entities.user_mentions[?(@.indices)&&(@.id_str)].id";
     num_threads = 16;
     pversion = 1;
-    warmup_flag = 1;
+    warmup_flag = 0;
     debug_flag = 0;
     percentage = 1;
     //xmlPath=(char*)malloc(2000*sizeof(char));
@@ -87,7 +87,7 @@ void Test3()
     //jsonPath = "$.root.products[?(@.sku)&&(@.productId)].categoryPath[?(@.name)].id";
     num_threads = 64;
     pversion = 1;
-    warmup_flag = 1;
+    warmup_flag = 0;
     debug_flag = 0;
     percentage = 1;
     xmlPath=jsonPath;//(char*)malloc(2000*sizeof(char));
@@ -117,7 +117,7 @@ void Test4()
     //jsonPath = "$.root.meta.view.columns[?(@.id)&&(@.name)&&(@.cachedContents)].position";
     num_threads = 16;
     pversion = 0;
-    warmup_flag = 1;
+    warmup_flag = 0;
     debug_flag = 0;
     percentage = 1;
     xmlPath=jsonPath;//(char*)malloc(2000*sizeof(char));
@@ -145,7 +145,7 @@ void Test5()
     jsonPath = "$.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position";
     num_threads = 16;
     pversion = 0;
-    warmup_flag = 1;
+    warmup_flag = 0;
     debug_flag = 0;
     percentage = 1;
     xmlPath=jsonPath;//(char*)malloc(2000*sizeof(char));
@@ -173,7 +173,7 @@ void Test6()
     jsonPath = "$.root[*].title";
     num_threads = 16;
     pversion = 1;
-    warmup_flag = 1;
+    warmup_flag = 0;
     debug_flag = 0;
     percentage = 1;
     xmlPath=jsonPath;//(char*)malloc(2000*sizeof(char));
@@ -201,7 +201,7 @@ void Test7()
     jsonPath = "$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property";
     num_threads = 64;
     pversion = 1;
-    warmup_flag = 1;
+    warmup_flag = 0;
     debug_flag = 0;
     percentage = 10;
     xmlPath=jsonPath;//(char*)malloc(2000*sizeof(char));
@@ -229,7 +229,7 @@ void Test8()
     jsonPath = "$.root[?(@.index&&@.guid)].friends[?(@.name)].id";
     num_threads = 64;
     pversion = 0;
-    warmup_flag = 1;
+    warmup_flag = 0;
     debug_flag = 0;
     percentage = 1;
     xmlPath=jsonPath;//(char*)malloc(2000*sizeof(char));

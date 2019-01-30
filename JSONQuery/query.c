@@ -2940,8 +2940,13 @@ int execute_query()
             return 0;
         }
 	}
-	thread_wait(n);
-	
+
+	for (i = 0; i <= n; i++)
+        pthread_join(thread[i], NULL);
+	// thread_wait(n);
+    // this is unsafe because the out of order instruction execution(sleep may help but it's unnecessary). 
+    // On the other hand, didn't call pthread_join will cause thread resource leak.
+    
 	//merging phase
 	printf("All the subthread ended, now the program is merging its results.\n");
 	printf("begin merging results\n");
