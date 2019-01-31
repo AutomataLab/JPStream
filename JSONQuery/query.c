@@ -1697,7 +1697,7 @@ static inline void query_output(int thread_num, char* start_text, tuple_array *c
             else top_output = (++outputs[thread_num].top_output);
             int tl = strlen(start_text);
             start_text[tl] = ' ';
-            start_text[tl+1] = '\0';
+            start_text[tl+1] = '\0'; //printf("&&&&& we add empty %s %d\n",start_text, strlen(start_text));
             if(append == 1){ printf("append %s\n",outputs[thread_num].output[prev_top_output]);
                int prev = prev_output_length, new;
                outputs[thread_num].output[top_output][prev++] = ' '; 
@@ -2813,7 +2813,7 @@ int writing_results()
 {
 	int ret;
 	printf("writting final results into %s\n", "result_0.txt");
-    if(1==2&&top_pstate>-1)
+    if(top_pstate>-1)
         ret = write_file_with_predicates("result_0.txt", num_threads-1);
     else  ret = write_file("result_0.txt");
     printf("finish writing final results, please check the relevant file\n");
@@ -3119,23 +3119,26 @@ void filter_output_predicates()
         }
         else if(key==NULL) //temporary output
         {    
-            //check whether it is an accept state
-			int verify_state = atoi(value);
-            int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
-            int pred_state = pred_list[index].state;
-            for(k=0;k<=pred_list[index].top_condition_list;k++)
+            //printf("value %s %d\n",outputs[0].output[i], strlen(outputs[0].output[i]));
+            if(value!=NULL&&outputs[0].output[i][strlen(outputs[0].output[i])-1]==' ') //accept state
             {
-                if(pred_list[index].condition_list[k]==verify_state)   
+            	strcopy(value,outputs[1].output[++outputs[1].top_output]);  //printf("%s\n", value);
+			}
+			else
+            {
+            	int verify_state = atoi(value);
+                int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
+                int pred_state = pred_list[index].state;
+                for(k=0;k<=pred_list[index].top_condition_list;k++)
                 {
-                    if(value!=NULL)
-                        pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
-                    break;
+                    if(pred_list[index].condition_list[k]==verify_state)   
+                    {
+                        if(value!=NULL)
+                            pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
+                        break;
+                    }
                 }
-            }
-            if(k>pred_list[index].top_condition_list) //an output value
-            {
-                strcopy(value,outputs[1].output[++outputs[1].top_output]);  //printf("%s\n", value);
-            }
+			}
         }
 
     }
