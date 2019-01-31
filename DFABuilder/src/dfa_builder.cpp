@@ -174,7 +174,7 @@ struct StackContext {
             }
             create_dfa();
             states_mapping[state_handle_now].push_back(model->size()-1);
-            tree_mapping[state_handle_now] = filter_trees.back();
+            tree_mapping[model->size()-1] = node;
             for (int i = 0; i < count; ++i)
                 st.pop_back();
         }
@@ -242,7 +242,7 @@ struct StackContext {
                     state_handle_now = model->size()-1;
                     states_mapping[state_handle_now] = vector<int>(0);
                     filter_trees.push_back(p->left);
-                    tree_mapping[state_handle_now] = filter_trees.back();
+                    tree_mapping[state_handle_now] = p->left;
                     construct_filter(p->left);
                     break;
                 }

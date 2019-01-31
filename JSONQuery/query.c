@@ -2940,8 +2940,13 @@ int execute_query()
             return 0;
         }
 	}
-	thread_wait(n);
-	
+
+	for (i = 0; i <= n; i++)
+        pthread_join(thread[i], NULL);
+	// thread_wait(n);
+    // this is unsafe because the out of order instruction execution(sleep may help but it's unnecessary). 
+    // On the other hand, didn't call pthread_join will cause thread resource leak.
+    
 	//merging phase
 	printf("All the subthread ended, now the program is merging its results.\n");
 	printf("begin merging results\n");
@@ -2987,9 +2992,10 @@ void load_dfa(JQ_DFA* dfa)
         stateMachine[2*stateCount-1].isoutput = 0;
         stateMachine[2*stateCount-1].low = 0;
         stateMachine[2*stateCount-1].high = 0;
-        int stop_state =  jqd_getStopState(dfa, stateCount); //needs remove
-        if(stop_state>0&&state != dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 2; //needs remove
-        if(state == dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 1;
+        int stop_state =  jqd_getAcceptType(dfa, stateCount); //needs remove
+        stateMachine[2*stateCount-1].isoutput = stop_state; 
+        //if(stop_state>0&&state != dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 2; //needs remove
+        //if(state == dfa->states_num-1) stateMachine[2*stateCount-1].isoutput = 1;
         for(input = 2; input < dfa->inputs_num; input++)
         {
             int next_state = jqd_nextState(dfa, state, input);
