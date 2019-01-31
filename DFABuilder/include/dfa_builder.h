@@ -58,9 +58,8 @@ static inline void dfa_print(JQ_CONTEXT* ctx) {
     printf("-----------------------\n");
     for (int i = 0; i < ctx->states_num; ++i) {
         printf("\t%d:", i);
-        int* vec = dfa_getValueOfMapping(ctx, i);
         for (int j = 0; j < dfa_getSizeOfMapping(ctx, i); ++j)
-            printf("\t%d", vec[j]);
+            printf("\t%d", dfa_getValueOfMapping(ctx, i, j));
         printf("\n");
     }
     int k = dfa_getSizeOfPredicateStates(ctx);
