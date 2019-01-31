@@ -17,6 +17,7 @@ typedef struct JQ_CONTEXT {
     int states_num;
     JSONPathNode** subtrees;
     JQ_IntVerPair* states_mapping;
+    JQ_IntVerPair array_predicate_states;
 } JQ_CONTEXT;
 
 extern JQ_DFA* dfa_Create(const char* json_path, JQ_CONTEXT* context);
@@ -35,10 +36,17 @@ static inline int dfa_getSizeOfMapping(JQ_CONTEXT* ctx, int stop_state) {
     return ctx->states_mapping[stop_state].value_size;
 }
 
-static inline int* dfa_getValueOfMapping(JQ_CONTEXT* ctx, int stop_state) {
-    return ctx->states_mapping[stop_state].value;
+static inline int dfa_getValueOfMapping(JQ_CONTEXT* ctx, int stop_state, int idx) {
+    return ctx->states_mapping[stop_state].value[idx];
 }
 
+static inline int dfa_getSizeOfPredicateStates(JQ_CONTEXT* ctx) {
+    return ctx->array_predicate_states.value_size;
+} 
+
+static inline int dfa_getPredicateStates(JQ_CONTEXT* ctx, int idx) {
+    return ctx->array_predicate_states.value[idx];
+}
 
 static inline void dfa_print(JQ_CONTEXT* ctx) {
     for (int i = 0; i < ctx->states_num; ++i) {
@@ -50,11 +58,16 @@ static inline void dfa_print(JQ_CONTEXT* ctx) {
     printf("-----------------------\n");
     for (int i = 0; i < ctx->states_num; ++i) {
         printf("\t%d:", i);
-        int* vec = dfa_getValueOfMapping(ctx, i);
         for (int j = 0; j < dfa_getSizeOfMapping(ctx, i); ++j)
-            printf("\t%d", vec[j]);
+            printf("\t%d", dfa_getValueOfMapping(ctx, i, j));
         printf("\n");
     }
+    int k = dfa_getSizeOfPredicateStates(ctx);
+    printf("predicate states from array:");
+    for (int i = 0; i < k; ++i) {
+        printf(" %d", dfa_getPredicateStates(ctx, i));
+    }
+    printf("\n");
     printf("-----------------------\n");
 }
 

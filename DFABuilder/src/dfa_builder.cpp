@@ -280,9 +280,9 @@ static JQ_DFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
                 dfa->stop_state[i] = 0;
             }
             if (ctx->output_states.find(stop_state) != ctx->output_states.end()) {
-                dfa->accept_type[i] = 1;
+                dfa->accept_type[i] = JQ_DFA_OUTPUT_TYPE;
             } else 
-                dfa->accept_type[i] = 2;
+                dfa->accept_type[i] = JQ_DFA_PREDICATE_TYPE;
         }
     }
     dfa->names[1] = str_copy("other");
@@ -302,10 +302,12 @@ static int acc_id2state(DFACompressed* cpd_dfa, int acc) {
     return -1;
 } 
 
-static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_CONTEXT* context) {
+static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_DFA* m_dfa, JQ_CONTEXT* context) {
     context->states_num = cpd_dfa->getStateSum();
-    context->subtrees = (JSONPathNode**) calloc(sizeof(JSONPathNode*), cpd_dfa->getStateSum()+1);
-    context->states_mapping = (JQ_IntVerPair*) calloc(sizeof(JQ_IntVerPair), cpd_dfa->getStateSum()+1);
+    context->subtrees = (JSONPathNode**) calloc(cpd_dfa->getStateSum()+1, sizeof(JSONPathNode*));
+    context->states_mapping = (JQ_IntVerPair*) calloc(cpd_dfa->getStateSum()+1, sizeof(JQ_IntVerPair));
+    context->array_predicate_states.value_size = 0;
+    context->array_predicate_states.value = (int*)calloc(cpd_dfa->getStateSum(), sizeof(int));
     for (int i = 0; i < cpd_dfa->getStateSum(); ++i) {
         int acc = cpd_dfa->isStopState(i);
         if (acc) {
@@ -313,9 +315,18 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_CONTEXT
             const auto& vec = ctx->states_mapping[acc-1];
             context->states_mapping[i].value_size = vec.size();
             if (!vec.empty()) {
-                context->states_mapping[i].value = (int*)calloc(sizeof(int), vec.size());
+                context->states_mapping[i].value = (int*)calloc(vec.size(), sizeof(int));
                 for (int j = 0; j < vec.size(); ++j) {
                     context->states_mapping[i].value[j] = acc_id2state(cpd_dfa, vec[j]+1);
+                }
+            }
+            if (m_dfa->accept_type[i] == JQ_DFA_PREDICATE_TYPE) {
+                for (int j = 0; j < cpd_dfa->getStateSum(); ++j) {
+                    if (cpd_dfa->nextState(j, 2) == i) {
+                        int k = context->array_predicate_states.value_size++;
+                        context->array_predicate_states.value[k] = i;
+                        break;
+                    }
                 }
             }
         }
@@ -349,7 +360,7 @@ JQ_DFA* dfa_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
     // dfa->print();
 
     JQ_DFA* m_dfa = create_dfa(ctx, dfa);
-    create_context(ctx, dfa, context);
+    create_context(ctx, dfa, m_dfa, context);
     jqd_print(m_dfa);
 
     delete model;
