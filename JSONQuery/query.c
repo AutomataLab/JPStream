@@ -25,9 +25,7 @@ It could also divide it into several parts and deal with each part in parallel.
 #include "constraint.h"
 #include "query.h"
 #include "global.h"
-#include "jsonpath_model.h"
-#include "jsonpath_evaluator.h"
-#include "dfa_builder.h"
+
 
 int temp_err = 0;
 int runtime = 0;
@@ -2964,6 +2962,8 @@ void gather_predicate_info()
     stateMachine[0].n_transitions = -1;
 }
 
+JQ_CONTEXT* map_context;
+
 /**************************************************************
 Function: vvoid filter_output_predicates();
 Description: extract final outputs for JSONPath with predicates
@@ -2971,14 +2971,29 @@ Description: extract final outputs for JSONPath with predicates
 void filter_output_predicates()
 {
     printf("%d\n", outputs[0].top_output);
-    predicate_states tpstate[50];
-    int top_tpstate = top_pstate;
+    //predicate table for evaluation
+    predicate_states pred_list[MAX_SIZE];
+    int pred_size = -1;
+    //int top_pre = -1;
     int i,j,k,l,current_pstate = -1;
     int satisfy = 0;
-    for(i=0;i<=top_tpstate;i++)
+    //load predicate table
+    pred_size = dfa_getSizeOfPredicateStates(map_context);
+    for(i = 0; i < pred_size; i++)
     {
-        tpstate[i] = pstate[i];
+    	int predicate_state = dfa_getPredicateStates(map_context, i);
+        pred_list[i].state = predicate_state;
+        int acc_size = dfa_getSizeOfMapping(map_context, predicate_state);
+        int top_accept = -1;
+        pred_list[i].top_condition_list = -1;
+        for(j=0;j<acc_size;j++)
+        {
+            int acc_state = dfa_getValueOfMapping(map_context, predicate_state, j);
+            pred_list[i].condition_list[++pred_list[i].top_condition_list] = acc_state;
+            pred_list[i].condition_value[pred_list[i].top_condition_list] = 0;
+        }
     }
+
     predicate_stacks[0].top_predicate_stack = -1;
     int tempo_state = 0;
     outputs[1].top_output = -1;  //save the temporary output
@@ -2994,6 +3009,14 @@ void filter_output_predicates()
 
     int counter = 0;
     int top_testoutput = 0;
+    //get predicate list;
+    //int pred_size = dfa_getSizeOfPredicateStates(map_context);
+    //int* pred_list = (int*)malloc(sizeof(int)*(pred_size+1));
+    //for(i = 0; i < pred_size; i++)
+      //  pred_list[i] = dfa_getPredicateStates(map_context, i);
+    //predicate table for evaluation
+    JSONPathKeyValuePair* eva_table = (JSONPathKeyValuePair*)malloc(MAX_SIZE*sizeof(JSONPathKeyValuePair));
+    int top_eva_table = -1;
     //iterate through every output element from outputs[0]
     char* key;
     char* value;
@@ -3002,90 +3025,123 @@ void filter_output_predicates()
         int len_output = strlen(outputs[0].output[i]);
         for(j=0; j<len_output; j++)
         {
-        	if(outputs[0].output[i][j]==' ') break;
-		}
-		if(j==len_output||j==(len_output-1))
-		{
-			key = NULL; //substring(outputs[i].output[j],0,j);
-			value = substring(outputs[0].output[i],0,j); //printf("value %s %s\n", value, outputs[0].output[i]);
-		}
-		else
-		{
-			key = substring(outputs[0].output[i],0,j);
+            if(outputs[0].output[i][j]==' ') break;
+        }
+        if(j==len_output||j==(len_output-1))
+        {
+            key = NULL; //substring(outputs[i].output[j],0,j);
+            value = substring(outputs[0].output[i],0,j); //printf("value %s %s\n", value, outputs[0].output[i]);
+        }
+        else
+        {
+            key = substring(outputs[0].output[i],0,j);
             if(outputs[0].output[i][len_output-1]==' ')
                 value = substring(outputs[0].output[i],j+1,len_output-1); 
             else value = substring(outputs[0].output[i],j+1,len_output); 
                         //printf("key %s value %s %s\n", key, value, outputs[0].output[i]);
-		}
+        }
         
-        if(key!=NULL&&strcmp(key, "{")==0)
+        if(key!=NULL&&strcmp(key, "{")==0)  //start of object, get predicate state
         {
         	//printf("value %d %s\n",atoi(value), outputs[0].output[i]);
-        	for(j=0;j<=top_tpstate;j++)
+            int pred_state = atoi(value);
+            //for(j=0;j<pred_size;j++)
+                //if(pred_list[j]==pred_state) break;
+            for(j=0;j<pred_size;j++)
             {
-                if(tpstate[j].state==atoi(value)) break;
+                if(pred_list[j].state==pred_state) break;
             }
-            if(j<=top_tpstate)  //find an array with predicates
+            if(j<pred_size)  //find an array with predicates
             {
             	//find the item and push this item into stack
-                predicate_stacks[0].predicate_stack[++predicate_stacks[0].top_predicate_stack] = j; //we can also push state into stack directly, then call API to fetch the list
+                predicate_stacks[0].predicate_stack[++predicate_stacks[0].top_predicate_stack] = j; //we can also push the index of predicate state into stack directly, then call API to fetch the list
                 predicate_stacks[0].start[predicate_stacks[0].top_predicate_stack] = outputs[1].top_output;  //start position in release buffer
-			}
-		}
-		else if(key!=NULL&&strcmp(key, "}")==0)
-		{
-			int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
-			int prior = predicate_stacks[0].start[index];
-            //verify results need to use Xiaofan's API
-            for(k=0;k<=tpstate[index].top_condition_list;k++)
+            }
+        }
+        else if(key!=NULL&&strcmp(key, "}")==0)
+        {
+            int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
+            int prior = predicate_stacks[0].start[index];
+            //call jpe_evaluate() to verify results 
+            top_eva_table = -1;
+            for(k=0;k<=pred_list[index].top_condition_list;k++)
             {
-                if(tpstate[index].condition_value[k]!=1)
+                JSONPathNode* node = dfa_getSubtree(map_context, pred_list[index].condition_list[k]);
+                eva_table[++top_eva_table].key = node->string;
+                eva_table[top_eva_table].value.vtype=jvt_boolean;
+                if(pred_list[index].condition_value[k]!=1)
                 {
+                    eva_table[top_eva_table].value.boolean = false; 
+                }
+                else eva_table[top_eva_table].value.boolean = true; 
+            }
+            eva_table[++top_eva_table].key = NULL;
+            JSONPathNode* root = dfa_getSubtree(map_context, pred_list[index].state); //get subtree list
+            JSONPathValue v = jpe_Evaluate(root, eva_table);
+            //if(k>tpstate[index].top_condition_list)
+            if (v.boolean)
+               satisfy = 1;
+            else satisfy = 0;
+            if(satisfy == 0)
+            {
+                outputs[1].top_output = prior; //clean buffer
+            }
+            else{
+                for(j=prior+1;j<=outputs[1].top_output;j++)  //release buffer
+                {
+                    strcopy(outputs[1].output[j], outputs[2].output[++outputs[2].top_output]);
+                }
+                outputs[1].top_output = prior;
+            }
+            //set back
+            for(k=0;k<=pred_list[index].top_condition_list;k++)
+            {
+                pred_list[index].condition_value[k] = 0;   
+            } 
+            --predicate_stacks[0].top_predicate_stack; //pop out
+        }
+        else if(key!=NULL)  //use key as predicate state
+        {
+            int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
+            int pred_state = pred_list[index].state;
+            int acc_state = atoi(key);
+            //JSONPathNode* node = dfa_getSubtree(map_context, acc_state);
+            //printf("%s\n", node->string);
+			for(k=0;k<=pred_list[index].top_condition_list;k++)
+            {
+                if(pred_list[index].condition_list[k]==acc_state)   
+                {
+                    if(value!=NULL)
+                        pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
                     break;
                 }
             }
-            if(k>tpstate[index].top_condition_list)
-               satisfy = 1;
-		    else satisfy = 0;
-		    if(satisfy == 0)
-		    {
-		    	outputs[1].top_output = prior; //clean buffer
-			}
-			else
-			{
-				for(j=prior+1;j<=outputs[1].top_output;j++)  //release buffer
-                {
-                	strcopy(outputs[1].output[j], outputs[2].output[++outputs[2].top_output]);
-                }
-                outputs[1].top_output = prior;
-			}
-                        //set back
-                         for(k=0;k<=tpstate[index].top_condition_list;k++)
-                         {
-                             tpstate[index].condition_value[k] = 0;   
-                         } 
-			--predicate_stacks[0].top_predicate_stack; //pop out
-		}
-		else if(key!=NULL)  //use key as predicate state
-		{
-			int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
-			for(k=0;k<=tpstate[index].top_condition_list;k++)
+        }
+        else if(key==NULL) //temporary output
+        {    
+            //check whether it is an accept state
+			int verify_state = atoi(value);
+            int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
+            int pred_state = pred_list[index].state;
+            for(k=0;k<=pred_list[index].top_condition_list;k++)
             {
-                    if(tpstate[index].condition_list[k]==atoi(key))   
-                    {
-                    	if(value!=NULL)
-                            tpstate[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
-                        break;
-                    }
-            }
-		}
-		else if(key==NULL) //temporary output
-		{       
-		      strcopy(value,outputs[1].output[++outputs[1].top_output]);  //printf("%s\n", value);
+                if(pred_list[index].condition_list[k]==verify_state)   
+                {
+                    if(value!=NULL)
+                        pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
+                    break;
                 }
+            }
+            if(k>pred_list[index].top_condition_list) //an output value
+            {
+                strcopy(value,outputs[1].output[++outputs[1].top_output]);  //printf("%s\n", value);
+            }
+        }
 
     }
     printf("number of final outputs is %d\n", outputs[2].top_output);
+    //if(pred_list) free(pred_list);
+    if(eva_table) free(eva_table);
 }
 
 
@@ -3389,7 +3445,7 @@ void load_dfa(JQ_DFA* dfa)
         stateMachine[2*stateCount-1].low = 0;
         stateMachine[2*stateCount-1].high = 0;
         int stop_state =  jqd_getAcceptType(dfa, stateCount); //needs remove
-        stateMachine[2*stateCount-1].isoutput = stop_state;
+        stateMachine[2*stateCount-1].isoutput = stop_state;  
         for(input = 2; input < dfa->inputs_num; input++)
         {
             int next_state = jqd_nextState(dfa, state, input);
@@ -3435,13 +3491,13 @@ void load_dfa(JQ_DFA* dfa)
                 printf(" (str:%s",stateMachine[i].str[k]);
                 if(stateMachine[i].isoutput==1)
                 {
-                    printf("%s",out);
+                    printf(" %s",out);
                 }
                 if(stateMachine[i].isoutput==2)
                 {
-                    printf("%s %s",out,"special output");
+                    printf(" %s ","special output");
                 }
-                printf(") end %d;",stateMachine[i].end[k]);
+                printf(") end %d; ",stateMachine[i].end[k]);
                 if(stateMachine[2*stateMachine[i].end[k]-1].isoutput==1)
                     printf("%s",out);
             }
@@ -3449,14 +3505,34 @@ void load_dfa(JQ_DFA* dfa)
     }
 }
 
-int automata()
+JQ_CONTEXT* automata()
 {
-    JQ_CONTEXT ctx;
-    JQ_DFA* dfa = dfa_Create(xmlPath, &ctx);
+    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
+    JQ_DFA* dfa = dfa_Create(xmlPath, ctx);
     if (dfa == NULL) return 0;
     load_dfa(dfa);
+    printf("context information\n");
+    printf("size of predicate states %d\n", dfa_getSizeOfPredicateStates(ctx));
+    int pred_size = dfa_getSizeOfPredicateStates(ctx);
     
-    return 1;
+    int i,j;
+    for(i=0; i<pred_size; i++)
+    {
+        int pred_state = dfa_getPredicateStates(ctx, i);
+        printf("predicate state is %d\n", pred_state);
+        int acc_size = dfa_getSizeOfMapping(ctx, pred_state);
+        //int* acc_list = dfa_getValueOfMapping(ctx, pred_state);
+        for(j=0; j<acc_size; j++){
+            int acc_state = dfa_getValueOfMapping(ctx, pred_state, j);
+            printf("accept state is %d\n", acc_state);
+        }
+        //int acc_size = dfa_getSizeOfMapping;
+       // int* acc_list = dfa_getPredicateStates(ctx, i);
+       // printf("accept state %d belongs to predicate state %d\n", 
+    }
+    map_context = ctx;
+    return ctx;
+    //return 1;
 }
 
 /*********************************************************************************************/
