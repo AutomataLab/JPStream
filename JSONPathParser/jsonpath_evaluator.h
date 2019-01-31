@@ -44,6 +44,16 @@ static inline JSONPathValue jpe_Opt1(JSONPathOperatorType opt, JSONPathValue v1)
     return v;
 }
 
+
+static inline JSONPathValue jpe_TypeCast(JSONPathValue v) {
+    if (v.vtype == jvt_null) v.boolean = false;
+    if (v.vtype == jvt_number) v.boolean = (v.number != 0.0);
+    if (v.vtype == jvt_string) v.boolean = (v.string != NULL);
+    v.vtype = jvt_boolean;
+    return v;
+}
+
+
 /**
     jot_or = 0, jot_and, // boolean
     jot_equal, jot_less, jot_greater, jot_neq, jot_leq, jot_geq,  // comparing
@@ -53,6 +63,12 @@ static inline JSONPathValue jpe_Opt1(JSONPathOperatorType opt, JSONPathValue v1)
 
 static inline JSONPathValue jpe_Opt2(JSONPathOperatorType opt, JSONPathValue v1, JSONPathValue v2) {
     JSONPathValue v;
+    // type casting
+    if (opt == jot_or || opt == jot_and) {
+        v1 = jpe_TypeCast(v1);
+        v2 = jpe_TypeCast(v2);
+    }
+    // calculate 
     switch (opt) {
         case jot_or:
             v.vtype = jvt_boolean;
@@ -70,7 +86,7 @@ static inline JSONPathValue jpe_Opt2(JSONPathOperatorType opt, JSONPathValue v1,
                 v.boolean = (v1.number == v2.number);
             else if (v1.vtype == v2.vtype && v1.vtype == jvt_string) {
                 int r = strcmp(v1.string, v2.string);
-                v.boolean = (r != 0);
+                v.boolean = (r == 0);
             }
             return v;
         case jot_neq:
@@ -81,7 +97,7 @@ static inline JSONPathValue jpe_Opt2(JSONPathOperatorType opt, JSONPathValue v1,
                 v.boolean = (v1.number != v2.number);
             else if (v1.vtype == v2.vtype && v1.vtype == jvt_string) {
                 int r = strcmp(v1.string, v2.string);
-                v.boolean = (r == 0);
+                v.boolean = (r != 0);
             }
             return v;
         case jot_less:
@@ -125,18 +141,14 @@ static inline JSONPathValue jpe_Opt2(JSONPathOperatorType opt, JSONPathValue v1,
 }
 
 
-/**
- * Before calling this function, please replace the '@.proptery' subtree to a single node - jnt_variable
- * You can create it by calling @jpn_CreateVariable(var_name)
- * When I calculate the result, I will try to search the table to find the values of those variable nodes.
- */
-static inline JSONPathValue jpe_Evaluate(JSONPathNode* node, JSONPathKeyValuePair* table) {
+
+static inline JSONPathValue jpe_EvaluateExp(JSONPathNode* node, JSONPathKeyValuePair* table) {
     switch (node->node_type) {
         case jnt_operator: {
             JSONPathValue v1, v2;
-            v1 = jpe_Evaluate(node->left, table);
+            v1 = jpe_EvaluateExp(node->left, table);
             if (node->right) {
-                v2 = jpe_Evaluate(node->right, table);
+                v2 = jpe_EvaluateExp(node->right, table);
                 return jpe_Opt2(node->opt, v1, v2);
             }
             return jpe_Opt1(node->opt, v1);
@@ -145,12 +157,31 @@ static inline JSONPathValue jpe_Evaluate(JSONPathNode* node, JSONPathKeyValuePai
             JSONPathValue v = jpe_Find(node->string, table);
             return v;
         }
+        case jnt_string: {
+            JSONPathValue v = {.vtype = jvt_string};
+            v.string = node->string;
+            return v;
+        }
+        case jnt_number: {
+            JSONPathValue v = {.vtype = jvt_number};
+            v.number = node->number;
+            return v;
+        }
         default: {
             JSONPathValue v = {jvt_null};
             return v;
         }
     }
+}
 
+/**
+ * Before calling this function, please replace the '@.proptery' subtree to a single node - jnt_variable
+ * You can create it by calling @jpn_CreateVariable(var_name)
+ * When I calculate the result, I will try to search the table to find the values of those variable nodes.
+ */
+static inline JSONPathValue jpe_Evaluate(JSONPathNode* node, JSONPathKeyValuePair* table) {
+    JSONPathValue v = jpe_EvaluateExp(node, table);
+    return jpe_TypeCast(v);
 }
 
 

@@ -39,6 +39,38 @@ int test_verify() {
         printf("v = true\n");
     else
         printf("v = false\n");
+
+    root = jpp_Analysis("$[?(@.text=='bbb')]");
+    jpe_ModifyRef(root);
+    node = root->right->left;
+    JSONPathKeyValuePair table2[] = {
+        {"text", {.vtype = jvt_string, .string = "ccc"}},
+        {NULL, {0}}
+    };
+    jpn_Print(node);
+    v = jpe_Evaluate(node, table2);
+    EXPECT_EQ(v.vtype, jvt_boolean);
+    EXPECT_EQ(v.boolean, false);
+    if (v.boolean)
+        printf("v2 = true\n");
+    else
+        printf("v2 = false\n");
+
+    root = jpp_Analysis("$[?(@.text=='bbb')]");
+    jpe_ModifyRef(root);
+    node = root->right->left;
+    JSONPathKeyValuePair table3[] = {
+        {"text", {.vtype = jvt_string, .string = "bbb"}},
+        {NULL, {0}}
+    };
+    jpn_Print(node);
+    v = jpe_Evaluate(node, table3);
+    EXPECT_EQ(v.vtype, jvt_boolean);
+    EXPECT_EQ(v.boolean, true);
+    if (v.boolean)
+        printf("v3 = true\n");
+    else
+        printf("v3 = false\n");
     return 0;
 }
 
