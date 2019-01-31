@@ -1147,6 +1147,10 @@ static inline void branket_output(int thread_num, char* start_text, tuple_array 
         int values = vt_arr->values[tempk];  
         if(values!=0&&stateMachine[2*values-1].isoutput ==2) //&&(values==4||values==8)
         {   //printf("value %d %d\n", values, stateMachine[2*values-1].isoutput);
+            int i;
+            for(i=0; i<=top_pstate; i++)
+                if(pstate[i].state == values) break;
+            if(i>top_pstate) continue;  //not a predicate state 
             if(thread_num>0&&outputs[thread_num].top_output<10) 
                 printf("values %d %s segment %d thread %d top %d\n", values, start_text, tsegs[thread_num].num_segs, thread_num, outputs[thread_num].top_output); 
             int top_output = (outputs[thread_num].top_output);
@@ -2555,7 +2559,11 @@ void merge(int n)
 				{
                                         printf("branket %d %d %d\n", i, j, unmatched_ending_index_end);
                                         int current_v = vt_array[0].values[current_states.from];
-                                        if(stateMachine[2*current_v-1].isoutput>0){
+                                        int t;
+                                        for(t=0; t<=top_pstate; t++)
+                                            if(pstate[t].state == current_v) break;
+                                        if(t<=top_pstate&&stateMachine[2*current_v-1].isoutput>0){
+                                             
                                             strcopy("} ", outputs[0].output[++outputs[0].top_output]);
                                             char currentv[MAX_LINE];
                                             sprintf(currentv, "%d", current_v);
@@ -3061,6 +3069,7 @@ void filter_output_predicates()
                 predicate_stacks[0].predicate_stack[++predicate_stacks[0].top_predicate_stack] = j; //we can also push the index of predicate state into stack directly, then call API to fetch the list
                 predicate_stacks[0].start[predicate_stacks[0].top_predicate_stack] = outputs[1].top_output;  //start position in release buffer
             }
+            else ++predicate_stacks[0].top_predicate_stack;
         }
         else if(key!=NULL&&strcmp(key, "}")==0)
         {
@@ -3078,14 +3087,14 @@ void filter_output_predicates()
                     eva_table[top_eva_table].value.boolean = false;
                 }
                 else{
-                    eva_table[top_eva_table].value.vtype = pred_list[index].condition_type[k]; //printf("type %d\n", pred_list[index].condition_type[k]); 
+                    eva_table[top_eva_table].value.vtype = pred_list[index].condition_type[k]; //if(eva_table[top_eva_table].value.vtype==jvt_number)printf("type %d %f\n", pred_list[index].condition_type[k], pred_list[index].condition_number[k]); 
                     if(eva_table[top_eva_table].value.vtype==jvt_boolean)
                         eva_table[top_eva_table].value.boolean = pred_list[index].condition_boolean[k];
                     else if(eva_table[top_eva_table].value.vtype==jvt_string)
                         eva_table[top_eva_table].value.string = pred_list[index].condition_string[k];    
                     if(eva_table[top_eva_table].value.vtype==jvt_number)
                         eva_table[top_eva_table].value.number = pred_list[index].condition_number[k];
-                     eva_table[top_eva_table].value.boolean = true; 
+                    // eva_table[top_eva_table].value.boolean = true; 
                 } 
                 /*eva_table[top_eva_table].value.vtype=jvt_boolean;
                 if(pred_list[index].condition_value[k]!=1)
@@ -3098,15 +3107,19 @@ void filter_output_predicates()
             JSONPathNode* root = dfa_getSubtree(map_context, pred_list[index].state); //get subtree list
             JSONPathValue v = jpe_Evaluate(root, eva_table);
             //if(k>tpstate[index].top_condition_list)
-            //printf("result %d\n", v.boolean);
+            //if(eva_table[top_eva_table].value.vtype==jvt_number) printf("result %d\n", v.boolean);
             if (v.boolean)
                satisfy = 1;
-            else satisfy = 0;
+            else satisfy = 0;  
+            //if(satisfy != 1) printf("result %d %d %d %d %d %d\n", satisfy, outputs[1].top_output, prior, top_eva_table, pred_list[index].top_condition_list, eva_table[top_eva_table-1].value.vtype);
+            //else printf("satisfy %d\n",eva_table[top_eva_table-1].value.vtype);
+            //satisfy = 1;
             if(satisfy == 0)
             {
                 outputs[1].top_output = prior; //clean buffer
             }
-            else{
+            else if(predicate_stacks[0].top_predicate_stack==0) {
+                //printf("%d %d\n", pred_list[predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack]].state, predicate_stacks[0].top_predicate_stack);
                 for(j=prior+1;j<=outputs[1].top_output;j++)  //release buffer
                 {
                     strcopy(outputs[1].output[j], outputs[2].output[++outputs[2].top_output]);
@@ -3133,7 +3146,7 @@ void filter_output_predicates()
                 {    //printf("true check %d\n",pred_list[index].condition_list[k] );
                     pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
                     if(value!=NULL&&value[0]=='"')
-                    {   //printf("string %s\n", value);
+                    {   //printf("string %s key %s\n", value, key);
                         pred_list[index].condition_type[k] = jvt_string;
                         pred_list[index].condition_string[k] = value; 
                     }
@@ -3187,7 +3200,7 @@ void filter_output_predicates()
                         break;
                     }
                 }
-			}
+	    }
         }
 
     }

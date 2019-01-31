@@ -124,12 +124,12 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                        //string is found
                         int tempcount = p-start;
                         templen = tempcount;
-                        char* sub1;
-                        sub1=substring(pToken->text.p , 1 , tempcount);
+                        char* sub1; 
+                        sub1=substring(pToken->text.p , 1, tempcount); 
                         if(sub1!=NULL)
                         {
                             strcopy(sub1,start_text);
-                            free(sub1);
+                            //free(sub1);
                         }
                         pToken->text.len = p - start + 1;
                         pToken->text.p = start + pToken->text.len;
@@ -153,10 +153,14 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                         }
                         else //primitive value
                         {
+                            start_text[0]='"';
+                            strcopy(sub1, start_text+1); start_text[strlen(start_text)]='"'; start_text[strlen(start_text)+1]='\0';
+                            //printf("primitive %s\n", start_text);
                             *tInfo->lex_state = 0; 
                             tInfo->current = p+1;
                             return PRI;
                         }
+                        if(sub1!=NULL) free(sub1);
                         state = 0;
                         break;
                     default:
@@ -177,8 +181,10 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                         int tempcount = p-start;
                         templen = tempcount;
                         char* sub1;
-                        if(p[0]=='"')
-                            sub1=substring(pToken->text.p , 1 , tempcount);
+                        if(p[0]=='"'){
+                            sub1=substring(pToken->text.p , 1 , tempcount); 
+                        }
+                        else if(pToken->text.p[tempcount-1]==',') sub1=substring(pToken->text.p, 0, tempcount-1);
                         else sub1=substring(pToken->text.p, 0, tempcount);
 
                         if(sub1!=NULL)  //primitive value
