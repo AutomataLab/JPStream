@@ -36,8 +36,8 @@ static inline int dfa_getSizeOfMapping(JQ_CONTEXT* ctx, int stop_state) {
     return ctx->states_mapping[stop_state].value_size;
 }
 
-static inline int* dfa_getValueOfMapping(JQ_CONTEXT* ctx, int stop_state) {
-    return ctx->states_mapping[stop_state].value;
+static inline int dfa_getValueOfMapping(JQ_CONTEXT* ctx, int stop_state, int idx) {
+    return ctx->states_mapping[stop_state].value[idx];
 }
 
 static inline int dfa_getSizeOfPredicateStates(JQ_CONTEXT* ctx) {
