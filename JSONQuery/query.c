@@ -285,6 +285,10 @@ typedef struct predicate_states{
     int state;
     int condition_list[50];
     int condition_value[50];
+    double condition_number[50];
+    JSONPathValueType condition_type[50];
+    char* condition_string[50];
+    bool condition_boolean[50];
     int last_count;
     int supplement[9];
     int top_condition_list;
@@ -2813,7 +2817,7 @@ int writing_results()
 {
 	int ret;
 	printf("writting final results into %s\n", "result_0.txt");
-    if(top_pstate>-1)
+    if(1==2&&top_pstate>-1)
         ret = write_file_with_predicates("result_0.txt", num_threads-1);
     else  ret = write_file("result_0.txt");
     printf("finish writing final results, please check the relevant file\n");
@@ -3068,17 +3072,33 @@ void filter_output_predicates()
             {
                 JSONPathNode* node = dfa_getSubtree(map_context, pred_list[index].condition_list[k]);
                 eva_table[++top_eva_table].key = node->string;
-                eva_table[top_eva_table].value.vtype=jvt_boolean;
                 if(pred_list[index].condition_value[k]!=1)
                 {
-                    eva_table[top_eva_table].value.boolean = false; 
+                    eva_table[top_eva_table].value.vtype=jvt_boolean;
+                    eva_table[top_eva_table].value.boolean = false;
                 }
-                else eva_table[top_eva_table].value.boolean = true; 
+                else{
+                    eva_table[top_eva_table].value.vtype = pred_list[index].condition_type[k]; //printf("type %d\n", pred_list[index].condition_type[k]); 
+                    if(eva_table[top_eva_table].value.vtype==jvt_boolean)
+                        eva_table[top_eva_table].value.boolean = pred_list[index].condition_boolean[k];
+                    else if(eva_table[top_eva_table].value.vtype==jvt_string)
+                        eva_table[top_eva_table].value.string = pred_list[index].condition_string[k];    
+                    if(eva_table[top_eva_table].value.vtype==jvt_number)
+                        eva_table[top_eva_table].value.number = pred_list[index].condition_number[k];
+                     eva_table[top_eva_table].value.boolean = true; 
+                } 
+                /*eva_table[top_eva_table].value.vtype=jvt_boolean;
+                if(pred_list[index].condition_value[k]!=1)
+                {
+                    eva_table[top_eva_table].value.boolean = false; //printf("false %d\n",pred_list[index].condition_list[k] ); 
+                }
+                else eva_table[top_eva_table].value.boolean = true; */
             }
             eva_table[++top_eva_table].key = NULL;
             JSONPathNode* root = dfa_getSubtree(map_context, pred_list[index].state); //get subtree list
             JSONPathValue v = jpe_Evaluate(root, eva_table);
             //if(k>tpstate[index].top_condition_list)
+            //printf("result %d\n", v.boolean);
             if (v.boolean)
                satisfy = 1;
             else satisfy = 0;
@@ -3107,14 +3127,42 @@ void filter_output_predicates()
             int acc_state = atoi(key);
             //JSONPathNode* node = dfa_getSubtree(map_context, acc_state);
             //printf("%s\n", node->string);
-			for(k=0;k<=pred_list[index].top_condition_list;k++)
+            for(k=0;k<=pred_list[index].top_condition_list;k++)
             {
                 if(pred_list[index].condition_list[k]==acc_state)   
-                {
-                    if(value!=NULL)
-                        pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
+                {    //printf("true check %d\n",pred_list[index].condition_list[k] );
+                    pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
+                    if(value!=NULL&&value[0]=='"')
+                    {   //printf("string %s\n", value);
+                        pred_list[index].condition_type[k] = jvt_string;
+                        pred_list[index].condition_string[k] = value; 
+                    }
+                    else if(value!=NULL&&strcmp(value,"true")==0)
+                    {
+                        pred_list[index].condition_type[k] = jvt_boolean;
+                        pred_list[index].condition_boolean[k] = true;   
+                    }
+                    else if(value!=NULL&&strcmp(value,"false")==0)
+                    {
+                        pred_list[index].condition_type[k] = jvt_boolean;
+                        pred_list[index].condition_boolean[k] = false;
+                    }
+                    else if(value!=NULL&&strcmp(value,"null")==0)
+                    {
+                        pred_list[index].condition_type[k] = jvt_boolean;
+                        pred_list[index].condition_boolean[k] = false;
+                    }
+                    else if(value!=NULL)
+                    {
+                        pred_list[index].condition_type[k] = jvt_number;
+                        pred_list[index].condition_number[k] = atof(value); //printf("atof value %f\n", atof(value));
+                    }
                     break;
                 }
+            }
+            if(k>pred_list[index].top_condition_list)
+            {
+                strcopy(outputs[0].output[i],outputs[1].output[++outputs[1].top_output]); 
             }
         }
         else if(key==NULL) //temporary output
@@ -3123,18 +3171,19 @@ void filter_output_predicates()
             if(value!=NULL&&outputs[0].output[i][strlen(outputs[0].output[i])-1]==' ') //accept state
             {
             	strcopy(value,outputs[1].output[++outputs[1].top_output]);  //printf("%s\n", value);
-			}
-			else
+	    }
+	    else   //pure accept state
             {
-            	int verify_state = atoi(value);
+            	int acc_state = atoi(value);  //printf("acc state %d\n", acc_state);
                 int index = predicate_stacks[0].predicate_stack[predicate_stacks[0].top_predicate_stack];
-                int pred_state = pred_list[index].state;
+                //acc_state = pred_list[index].state;
                 for(k=0;k<=pred_list[index].top_condition_list;k++)
                 {
-                    if(pred_list[index].condition_list[k]==verify_state)   
-                    {
-                        if(value!=NULL)
-                            pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
+                    if(pred_list[index].condition_list[k]==acc_state)   
+                    {   // printf("true check1 %d\n",pred_list[index].condition_list[k] );
+                        pred_list[index].condition_type[k] = jvt_boolean;
+                        pred_list[index].condition_boolean[k] = true;
+                        pred_list[index].condition_value[k] = 1;   //we need to adjust this by using Xiaofan's API, check the type and give the value
                         break;
                     }
                 }
