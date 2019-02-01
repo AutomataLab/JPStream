@@ -1466,19 +1466,19 @@ static inline void push_regular(int thread_num, char *str, tuple_array *current_
                     }
                     else
                     {
-                        int bb;
+                        int bb;top_root_values[vtvalues] = -1; //printf("start\n");
                         for(bb = vt_arr->fromr[i]; bb <= vt_arr->tor[i]; bb++)
                         {
                             int current1 = (++rt_arr->root_count);
                             rt_arr->root[current1] = rt_arr->root[bb];
-                            top_root_values[vtvalues] = 0;
-                            root_values[vtvalues][top_root_values[vtvalues]] = rt_arr->root[bb];
+                            //top_root_values[vtvalues] = 0;
+                            root_values[vtvalues][++top_root_values[vtvalues]] = rt_arr->root[bb]; //printf("value %d\n", rt_arr->root[bb]);
                             vt_arr->tor[current] = current1;
                             if(bb == vt_arr->fromr[i])
                             {
                                 vt_arr->fromr[current] = current1;
                             }
-                        }
+                        } //sleep(1);
                     }
                 }
             }
@@ -3094,7 +3094,7 @@ void filter_output_predicates()
                         eva_table[top_eva_table].value.string = pred_list[index].condition_string[k];    
                     if(eva_table[top_eva_table].value.vtype==jvt_number)
                         eva_table[top_eva_table].value.number = pred_list[index].condition_number[k];
-                    // eva_table[top_eva_table].value.boolean = true; 
+                    eva_table[top_eva_table].value.boolean = true; 
                 } 
                 /*eva_table[top_eva_table].value.vtype=jvt_boolean;
                 if(pred_list[index].condition_value[k]!=1)
