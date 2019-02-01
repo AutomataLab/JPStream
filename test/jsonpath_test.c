@@ -71,6 +71,23 @@ int test_verify() {
         printf("v3 = true\n");
     else
         printf("v3 = false\n");
+    
+
+    root = jpp_Analysis("$[?(@.value)]");
+    jpe_ModifyRef(root);
+    node = root->right->left;
+    JSONPathKeyValuePair table4[] = {
+        {"value", {.vtype = jvt_number, .number = 10.9}},
+        {NULL, {0}}
+    };
+    jpn_Print(node);
+    v = jpe_Evaluate(node, table4);
+    EXPECT_EQ(v.vtype, jvt_boolean);
+    EXPECT_EQ(v.boolean, true);
+    if (v.boolean)
+        printf("v4 = true\n");
+    else
+        printf("v4 = false\n");
     return 0;
 }
 
