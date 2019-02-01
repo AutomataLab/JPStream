@@ -309,7 +309,7 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_DFA* m_
     context->array_predicate_states.value_size = 0;
     context->array_predicate_states.value = (int*)calloc(cpd_dfa->getStateSum(), sizeof(int));
     for (int i = 0; i < cpd_dfa->getStateSum(); ++i) {
-        int acc = cpd_dfa->isStopState(i);
+        int acc = jqd_getStopState(m_dfa, i);
         if (acc) {
             context->subtrees[i] = ctx->tree_mapping[acc-1];
             const auto& vec = ctx->states_mapping[acc-1];

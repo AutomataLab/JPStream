@@ -100,6 +100,7 @@ int test_dfa_Create() {
     if (dfa == NULL) return 1;
     
     dfa = dfa_Create("$.root[12:20].title", &ctx);
+    dfa_print(&ctx);
     if (dfa == NULL) return 1;
 
     dfa = dfa_Create("$.root.id", &ctx);
