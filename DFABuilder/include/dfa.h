@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -22,6 +24,8 @@ typedef struct JQ_DFA {
     JQ_index_pair* array_index; // states_num
     char** names; // inputs_num
 } JQ_DFA;
+
+#define JQ_DFA_ARRAY ((const char*)0)
 
 #define JQ_DFA_OUTPUT_TYPE (1)
 #define JQ_DFA_PREDICATE_TYPE (2)
@@ -87,6 +91,20 @@ static inline uint32_t jqd_getStatesNum(JQ_DFA* dfa) {
 
 static inline uint32_t jqd_getInputsNum(JQ_DFA* dfa) {
     return dfa->inputs_num;
+}
+
+static inline int32_t jqd_nextStateByStr(JQ_DFA* dfa, uint32_t state, const char* input) {
+    int cinput; bool found = false;
+    if (input == NULL) cinput = 2;
+    else {
+        for (cinput = 3; cinput < jqd_getInputsNum(dfa); ++cinput) {
+            if (strcmp(jqd_getName(dfa, cinput), input) == 0) {
+                found = true; break;
+            }
+        }
+        if (!found) cinput = 1;
+    }
+    return dfa->table[state * dfa->inputs_num + cinput];
 }
 
 static inline void jqd_print(JQ_DFA* dfa) {
