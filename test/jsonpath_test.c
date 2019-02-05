@@ -97,6 +97,9 @@ int test_dfa_Create() {
 
     dfa = dfa_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
     dfa_print(&ctx);
+    printf("next: %d, %s\n", jqd_nextStateByStr(dfa, 1, "root"), "root");
+    printf("next: %d, %s\n", jqd_nextStateByStr(dfa, 2, JQ_DFA_ARRAY), "JQ_DFA_ARRAY");
+
     if (dfa == NULL) return 1;
     
     dfa = dfa_Create("$.root[12:20].title", &ctx);
