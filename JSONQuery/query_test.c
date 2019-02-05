@@ -9,8 +9,9 @@ int main()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    //JSONStream* stream = jps_createJSONStream("../../dataset/twitter.json",1);
-    JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+    JSONStream* stream = jps_createJSONStream("../../dataset/bb.json",1);
+    //JSONStream* stream = jps_createJSONStream("bb.json",1);
+    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.root.products[*].categoryPath[*].id";
 
     //loading dfa

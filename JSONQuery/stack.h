@@ -76,6 +76,7 @@ static inline QueryElement jps_queryPop(QueryStack* qs)
     {
         QueryElement exception;
         exception.state = INVALID_ST;
+        exception.count = 0;
         top_state = exception;
     }
     return top_state;
@@ -106,6 +107,7 @@ static inline QueryElement jps_queryTop(QueryStack* qs)
     {
         QueryElement exception;
         exception.state = INVALID_ST;
+        exception.count = 0;
         return exception;
     }
 }
@@ -122,6 +124,7 @@ static inline QueryElement jps_querySecondTop(QueryStack* qs)
     {
         QueryElement exception;
         exception.state = INVALID_ST;
+        exception.count = 0;
         return exception;
     }
 }

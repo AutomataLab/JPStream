@@ -1,6 +1,6 @@
 #include "streaming_automaton.h"
 #include "lexer.h"
-#include "automaton.h"
+//#include "automaton.h"
 
 #define PUSH 1
 #define POP 2
@@ -44,12 +44,12 @@ static inline void elt_obj_e(SyntaxStack* syn_stack)
     jps_syntaxPop(syn_stack);
 }
 
-static inline void ary_s(Automaton* query_automaton, QueryElement* current_state, int input, SyntaxStack* syn_stack, QueryStack* query_stack)  //needs adjustment
+static inline void ary_s(JQ_DFA* query_automaton, QueryElement* current_state, int input, SyntaxStack* syn_stack, QueryStack* query_stack)  //needs adjustment
 {
     jps_syntaxPush(syn_stack, input);
     jps_queryPush(query_stack, *current_state);
     QueryElement next_state;
-    next_state.state = jpa_nextState(query_automaton, current_state->state, "array");  //get next state
+    next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, JQ_DFA_ARRAY);  //get next state
     next_state.count = 0;
     *current_state  = next_state; //update current state
 }
@@ -74,7 +74,7 @@ static inline void elt_ary_e(QueryElement* current_state, SyntaxStack* syn_stack
     jps_syntaxPop(syn_stack); //printf("size %d\n", syn_stack->count);
 }
 
-static inline void key(Automaton* query_automaton, QueryElement* current_state, int input, char* content, SyntaxStack* syn_stack, QueryStack* query_stack)  //needs adjustment
+static inline void key(JQ_DFA* query_automaton, QueryElement* current_state, int input, char* content, SyntaxStack* syn_stack, QueryStack* query_stack)  //needs adjustment
 {
     jps_syntaxPush(syn_stack, input);
     QueryElement c_state;
@@ -82,7 +82,7 @@ static inline void key(Automaton* query_automaton, QueryElement* current_state, 
     c_state.count = current_state->count;
     jps_queryPush(query_stack, c_state);   //printf("query stack size %d %d\n", query_stack->count, current_state->state); printf("content %s %d\n", content, c_state.state); //printf("num of states %d\n", jpa_getStatesNum(query_automaton));
     QueryElement next_state;
-    next_state.state = jpa_nextState(query_automaton, current_state->state, content);  //get next state based on content  
+    next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, content);  //get next state based on content  
     //printf("1\n");
     //printf("%d next state %d %s\n", c_state.state, next_state.state, content);
     next_state.count = 0;
@@ -95,9 +95,9 @@ static inline void val_pmt(QueryElement* current_state, SyntaxStack* syn_stack, 
     jps_syntaxPop(syn_stack);
 }
 
-static inline void add_output(Automaton* query_automaton, QueryElement* current_state, char* text_content, OutputList* output_list) //needs adjustment
+static inline void add_output(JQ_DFA* query_automaton, QueryElement* current_state, char* text_content, OutputList* output_list) //needs adjustment
 {
-    if(jpa_getAcceptType(query_automaton, current_state->state))  //current_state is a match
+    if(jqd_getAcceptType(query_automaton, current_state->state))  //current_state is a match
     {
         jpo_addElement(output_list, text_content);
     }
@@ -112,7 +112,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
 
     //needs adjustment, temporarily create an inner dfa
     //printf("create automaton\n");
-    Automaton* automaton =  jpa_loadDfaTable(streaming_automaton->query_automaton);
+    //////Automaton* automaton =  jpa_loadDfaTable(streaming_automaton->query_automaton);
     //printf("end\n");
     //printf("1 num of states %d %d\n", jpa_getStatesNum(automaton), symbol);
     //printf("begin %d\n", symbol);
@@ -144,7 +144,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
                 }
                 break;
             case LB: counter++;
-                ary_s(automaton, &streaming_automaton->current_state, symbol, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack);
+                ary_s(streaming_automaton->query_automaton, &streaming_automaton->current_state, symbol, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack);
                 break;
             case RB: 
                 if(jps_syntaxSize(&streaming_automaton->syntax_stack) == 1)
@@ -167,7 +167,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
             case COM:
                 break;
             case KY: counter++;
-                key(automaton, &streaming_automaton->current_state, symbol, text_content, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack);
+                key(streaming_automaton->query_automaton, &streaming_automaton->current_state, symbol, text_content, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack);
                 break;
             case PRI: 
                 //printf(" valpmt %d %d %d\n", streaming_automaton->syntax_stack.count, jps_syntaxSize(&streaming_automaton->syntax_stack), jps_syntaxTop(&streaming_automaton->syntax_stack));
@@ -175,13 +175,13 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
                 {
                     if(jps_syntaxTop(&streaming_automaton->syntax_stack)==KY)
                     {
-                        add_output(automaton, &streaming_automaton->current_state, text_content, streaming_automaton->output_list); //printf("start valpmt\n");
+                        add_output(streaming_automaton->query_automaton, &streaming_automaton->current_state, text_content, streaming_automaton->output_list); //printf("start valpmt\n");
                         val_pmt(&streaming_automaton->current_state, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack); counter--;
                     }
                     else if(jps_syntaxTop(&streaming_automaton->syntax_stack)==LB)
                     {
                         increase_counter(&streaming_automaton->current_state);
-                        add_output(automaton, &streaming_automaton->current_state, text_content, streaming_automaton->output_list); 
+                        add_output(streaming_automaton->query_automaton, &streaming_automaton->current_state, text_content, streaming_automaton->output_list); 
                     }
                 }
                 break;
@@ -189,6 +189,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
         symbol = lexer(pText, pToken, &tInfo, text_content);
     }
     printf("syntax size %d %d query state %d %d\n", jps_syntaxSize(&streaming_automaton->syntax_stack), counter, streaming_automaton->current_state.state, streaming_automaton->query_stack.count);
+    printf("output size %d\n", jpo_getSize(streaming_automaton->output_list));
 }
 
 void jsr_automaton_execution(StreamingAutomaton* streaming_automaton)
