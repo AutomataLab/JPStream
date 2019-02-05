@@ -126,11 +126,7 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                         templen = tempcount;
                         char* sub1; 
                         sub1=substring(pToken->text.p , 1, tempcount); 
-                        if(sub1!=NULL)
-                        {
-                            strcopy(sub1,start_text);
-                            //free(sub1);
-                        }
+                        
                         pToken->text.len = p - start + 1;
                         pToken->text.p = start + pToken->text.len;
                         start = pToken->text.p;
@@ -144,6 +140,11 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                         }
                         if(*(p+1)==':') //it is a key field
                         {
+                            if(sub1!=NULL)
+                            {
+                                strcopy(sub1,start_text);
+                                free(sub1);
+                            }
                             pToken->text.len = p - start+1 ;
                             pToken->text.p = start + pToken->text.len;
                             tInfo->start = pToken->text.p; p++;
@@ -155,12 +156,13 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                         {
                             start_text[0]='"';
                             strcopy(sub1, start_text+1); start_text[strlen(start_text)]='"'; start_text[strlen(start_text)+1]='\0';
+                            if(sub1!=NULL) free(sub1);
                             //printf("primitive %s\n", start_text);
                             *tInfo->lex_state = 0; 
                             tInfo->current = p+1;
                             return PRI;
                         }
-                        if(sub1!=NULL) free(sub1);
+                        
                         state = 0;
                         break;
                     default:
