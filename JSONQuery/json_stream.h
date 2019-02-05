@@ -27,8 +27,9 @@ static inline void jps_JSONStreamCtor(JSONStream* stream, char* file_name, int t
         size=ftell (fp);
         rewind(fp);
         stream->input_stream[0]=(char*)malloc((size+1)*sizeof(char));
-        stream->chunks_num = fread (stream->input_stream[0],1,size,fp);
+        fread(stream->input_stream[0],1,size,fp);
         stream->input_stream[0][size]='\0';
+        stream->chunks_num = 1;
         fclose(fp);
         //printf("load %d\n", strlen(stream->input_stream[0]));
     }
@@ -41,7 +42,6 @@ static inline void jps_JSONStreamDtor(JSONStream* stream)
     {
         if(stream->input_stream[i]!=NULL) free(stream->input_stream[i]);
     }
-    free(stream);
 }
 
 static inline JSONStream* jps_createJSONStream(char* file_name, int thread_num) //thread_num: number of threads

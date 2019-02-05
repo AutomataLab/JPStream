@@ -2,8 +2,7 @@
 #include "lexer.h"
 //#include "automaton.h"
 
-#define PUSH 1
-#define POP 2
+#define MAX_SIZE_PRIMITIVE 4000
 
 //initialize tokens
 static inline void token_info_initialization(StreamingAutomaton* streaming_automaton, xml_Text *pText, xml_Token *pToken, token_info* tInfo)
@@ -49,7 +48,12 @@ static inline void ary_s(JQ_DFA* query_automaton, QueryElement* current_state, i
     jps_syntaxPush(syn_stack, input);
     jps_queryPush(query_stack, *current_state);
     QueryElement next_state;
-    next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, JQ_DFA_ARRAY);  //get next state
+    JQ_index_pair pair = jqd_getArrayIndex(query_automaton, current_state->state);
+    int lower = pair.lower;
+    int upper = pair.upper; //printf("state %d lower %d upper %d count %d %d\n", current_state->state, lower, upper, current_state->count, (current_state->count>=lower && current_state->count<=upper));
+    if(!((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<=upper)))
+        next_state.state = 0;
+    else next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, JQ_DFA_ARRAY); //if(next_state.state==5) printf("5\n");}  //get next state
     next_state.count = 0;
     *current_state  = next_state; //update current state
 }
@@ -82,7 +86,14 @@ static inline void key(JQ_DFA* query_automaton, QueryElement* current_state, int
     c_state.count = current_state->count;
     jps_queryPush(query_stack, c_state);   //printf("query stack size %d %d\n", query_stack->count, current_state->state); printf("content %s %d\n", content, c_state.state); //printf("num of states %d\n", jpa_getStatesNum(query_automaton));
     QueryElement next_state;
-    next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, content);  //get next state based on content  
+    JQ_index_pair pair = jqd_getArrayIndex(query_automaton, c_state.state);
+    int lower = pair.lower; 
+    int upper = pair.upper; //printf("state %d lower %d upper %d count %d\n", c_state.state, lower, upper, c_state.count);
+    if(!((lower==0&&upper==0)||(c_state.count>=lower && c_state.count<=upper)))
+        next_state.state = 0;
+    else { 
+        next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, content); //printf("%d next %d %s\n",current_state->state, next_state.state, content);
+    }//next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, content);  //get next state based on content  
     //printf("1\n");
     //printf("%d next state %d %s\n", c_state.state, next_state.state, content);
     next_state.count = 0;
@@ -99,7 +110,14 @@ static inline void add_output(JQ_DFA* query_automaton, QueryElement* current_sta
 {
     if(jqd_getAcceptType(query_automaton, current_state->state))  //current_state is a match
     {
-        jpo_addElement(output_list, text_content);
+        JQ_index_pair pair = jqd_getArrayIndex(query_automaton, current_state->state);
+        int lower = pair.lower; 
+        int upper = pair.upper;
+        if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<=upper)))
+        {
+            //printf("%d %s\n",current_state->state, text_content);
+            jpo_addElement(output_list, text_content);
+        }
     }
 }
 
@@ -107,7 +125,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
 {
     token_info tInfo;
     token_info_initialization(streaming_automaton, pText, pToken, &tInfo);
-    char text_content[MAX_TEXT];
+    char text_content[MAX_SIZE_PRIMITIVE];
     int symbol = lexer(pText, pToken, &tInfo, text_content);
 
     //needs adjustment, temporarily create an inner dfa

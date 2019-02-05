@@ -4,7 +4,7 @@
 #include "basic.h"
 
 #define MAX_OUTPUTLIST 2390000
-#define MAX_TEXT 10000
+#define MAX_TEXT 200
 
 typedef struct OutputList{
     char** element;
@@ -24,11 +24,11 @@ static inline void jpo_OutputListCtor(OutputList* list)
 
 static inline void jpo_OutputListDtor(OutputList* list)
 {
-    /*int i;
-    for(i=0; i<MAX_OUTPUT; i++)
+    int i;
+    for(i=0; i<MAX_OUTPUTLIST; i++)
     {
         if(list->element[i]!=NULL) free(list->element[i]);
-    }*/
+    }
     free(list->element);
 }
 

@@ -32,15 +32,15 @@ static inline void jsr_StreamingAutomatonDtor(StreamingAutomaton* streaming_auto
 {
     if(streaming_automaton->json_stream != NULL)
     {
-        free(streaming_automaton->json_stream);
+        jps_freeJSONStream(streaming_automaton->json_stream);
     }
     if(streaming_automaton->query_automaton != NULL)
     {
-        free(streaming_automaton->query_automaton);
+        jqd_Dtor(streaming_automaton->query_automaton);
     }
     if(streaming_automaton->output_list != NULL)
     {
-        free(streaming_automaton->output_list);
+        jpo_freeOutputList(streaming_automaton->output_list);
     }
 }
 
