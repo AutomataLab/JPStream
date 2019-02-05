@@ -22,22 +22,11 @@ Return: 0--success -1--error
 int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_text)
 {
     char* start = tInfo->start;
-    char* start1 = tInfo->head;
-    int special_tag=0;
-    int first_end_tag=0;
-
     char* p = tInfo->current;
     char* end = tInfo->end;
     int state = *tInfo->lex_state; //lex_state 
     int templen = 0;
-    int i,j,a;
-
-    int flags=0;
     pToken->text.p = p;
-    int flag_attribute=0;
-    int new_tag=0;
-    char *start2=p;
-    int segflag = 0;
 
     for (; p < end; p++)
     {   

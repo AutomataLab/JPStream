@@ -27,7 +27,8 @@ static inline void jps_JSONStreamCtor(JSONStream* stream, char* file_name, int t
         size=ftell (fp);
         rewind(fp);
         stream->input_stream[0]=(char*)malloc((size+1)*sizeof(char));
-        fread(stream->input_stream[0],1,size,fp);
+        int ret = fread(stream->input_stream[0],1,size,fp);
+        if(ret==-1) return;
         stream->input_stream[0][size]='\0';
         stream->chunks_num = 1;
         fclose(fp);

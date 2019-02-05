@@ -74,7 +74,7 @@ void Test3()
     JSONStream* stream = jps_createJSONStream("../../dataset/twitter.json",1);
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
-    char* path = "$.root[10:20].quoted_status.entities.user_mentions[1:2].id";
+    char* path = "$.root[2:5].id";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
