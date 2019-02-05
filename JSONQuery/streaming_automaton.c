@@ -1,5 +1,6 @@
 #include "streaming_automaton.h"
 #include "lexer.h"
+#include "lexing.h"
 //#include "automaton.h"
 
 #define MAX_SIZE_PRIMITIVE 4000
@@ -8,9 +9,11 @@
 static inline void token_info_initialization(StreamingAutomaton* streaming_automaton, xml_Text *pText, xml_Token *pToken, token_info* tInfo)
 {
     tInfo->start = pToken->text.p + pToken->text.len;
+    tInfo->start = streaming_automaton->json_stream->input_stream[0]; 
     tInfo->head = streaming_automaton->json_stream->input_stream[0];
     tInfo->current = tInfo->start;
     tInfo->end = pText->p + pText->len;
+    tInfo->end = streaming_automaton->json_stream->input_stream[0] + strlen(streaming_automaton->json_stream->input_stream[0]);
     tInfo->lex_state = (int*)malloc(sizeof(int));
     *(tInfo->lex_state)= 0;
 }
@@ -20,7 +23,7 @@ static inline void increase_counter(QueryElement* current_state)
     current_state->count++;
 }
 
-//state transition rules
+//different state transition rules based on input symbol and syntax stack
 static inline void obj_s(int input, SyntaxStack* syn_stack)
 {
     jps_syntaxPush(syn_stack, input);
@@ -121,13 +124,16 @@ static inline void add_output(JQ_DFA* query_automaton, QueryElement* current_sta
     }
 }
 
+Lexer* lexz;
+
 void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pText, xml_Token *pToken)
 {
     token_info tInfo;
     token_info_initialization(streaming_automaton, pText, pToken, &tInfo);
     char text_content[MAX_SIZE_PRIMITIVE];
-    int symbol = lexer(pText, pToken, &tInfo, text_content);
-
+    //int symbol = lexer(pText, pToken, &tInfo, text_content);  //get the first input symbol
+    int symbol = jsl_next_token(lexz);
+    
     //needs adjustment, temporarily create an inner dfa
     //printf("create automaton\n");
     //////Automaton* automaton =  jpa_loadDfaTable(streaming_automaton->query_automaton);
@@ -137,66 +143,70 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
     int counter = 0;
     while(symbol!=-1)
     {   //printf("symbol %d size %d top %d %s\n", symbol, jps_syntaxSize(&streaming_automaton->syntax_stack), jps_syntaxTop(&streaming_automaton->syntax_stack), text_content);
+        //if(streaming_automaton->current_state.state>2) printf("state %d\n", streaming_automaton->current_state.state);
+        strcopy(lexz->content,text_content);
         switch(symbol)
         {   
-            case LCB: 
+            case LCB:   //left curly branket
                 counter++;
                 obj_s(symbol, &streaming_automaton->syntax_stack);  
                 break;
-            case RCB: 
-                if(jps_syntaxSize(&streaming_automaton->syntax_stack) == 1)
+            case RCB:   //right curly branket
+                if(jps_syntaxSize(&streaming_automaton->syntax_stack) == 1)   //syntax stack only has one '{'
                 {
                     obj_e(&streaming_automaton->syntax_stack); counter--;
                 }
-                else if(jps_syntaxSize(&streaming_automaton->syntax_stack) > 1)
+                else if(jps_syntaxSize(&streaming_automaton->syntax_stack) > 1)  //syntax stack has at least two elements, the top element is '{'
                 {
-                     if(jps_syntaxSecondTop(&streaming_automaton->syntax_stack)==KY)		
+                     if(jps_syntaxSecondTop(&streaming_automaton->syntax_stack)==KY)	 //after we pop out '{', the next element on top of syntax stack is a key field
                      {
                          val_obj_e(&streaming_automaton->current_state, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack); counter-=2;
                      }
-                     else if(jps_syntaxSecondTop(&streaming_automaton->syntax_stack)==LB)
+                     else if(jps_syntaxSecondTop(&streaming_automaton->syntax_stack)==LB)  //after we pop out '{', the next element on top of syntax stack is '['
                      {
                          elt_obj_e(&streaming_automaton->syntax_stack);
                          increase_counter(&streaming_automaton->current_state); counter--;
                      }
                 }
                 break;
-            case LB: counter++;
+            case LB:   //left square branket 
+                counter++;
                 ary_s(streaming_automaton->query_automaton, &streaming_automaton->current_state, symbol, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack);
                 break;
-            case RB: 
-                if(jps_syntaxSize(&streaming_automaton->syntax_stack) == 1)
+            case RB:   //right square branket
+                if(jps_syntaxSize(&streaming_automaton->syntax_stack) == 1)  //syntax stack only has one '['
                 {   
                     ary_e(&streaming_automaton->current_state, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack); counter--;
                 }
-                else if(jps_syntaxSize(&streaming_automaton->syntax_stack) > 1)
+                else if(jps_syntaxSize(&streaming_automaton->syntax_stack) > 1)  //syntax stack has at least two elements, the top element is '['
                 {   //printf("select %d\n", jps_syntaxTop(&streaming_automaton->syntax_stack));
-                    if(jps_syntaxSecondTop(&streaming_automaton->syntax_stack)==KY)
+                    if(jps_syntaxSecondTop(&streaming_automaton->syntax_stack)==KY)  //after we pop out '[', the next element on top of syntax stack is a key field
                     {   //printf("KEY\n");
                         val_ary_e(&streaming_automaton->current_state, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack); counter-=2;
                     }
-                    else if(jps_syntaxSecondTop(&streaming_automaton->syntax_stack)==LB)
+                    else if(jps_syntaxSecondTop(&streaming_automaton->syntax_stack)==LB)  //after we pop out '[', the next element on top of syntax stack is '['
                     {   //printf("LB\n");
                         elt_ary_e(&streaming_automaton->current_state, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack); counter--;
                         increase_counter(&streaming_automaton->current_state);
                     }
                 }
                 break;
-            case COM:
+            case COM:   //comma
                 break;
-            case KY: counter++;
+            case KY:    //key field
+                counter++;
                 key(streaming_automaton->query_automaton, &streaming_automaton->current_state, symbol, text_content, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack);
                 break;
-            case PRI: 
+            case PRI:   //primitive
                 //printf(" valpmt %d %d %d\n", streaming_automaton->syntax_stack.count, jps_syntaxSize(&streaming_automaton->syntax_stack), jps_syntaxTop(&streaming_automaton->syntax_stack));
                 if(jps_syntaxSize(&streaming_automaton->syntax_stack) >= 1)
                 {
-                    if(jps_syntaxTop(&streaming_automaton->syntax_stack)==KY)
+                    if(jps_syntaxTop(&streaming_automaton->syntax_stack)==KY)  //the top element on syntax stack is a key field
                     {
                         add_output(streaming_automaton->query_automaton, &streaming_automaton->current_state, text_content, streaming_automaton->output_list); //printf("start valpmt\n");
                         val_pmt(&streaming_automaton->current_state, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack); counter--;
                     }
-                    else if(jps_syntaxTop(&streaming_automaton->syntax_stack)==LB)
+                    else if(jps_syntaxTop(&streaming_automaton->syntax_stack)==LB)  //the top element on syntax stack is '['
                     {
                         increase_counter(&streaming_automaton->current_state);
                         add_output(streaming_automaton->query_automaton, &streaming_automaton->current_state, text_content, streaming_automaton->output_list); 
@@ -204,7 +214,8 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
                 }
                 break;
         }
-        symbol = lexer(pText, pToken, &tInfo, text_content);
+        symbol = jsl_next_token(lexz); 
+        //symbol = lexer(pText, pToken, &tInfo, text_content);    //get the next input symbol
     }
     printf("syntax size %d %d query state %d %d\n", jps_syntaxSize(&streaming_automaton->syntax_stack), counter, streaming_automaton->current_state.state, streaming_automaton->query_stack.count);
     printf("output size %d\n", jpo_getSize(streaming_automaton->output_list));
@@ -212,12 +223,15 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
 
 void jsr_automaton_execution(StreamingAutomaton* streaming_automaton)
 {
+    lexz = jsl_createLexer(streaming_automaton->json_stream);
+    //jsl_next_token(lexer);
     xml_Text xml;
     xml_Token token;
     xml_initText(&xml,streaming_automaton->json_stream->input_stream[0]);
     xml_initToken(&token, &xml);
     //printf("start\n");
     jsr_state_transition(streaming_automaton, &xml, &token); 
+    jsl_freeLexer(lexz);
 }
 
 

@@ -200,6 +200,7 @@ int lexer(xml_Text *pText, xml_Token *pToken, token_info* tInfo, char* start_tex
                 state = -1;
                 break;
         }
+        
     }
     return -1;
 }
