@@ -9,10 +9,11 @@ void Test1()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    //JSONStream* stream = jps_createJSONStream("../../dataset/bb.json",1);
-    JSONStream* stream = jps_createJSONStream("bb.json",1);
+    JSONStream* stream = jps_createJSONStream("../../dataset/bb.json",1);
+   // JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.root.products[*].categoryPath[*].id";
+    //char* path = "$.root";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
@@ -73,9 +74,9 @@ void Test3()
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/twitter.json",1);
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
-    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
-    char* path = "$.root[2:5].id";
-
+  // JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+   // char* path = "$.root[2:5].id";
+    char* path = "$.root[*].quoted_status.*.media[*].sizes.large.w";
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);

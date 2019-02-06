@@ -54,9 +54,9 @@ static inline void ary_s(JQ_DFA* query_automaton, QueryElement* current_state, i
     JQ_index_pair pair = jqd_getArrayIndex(query_automaton, current_state->state);
     int lower = pair.lower;
     int upper = pair.upper; //printf("state %d lower %d upper %d count %d %d\n", current_state->state, lower, upper, current_state->count, (current_state->count>=lower && current_state->count<=upper));
-    if(!((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<=upper)))
+    if(!((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))
         next_state.state = 0;
-    else next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, JQ_DFA_ARRAY); //if(next_state.state==5) printf("5\n");}  //get next state
+    else  next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, JQ_DFA_ARRAY); //if(next_state.state==5) printf("5\n");}  //get next state
     next_state.count = 0;
     *current_state  = next_state; //update current state
 }
@@ -92,7 +92,8 @@ static inline void key(JQ_DFA* query_automaton, QueryElement* current_state, int
     JQ_index_pair pair = jqd_getArrayIndex(query_automaton, c_state.state);
     int lower = pair.lower; 
     int upper = pair.upper; //printf("state %d lower %d upper %d count %d\n", c_state.state, lower, upper, c_state.count);
-    if(!((lower==0&&upper==0)||(c_state.count>=lower && c_state.count<=upper)))
+    //int acc_type = jqd_getAcceptType(query_automaton, c_state.state);
+    if(!((lower==0&&upper==0)||(c_state.count>=lower && c_state.count<upper)))
         next_state.state = 0;
     else { 
         next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, content); //printf("%d next %d %s\n",current_state->state, next_state.state, content);
@@ -124,15 +125,15 @@ static inline void add_output(JQ_DFA* query_automaton, QueryElement* current_sta
     }
 }
 
-Lexer* lexz;
+Lexer lexz;
 
 void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pText, xml_Token *pToken)
 {
     token_info tInfo;
     token_info_initialization(streaming_automaton, pText, pToken, &tInfo);
     char text_content[MAX_SIZE_PRIMITIVE];
-    //int symbol = lexer(pText, pToken, &tInfo, text_content);  //get the first input symbol
-    int symbol = jsl_next_token(lexz);
+    ///int symbol = lexer(pText, pToken, &tInfo, text_content);  //get the first input symbol
+    int symbol = jsl_next_token(&lexz);
     
     //needs adjustment, temporarily create an inner dfa
     //printf("create automaton\n");
@@ -144,7 +145,8 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
     while(symbol!=-1)
     {   //printf("symbol %d size %d top %d %s\n", symbol, jps_syntaxSize(&streaming_automaton->syntax_stack), jps_syntaxTop(&streaming_automaton->syntax_stack), text_content);
         //if(streaming_automaton->current_state.state>2) printf("state %d\n", streaming_automaton->current_state.state);
-        strcopy(lexz->content,text_content);
+       // strcopy(lexz.content,text_content);
+       // printf("string %s\n", lexz.content);
         switch(symbol)
         {   
             case LCB:   //left curly branket
@@ -195,7 +197,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
                 break;
             case KY:    //key field
                 counter++;
-                key(streaming_automaton->query_automaton, &streaming_automaton->current_state, symbol, text_content, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack);
+                key(streaming_automaton->query_automaton, &streaming_automaton->current_state, symbol, lexz.content, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack);
                 break;
             case PRI:   //primitive
                 //printf(" valpmt %d %d %d\n", streaming_automaton->syntax_stack.count, jps_syntaxSize(&streaming_automaton->syntax_stack), jps_syntaxTop(&streaming_automaton->syntax_stack));
@@ -203,7 +205,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
                 {
                     if(jps_syntaxTop(&streaming_automaton->syntax_stack)==KY)  //the top element on syntax stack is a key field
                     {
-                        add_output(streaming_automaton->query_automaton, &streaming_automaton->current_state, text_content, streaming_automaton->output_list); //printf("start valpmt\n");
+                        add_output(streaming_automaton->query_automaton, &streaming_automaton->current_state, lexz.content, streaming_automaton->output_list); //printf("start valpmt\n");
                         val_pmt(&streaming_automaton->current_state, &streaming_automaton->syntax_stack, &streaming_automaton->query_stack); counter--;
                     }
                     else if(jps_syntaxTop(&streaming_automaton->syntax_stack)==LB)  //the top element on syntax stack is '['
@@ -214,7 +216,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
                 }
                 break;
         }
-        symbol = jsl_next_token(lexz); 
+        symbol = jsl_next_token(&lexz); 
         //symbol = lexer(pText, pToken, &tInfo, text_content);    //get the next input symbol
     }
     printf("syntax size %d %d query state %d %d\n", jps_syntaxSize(&streaming_automaton->syntax_stack), counter, streaming_automaton->current_state.state, streaming_automaton->query_stack.count);
@@ -223,15 +225,17 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, xml_Text *pTe
 
 void jsr_automaton_execution(StreamingAutomaton* streaming_automaton)
 {
-    lexz = jsl_createLexer(streaming_automaton->json_stream);
+    jsl_LexerCtor(&lexz, streaming_automaton->json_stream);
+    //lexz = jsl_createLexer(streaming_automaton->json_stream);
     //jsl_next_token(lexer);
     xml_Text xml;
     xml_Token token;
     xml_initText(&xml,streaming_automaton->json_stream->input_stream[0]);
     xml_initToken(&token, &xml);
     //printf("start\n");
-    jsr_state_transition(streaming_automaton, &xml, &token); 
-    jsl_freeLexer(lexz);
+    jsr_state_transition(streaming_automaton, &xml, &token);
+    jsl_LexerDtor(&lexz);
+    //jsl_freeLexer(lexz);
 }
 
 
