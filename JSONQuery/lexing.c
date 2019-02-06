@@ -15,9 +15,8 @@ int jsl_next_token(Lexer* lexer)
     int templen = 0;
     int token_len = 0;
     char* token_pointer = p; int tempcount;
-   // printf("%d %d %d %s\n", lexer->current_start-head, lexer->next_start-head, lexer->lex_state, substring(head, 0, 109));
     for (; p < end; p++)
-    {   //if(p-start<0) printf("%c %d %d %d %c\n", *p, p-start, token_len, lexer->lex_state, *start);
+    {   
         switch(state)
         {
             case 0:
@@ -56,7 +55,7 @@ int jsl_next_token(Lexer* lexer)
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
                         lexer->lex_state = 0;
-                        lexer->next_start = p+1;  //printf("return\n");
+                        lexer->next_start = p+1;  
                         return COM;
                     case '"': //text or key field
                         token_len = p - start;
@@ -98,16 +97,6 @@ int jsl_next_token(Lexer* lexer)
                             }
                             if(count%2==1) {state = 1; break;}  //it is not a string
                         }
-                        /*if(head[p-head-1]=='\\')
-                        {
-                            char* pointer = p-2;
-                            int count = 1;
-                            while(head[pointer-head]=='\\'){
-                                count++;
-                                --pointer;
-                            }
-                            if(count%2==1) {state = 1; break;}  //it is not a string
-                        }*///printf("begin %c\n", head[p-head-1]);
                        //string is found 
                          tempcount = p-start;
                         templen = tempcount;
@@ -123,7 +112,7 @@ int jsl_next_token(Lexer* lexer)
                             token_len = p - start + 1;
                             token_pointer = start + token_len;
                             start = token_pointer;
-                        } //printf("string %s %c\n", sub1, *(p-1));
+                        } 
                         if(*(p+1)==':') //it is a key field
                         {
                             if(sub1!=NULL)
@@ -136,7 +125,7 @@ int jsl_next_token(Lexer* lexer)
                             lexer->current_start = token_pointer; 
                             p++;
                             lexer->lex_state = 0;
-                            lexer->next_start = p+1; if(strcmp(lexer->content,"root")==0) printf("return key %s\n",lexer->content);
+                            lexer->next_start = p+1; 
                             return KY;
                         }
                         else //primitive value
@@ -146,9 +135,8 @@ int jsl_next_token(Lexer* lexer)
                             lexer->content[strlen(lexer->content)]='"'; 
                             lexer->content[strlen(lexer->content)+1]='\0';
                             if(sub1!=NULL) free(sub1);
-                            //printf("primitive %s\n", lexer->content);
                             lexer->lex_state = 0; 
-                            lexer->next_start = p+1; //printf("return pri\n");
+                            lexer->next_start = p+1; 
                             return PRI;
                         }
                         

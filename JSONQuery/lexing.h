@@ -13,12 +13,6 @@
 
 #define MAX_SIZE_PRIMITIVE 4000
 
-/*typedef struct JsonToken
-{
-    char *text;
-    int len;
-}JsonToken;*/
-
 /* structure for tokens */
 typedef struct Lexer{
     char* current_start;     //starting position of the current symbol
@@ -29,11 +23,6 @@ typedef struct Lexer{
     char* content;           //content of the current symbol
 }Lexer; 
 
-/*static inline void jsl_initToken(JsonToken *jToken, char *s)
-{
-    jToken->text = s;
-    jToken->len = strlen(s);
-}*/
 
 static inline void jsl_LexerCtor(Lexer* lexer, JSONStream* json_stream)
 {
@@ -43,8 +32,6 @@ static inline void jsl_LexerCtor(Lexer* lexer, JSONStream* json_stream)
     lexer->end_stream = json_stream->input_stream[0] + strlen(json_stream->input_stream[0]);
     lexer->lex_state = 0;
     lexer->content = (char*)malloc(MAX_SIZE_PRIMITIVE*sizeof(char));
-    //(int*)malloc(sizeof(int));
-    //*(lexer->lex_state)= 0;
 }
 
 static inline void jsl_LexerDtor(Lexer* lexer)
@@ -59,7 +46,7 @@ static inline Lexer* jsl_createLexer(JSONStream* json_stream)
     return lexer;
 }
 
-static inline Lexer* jsl_freeLexer(Lexer* lexer)
+static inline void jsl_freeLexer(Lexer* lexer)
 {
     jsl_LexerDtor(lexer);
     free(lexer);

@@ -5,12 +5,14 @@
 #include "dfa_builder.h"
 #include "stack.h"
 #include "output.h"
+#include "lexing.h"
 
 typedef struct StreamingAutomaton{
     JSONStream* json_stream;
     JQ_DFA* query_automaton;
     SyntaxStack syntax_stack;
     QueryStack query_stack;
+    Lexer lexer;
     OutputList* output_list;
     QueryElement current_state;
 }StreamingAutomaton;
@@ -20,9 +22,9 @@ static inline void jsr_StreamingAutomatonCtor(StreamingAutomaton* streaming_auto
 {
     streaming_automaton->json_stream = json_stream;
     streaming_automaton->query_automaton = query_automaton;
-    //initialize stacks and output list
     jps_SyntaxStackCtor(&streaming_automaton->syntax_stack);
     jps_QueryStackCtor(&streaming_automaton->query_stack);
+    jsl_LexerCtor(&streaming_automaton->lexer, json_stream);
     streaming_automaton->output_list = jpo_createOutputList();
     streaming_automaton->current_state.state = 1;   //starting state
     streaming_automaton->current_state.count = 0;  
@@ -42,6 +44,7 @@ static inline void jsr_StreamingAutomatonDtor(StreamingAutomaton* streaming_auto
     {
         jpo_freeOutputList(streaming_automaton->output_list);
     }
+    jsl_LexerDtor(&streaming_automaton->lexer);
 }
 
 void jsr_automaton_execution(StreamingAutomaton* streaming_automaton);

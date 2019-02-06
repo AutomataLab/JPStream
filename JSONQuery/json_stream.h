@@ -32,7 +32,6 @@ static inline void jps_JSONStreamCtor(JSONStream* stream, char* file_name, int t
         stream->input_stream[0][size]='\0';
         stream->chunks_num = 1;
         fclose(fp);
-        //printf("load %d\n", strlen(stream->input_stream[0]));
     }
 }
 
