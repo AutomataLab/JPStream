@@ -98,7 +98,8 @@ static inline int32_t jqd_nextStateByStr(JQ_DFA* dfa, uint32_t state, const char
     if (input == NULL) cinput = 2;
     else {
         for (cinput = 3; cinput < jqd_getInputsNum(dfa); ++cinput) {
-            if (strcmp(jqd_getName(dfa, cinput), input) == 0) {
+            if (dfa->table[state * dfa->inputs_num + cinput] != 0 &&
+                strcmp(jqd_getName(dfa, cinput), input) == 0) {
                 found = true; break;
             }
         }
