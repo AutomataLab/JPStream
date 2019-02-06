@@ -5,7 +5,7 @@ static inline void increase_counter(QueryElement* current_state)
     current_state->count++;
 }
 
-static inline void add_output(JQ_DFA* query_automaton, QueryElement* current_state, char* text_content, OutputList* output_list) //needs adjustment
+static inline void add_output(JQ_DFA* query_automaton, QueryElement* current_state, char* text_content, OutputList* output_list) 
 {
     if(jqd_getAcceptType(query_automaton, current_state->state))  //current_state is a match
     {
@@ -42,7 +42,7 @@ static inline void elt_obj_e(SyntaxStack* syn_stack)
     jps_syntaxPop(syn_stack);
 }
 
-static inline void ary_s(JQ_DFA* query_automaton, QueryElement* current_state, int input, SyntaxStack* syn_stack, QueryStack* query_stack)  //needs adjustment
+static inline void ary_s(JQ_DFA* query_automaton, QueryElement* current_state, int input, SyntaxStack* syn_stack, QueryStack* query_stack)  
 {
     jps_syntaxPush(syn_stack, input);
     jps_queryPush(query_stack, *current_state);
@@ -77,7 +77,7 @@ static inline void elt_ary_e(QueryElement* current_state, SyntaxStack* syn_stack
     jps_syntaxPop(syn_stack); 
 }
 
-static inline void key(JQ_DFA* query_automaton, QueryElement* current_state, int input, char* content, SyntaxStack* syn_stack, QueryStack* query_stack)  //needs adjustment
+static inline void key(JQ_DFA* query_automaton, QueryElement* current_state, int input, char* content, SyntaxStack* syn_stack, QueryStack* query_stack)  
 {
     jps_syntaxPush(syn_stack, input);
     QueryElement c_state;
@@ -114,7 +114,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
 
     int symbol = jsl_next_token(lexer);
     
-    while(symbol!=-1)
+    while(symbol!=END)
     {   
         switch(symbol)
         {   

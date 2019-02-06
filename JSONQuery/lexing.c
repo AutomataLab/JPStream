@@ -191,5 +191,5 @@ int jsl_next_token(Lexer* lexer)
         }
         
     }
-    return -1;
+    return END;
 }

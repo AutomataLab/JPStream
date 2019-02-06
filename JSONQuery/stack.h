@@ -41,14 +41,20 @@ static inline void jps_QueryStackCtor(QueryStack* qs)
 
 static inline void jps_syntaxPush(SyntaxStack* ss, int data)
 {
-    ++ss->count;
-    ss->symbol[ss->count] = data;
+    if(ss->count<MAX_STACK-1)
+    {
+        ++ss->count;
+        ss->symbol[ss->count] = data;
+    }
 }
 
 static inline void jps_queryPush(QueryStack* qs, QueryElement data)
 {
-    ++qs->count;
-    qs->item[qs->count] = data;
+    if(qs->count<MAX_STACK-1)
+    {
+        ++qs->count;
+        qs->item[qs->count] = data;
+    }
 }
 
 static inline int jps_syntaxPop(SyntaxStack* ss)
