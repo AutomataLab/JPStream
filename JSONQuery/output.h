@@ -3,8 +3,8 @@
 
 #include "basic.h"
 
-#define MAX_OUTPUTLIST 2390000
-#define MAX_TEXT 200
+#define MAX_OUTPUTLIST 239000
+#define MAX_TEXT 500
 
 typedef struct OutputList{
     char** element;

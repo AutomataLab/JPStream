@@ -28,6 +28,8 @@ static inline void jsr_StreamingAutomatonCtor(StreamingAutomaton* streaming_auto
     streaming_automaton->output_list = jpo_createOutputList();
     streaming_automaton->current_state.state = 1;   //starting state
     streaming_automaton->current_state.count = 0;  
+    streaming_automaton->current_state.start_obj = -1;
+    streaming_automaton->current_state.end_obj = -1;
 }
 
 static inline void jsr_StreamingAutomatonDtor(StreamingAutomaton* streaming_automaton)

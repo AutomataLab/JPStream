@@ -76,7 +76,7 @@ void Test3()
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
   // JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
    // char* path = "$.root[2:5].id";
-    char* path = "$.root[*].quoted_status.*.media[*].sizes.large.w";
+    char* path = "$.root[*].quoted_status.entities.user_mentions[*].indices[*]";
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
@@ -199,7 +199,70 @@ void Test7()
     JSONStream* stream = jps_createJSONStream("../../dataset/rowstest.json",1);
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
-    char* path = "$.data[2:5][1:5]";
+    char* path = "$.data[*]";
+
+    //loading dfa
+    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
+    JQ_DFA* dfa = dfa_Create(path, ctx);
+    if (dfa == NULL) return 0;
+   
+    StreamingAutomaton streaming_automaton;
+    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    jsr_automaton_execution(&streaming_automaton);
+
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);  
+    
+    //free up dynamic memories
+    jsr_StreamingAutomatonDtor(&streaming_automaton);
+}
+
+void Test8()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    JSONStream* stream = jps_createJSONStream("../../dataset/twitter.json",1);
+    //JSONStream* stream = jps_createJSONStream("bb.json",1);
+  // JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+   // char* path = "$.root[2:5].id";
+    char* path = "$.root[*].quoted_status.entities.symbols";
+
+    //loading dfa
+    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
+    JQ_DFA* dfa = dfa_Create(path, ctx);
+    if (dfa == NULL) return 0;
+   
+    StreamingAutomaton streaming_automaton;
+    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    jsr_automaton_execution(&streaming_automaton);
+
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);  
+    
+    //free up dynamic memories
+    jsr_StreamingAutomatonDtor(&streaming_automaton);
+}
+
+void Test9()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    JSONStream* stream = jps_createJSONStream("../../dataset/bb.json",1);
+    //JSONStream* stream = jps_createJSONStream("bb.json",1);
+    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+    char* path = "$.root.products[*].categoryPath[*]";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
@@ -231,5 +294,7 @@ int main()
     Test5();
     Test6();
     Test7();
+    Test8();
+    //Test9();
     return 1;
 }

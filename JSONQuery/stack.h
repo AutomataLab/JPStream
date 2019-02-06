@@ -11,6 +11,8 @@
 typedef struct QueryElement{
     int state;
     int count;
+    int start_obj;
+    int end_obj;
 }QueryElement;
 
 typedef struct SyntaxStackElement{
@@ -114,6 +116,8 @@ static inline QueryElement jps_queryTop(QueryStack* qs)
         QueryElement exception;
         exception.state = INVALID_ST;
         exception.count = 0;
+        exception.start_obj = -1;
+        exception.end_obj = -1;
         return exception;
     }
 }
@@ -131,6 +135,8 @@ static inline QueryElement jps_querySecondTop(QueryStack* qs)
         QueryElement exception;
         exception.state = INVALID_ST;
         exception.count = 0;
+        exception.start_obj = -1;
+        exception.end_obj = -1;
         return exception;
     }
 }
