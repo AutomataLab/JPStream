@@ -30,17 +30,16 @@ static inline void add_object_output(JQ_DFA* query_automaton, QueryElement* curr
         {
             if(strcmp(text_content, "{")==0||strcmp(text_content, "[")==0)
             {
-                int position = lexer->next_start - lexer->begin_stream - 1; //printf("state %d start beginning %d\n", current_state->state, current_state->start_obj);
-                current_state->start_obj = position;  //printf("state %d [start %d end %d]\n", current_state->state, current_state->start_obj, position);
+                int position = lexer->next_start - lexer->begin_stream - 1; 
+                current_state->start_obj = position;  
             }
             else if(current_state->start_obj>0&&(strcmp(text_content, "}")==0||strcmp(text_content, "]")==0))
-            {   printf("%s %d\n", text_content, current_state->state);
+            {   
                 int position = lexer->next_start - lexer->begin_stream;
                 char* output_text;
-                output_text = substring(lexer->begin_stream, current_state->start_obj, position);  //printf("state %d start %d end %d\n", current_state->state, current_state->start_obj, position);
+                output_text = substring(lexer->begin_stream, current_state->start_obj, position);  
                 current_state->start_obj = -1;
                 jpo_addElement(output_list, output_text);
-                //printf("%d my output %s len %d\n", jqd_getAcceptType(query_automaton, current_state->state), output_text, strlen(output_text));
             }
         }
     }
@@ -72,14 +71,14 @@ static inline void elt_obj_e(SyntaxStack* syn_stack)
 static inline void ary_s(JQ_DFA* query_automaton, QueryElement* current_state, int input, SyntaxStack* syn_stack, QueryStack* query_stack)  
 {
     jps_syntaxPush(syn_stack, input);
-    jps_queryPush(query_stack, *current_state);
-    QueryElement next_state;
+    jps_queryPush(query_stack, *current_state);   //push current state into stack
+    QueryElement next_state;                      //move onto next state
     JQ_index_pair pair = jqd_getArrayIndex(query_automaton, current_state->state);
     int lower = pair.lower;
     int upper = pair.upper; 
     if(!((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes 
         next_state.state = 0;
-    else{ next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, JQ_DFA_ARRAY);} //printf("next low %d high %d state %d\n", lower, upper ,next_state.state); }  //get next state
+    else{ next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, JQ_DFA_ARRAY);} 
     next_state.count = 0;
     next_state.start_obj = -1;
     *current_state  = next_state; //update current state
@@ -113,8 +112,8 @@ static inline void key(JQ_DFA* query_automaton, QueryElement* current_state, int
     c_state.count = current_state->count;
     if(current_state->start_obj>0) c_state.start_obj = current_state->start_obj;
     else c_state.start_obj = -1;
-    jps_queryPush(query_stack, c_state);   
-    QueryElement next_state;
+    jps_queryPush(query_stack, c_state);     //push current state in query stack
+    QueryElement next_state;                 //move onto next state
     JQ_index_pair pair = jqd_getArrayIndex(query_automaton, c_state.state);
     int lower = pair.lower; 
     int upper = pair.upper; 
@@ -123,6 +122,7 @@ static inline void key(JQ_DFA* query_automaton, QueryElement* current_state, int
     else 
         next_state.state = jqd_nextStateByStr(query_automaton, current_state->state, content);  //get next state based on content  
     next_state.count = 0;
+    next_state.start_obj = -1;
     *current_state  = next_state; //update current state
 }
 

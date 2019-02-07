@@ -13,17 +13,17 @@ void Test1()
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.root.products[*].categoryPath[*].id";
-    //char* path = "$.root";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
+    //create streaming automaton
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
 
-    //query execution
+    //run streaming automaton
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
     jsr_automaton_execution(&streaming_automaton);
@@ -49,7 +49,7 @@ void Test2()
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
@@ -80,7 +80,7 @@ void Test3()
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
@@ -104,14 +104,12 @@ void Test4()
     double duration;
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/rowstest.json",1);
-    //JSONStream* stream = jps_createJSONStream("bb.json",1);
-    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.meta.view.columns[*].position";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
@@ -135,14 +133,12 @@ void Test5()
     double duration;
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/wiki.json",1);
-    //JSONStream* stream = jps_createJSONStream("bb.json",1);
-    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.root[*].claims.P150[0:100].mainsnak.property";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
@@ -166,14 +162,12 @@ void Test6()
     double duration;
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/random.json",1);
-    //JSONStream* stream = jps_createJSONStream("bb.json",1);
-    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.root[*].friends[*].id";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
@@ -197,14 +191,12 @@ void Test7()
     double duration;
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/rowstest.json",1);
-    //JSONStream* stream = jps_createJSONStream("bb.json",1);
-    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.data[*]";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
@@ -229,14 +221,14 @@ void Test8()
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/twitter.json",1);
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
-  // JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+   // JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
    // char* path = "$.root[2:5].id";
     char* path = "$.root[*].quoted_status.entities.symbols";
 
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
@@ -267,7 +259,7 @@ void Test9()
     //loading dfa
     JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
     JQ_DFA* dfa = dfa_Create(path, ctx);
-    if (dfa == NULL) return 0;
+    if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
     jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
@@ -293,8 +285,8 @@ int main()
     Test4();
     Test5();
     Test6();
-    Test7();
+    //Test7();
     Test8();
-    //Test9();
+    Test9();
     return 1;
 }
