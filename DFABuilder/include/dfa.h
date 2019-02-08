@@ -128,11 +128,11 @@ static inline void jqd_print(JQ_DFA* dfa) {
         int l;
         if ((l = jqd_getStopState(dfa, i)) != 0) {
             printf("#%d",l);
-            if (jqd_getAcceptType(dfa, i) == JQ_DFA_OUTPUT_TYPE) 
-                printf("!");
-            else
-                printf("*");
         }
+        if (jqd_getAcceptType(dfa, i) == JQ_DFA_OUTPUT_TYPE) 
+            printf("!");
+        if (jqd_getAcceptType(dfa, i) == JQ_DFA_PREDICATE_TYPE) 
+            printf("*");
         for (int j = 1; j< inputs; ++j) {
             int next = jqd_nextState(dfa, i, j);
             if (next != 0)
