@@ -274,15 +274,18 @@ static JQ_DFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
         int stop_state = cpd_dfa->isStopState(i);
         dfa->stop_state[i] = stop_state;
         if (stop_state) {
+            if (ctx->output_states.find(stop_state) != ctx->output_states.end())
+                dfa->accept_type[i] = JQ_DFA_OUTPUT_TYPE;
+            else
+                dfa->accept_type[i] = JQ_DFA_PREDICATE_TYPE;
             auto pair = ctx->array_range[stop_state-1];
             if (pair.first || pair.second) {
                 dfa->array_index[i] = {pair.first, pair.second};
-                dfa->stop_state[i] = 0;
+                if (dfa->accept_type[i] != JQ_DFA_OUTPUT_TYPE) {
+                    dfa->stop_state[i] = 0;
+                    dfa->accept_type[i] = 0;
+                }
             }
-            if (ctx->output_states.find(stop_state) != ctx->output_states.end()) {
-                dfa->accept_type[i] = JQ_DFA_OUTPUT_TYPE;
-            } else 
-                dfa->accept_type[i] = JQ_DFA_PREDICATE_TYPE;
         }
     }
     dfa->names[1] = str_copy("other");

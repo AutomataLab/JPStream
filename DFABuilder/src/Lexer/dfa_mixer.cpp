@@ -113,7 +113,7 @@ void DFAMixer::Combine(RegexModel* model) {
 }
 
 void DFAMixer::addStopState(RegexModel* model, const std::vector<int>& newvec, int p) {
-    for (int i = 0; i < newvec.size(); ++i) {
+    for (int i = newvec.size()-1; i >= 0; --i) { // 颠倒优先级
         if (newvec[i] != 0) {
             auto r = model->at(i);
             DFA* dfa = r->dfa;

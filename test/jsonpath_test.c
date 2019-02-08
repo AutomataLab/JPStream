@@ -95,6 +95,12 @@ int test_dfa_Create() {
     JQ_CONTEXT ctx;
     JQ_DFA* dfa;
 
+    dfa = dfa_Create("$.a[1:2].b", &ctx);
+    dfa_print(&ctx);
+
+    dfa = dfa_Create("$.a[1:2]", &ctx);
+    dfa_print(&ctx);
+
     dfa = dfa_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
     dfa_print(&ctx);
     printf("next: %d, %s\n", jqd_nextStateByStr(dfa, 1, "root"), "root");
