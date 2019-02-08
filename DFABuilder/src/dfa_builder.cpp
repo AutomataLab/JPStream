@@ -75,6 +75,7 @@ struct StackContext {
     RegexModel* model;
     JSONPathNode* root;
     vector<StackElement> st;
+    bool last_st_generated;
     unordered_map<string, int> name_mapping;
     // 0 is end, 1 is other, 2 is array 3-n are names
     vector<string> input_mapping;
@@ -88,6 +89,11 @@ struct StackContext {
 
     StackContext(RegexModel* model, JSONPathNode* root) : model(model), root(root), st(0), input_mapping(3), array_range(0) {}
     ~StackContext() {}
+
+    void push(StackElement&& s) {
+        last_st_generated = false;
+        st.push_back(std::forward<StackElement>(s));
+    }
 
     void print() {
         printf("$");
@@ -112,8 +118,9 @@ struct StackContext {
         printf("\n");
     }
 
-    void create_dfa(bool output = false) {
+    void create_dfa() {
         print();
+        last_st_generated = true;
         for (auto& se: st) 
             if (se.stype == set_dot_property || 
                 se.stype == set_parent_property) {
@@ -157,9 +164,6 @@ struct StackContext {
         model->Add(list);
         array_range.push_back({0,0});
         tree_mapping.push_back(NULL);
-        if (output) {
-            output_states.insert(model->size());
-        }
     }
 
     void construct_filter(JSONPathNode* node) {
@@ -347,7 +351,9 @@ JQ_DFA* dfa_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
 
     StackContext* ctx = new StackContext(model, json_path);
     ctx->construct_dfa(json_path);
-    ctx->create_dfa(true);
+    if (ctx->last_st_generated == false)
+        ctx->create_dfa();
+    ctx->output_states.insert(model->size());
     
     printf("-------------------\n");
     model->input_max = ctx->input_mapping.size();
