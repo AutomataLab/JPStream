@@ -174,7 +174,7 @@ struct StackContext {
             int count = 0;
             while (std::getline(tokenStream, token, '.')) {
                 count++;
-                st.push_back({set_dot_property, token.c_str()});
+                push({set_dot_property, token.c_str()});
             }
             create_dfa();
             states_mapping[state_handle_now].push_back(model->size()-1);
@@ -201,19 +201,19 @@ struct StackContext {
         case jnt_concat: {
             // .*
             if (node->right && node->right->node_type == jnt_wildcard)
-                st.push_back({set_dot_all});
+                push({set_dot_all});
             // .property
             if (node->right && node->right->node_type == jnt_id) 
-                st.push_back({set_dot_property, node->right->string});
+                push({set_dot_property, node->right->string});
             break;
         }
         case jnt_parent_concat: {
             // ..*
             if (node->right && node->right->node_type == jnt_wildcard) 
-                st.push_back({set_parent_all});
+                push({set_parent_all});
             // ..property
             if (node->right && node->right->node_type == jnt_id) 
-                st.push_back({set_parent_property, node->right->string});
+                push({set_parent_property, node->right->string});
             break;
         }
         case jnt_predicate: {
@@ -228,19 +228,19 @@ struct StackContext {
                     else begin = INT_MIN;
                     if (p->right) end = p->right->number;
                     else end = INT_MAX;
-                    st.push_back({set_array_index, begin, end});
+                    push({set_array_index, begin, end});
                     create_dfa();
                     array_range[model->size()-1] = {begin, end};
                     break;
                 }
                 // [*]
                 case jnt_wildcard: {
-                    st.push_back({set_array_all});
+                    push({set_array_all});
                     break;
                 }
                 // [?()]
                 case jnt_fliter: {
-                    st.push_back({set_array_all});
+                    push({set_array_all});
                     create_dfa();
                     jpe_ModifyRef(p);
                     state_handle_now = model->size()-1;

@@ -145,6 +145,15 @@ int test_dfa_Create() {
     dfa = dfa_Create("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position", &ctx);
     if (dfa == NULL) return 1;
 
+    dfa = dfa_Create("$.root[*].quoted_status.entities.symbols", &ctx);
+    if (dfa == NULL) return 1;
+
+    dfa = dfa_Create("$.root[*].friends[*].id", &ctx);
+    if (dfa == NULL) return 1;
+
+    dfa = dfa_Create("$.meta.view.columns[*].position", &ctx);
+    if (dfa == NULL) return 1;
+
     return 0;
 }
 
