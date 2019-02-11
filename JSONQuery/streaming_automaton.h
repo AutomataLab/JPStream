@@ -8,25 +8,26 @@
 #include "lexing.h"
 
 typedef struct StreamingAutomaton{
-    JSONStream* json_stream;
+    JSONStream* json_stream;  //remove this
     JQ_DFA* query_automaton;
     SyntaxStack syntax_stack;
     QueryStack query_stack;
-    Lexer lexer;
+    Lexer lexer;              //remove this
     OutputList* output_list;
-    QueryElement current_state;
+    QueryElement current_state;  //remove this and add three new variables
 }StreamingAutomaton;
 
 
-static inline void jsr_StreamingAutomatonCtor(StreamingAutomaton* streaming_automaton, JSONStream* json_stream, JQ_DFA* query_automaton)
+static inline void jsr_StreamingAutomatonCtor(StreamingAutomaton* streaming_automaton, JSONStream* json_stream, JQ_DFA* query_automaton)  //remove the first parameter
 {
-    streaming_automaton->json_stream = json_stream;
+    streaming_automaton->json_stream = json_stream;  //remove this
     streaming_automaton->query_automaton = query_automaton;
     jps_SyntaxStackCtor(&streaming_automaton->syntax_stack);
     jps_QueryStackCtor(&streaming_automaton->query_stack);
     jsl_LexerCtor(&streaming_automaton->lexer, json_stream);
     streaming_automaton->output_list = jpo_createOutputList();
-    streaming_automaton->current_state.state = 1;   //starting state
+    //change the implemenations for the following 4 sentences
+    streaming_automaton->current_state.state = 1;   //starting state 
     streaming_automaton->current_state.count = 0;  
     streaming_automaton->current_state.start_obj = -1;
     streaming_automaton->current_state.end_obj = -1;
@@ -34,7 +35,7 @@ static inline void jsr_StreamingAutomatonCtor(StreamingAutomaton* streaming_auto
 
 static inline void jsr_StreamingAutomatonDtor(StreamingAutomaton* streaming_automaton)
 {
-    if(streaming_automaton->json_stream != NULL)
+    if(streaming_automaton->json_stream != NULL)  //remove this
     {
         jps_freeJSONStream(streaming_automaton->json_stream);
     }
@@ -49,5 +50,5 @@ static inline void jsr_StreamingAutomatonDtor(StreamingAutomaton* streaming_auto
     jsl_LexerDtor(&streaming_automaton->lexer);
 }
 
-void jsr_automaton_execution(StreamingAutomaton* streaming_automaton);
+void jsr_automaton_execution(StreamingAutomaton* streaming_automaton); //add a new parameter char*
 #endif // !__STREAMING_AUTOMATON_H__
