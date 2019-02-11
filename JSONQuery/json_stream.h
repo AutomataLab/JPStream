@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "basic.h"
-#include "lexer.h"
 
 #define MAX_CHUNK 100
 

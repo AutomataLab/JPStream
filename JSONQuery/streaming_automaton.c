@@ -3,6 +3,7 @@
 static inline void increase_counter(QueryElement* current_state)
 {
     current_state->count++;
+   //printf("new state %d count %d\n", current_state->state, current_state->count);
 }
 
 static inline void add_primitive_output(JQ_DFA* query_automaton, QueryElement* current_state, char* text_content, OutputList* output_list) 
@@ -14,30 +15,40 @@ static inline void add_primitive_output(JQ_DFA* query_automaton, QueryElement* c
         int upper = pair.upper;
         if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes
         {
-            jpo_addElement(output_list, text_content);
+            jpo_addElement(output_list, text_content);  //printf("output %s\n", text_content);
         }
     }
 }
 
 static inline void add_object_output(JQ_DFA* query_automaton, QueryElement* current_state, char* text_content, Lexer* lexer, OutputList* output_list) 
 {
+    /*if(strcmp(text_content, "]")==0)
+    {
+        JQ_index_pair pair = jqd_getArrayIndex(query_automaton, current_state->state);
+        int lower = pair.lower; 
+        int upper = pair.upper;
+        printf("output ] %s count %d state %d lower %d upper %d\n", text_content, current_state->count, current_state->state, lower, upper);
+    }*/
+    //if(jqd_getAcceptType(query_automaton, current_state->state)==JQ_DFA_PREDICATE_TYPE)
+       // printf(" checking extra output %s count %d start %d\n", text_content, current_state->count, current_state->start_obj);
     if(jqd_getAcceptType(query_automaton, current_state->state)==JQ_DFA_OUTPUT_TYPE)  //current_state is a match
     {
         JQ_index_pair pair = jqd_getArrayIndex(query_automaton, current_state->state);
         int lower = pair.lower; 
         int upper = pair.upper;
         if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes
-        {
+        {   //printf(" checking output %s lower %d upper %d count %d start %d state %d\n", text_content, lower, upper, current_state->count, current_state->start_obj, current_state->state);
             if(strcmp(text_content, "{")==0||strcmp(text_content, "[")==0)
             {
                 int position = lexer->next_start - lexer->begin_stream - 1; 
                 current_state->start_obj = position;  
+                //printf(" checking output' %s lower %d upper %d count %d start %d state %d\n", text_content, lower, upper, current_state->count, current_state->start_obj, current_state->state);
             }
             else if(current_state->start_obj>0&&(strcmp(text_content, "}")==0||strcmp(text_content, "]")==0))
             {   
                 int position = lexer->next_start - lexer->begin_stream;
                 char* output_text;
-                output_text = substring(lexer->begin_stream, current_state->start_obj, position);  
+                output_text = substring(lexer->begin_stream, current_state->start_obj, position);  //printf("output %s lower %d upper %d count %d state %d\n", output_text, lower, upper, current_state->count, current_state->state);
                 current_state->start_obj = -1;
                 jpo_addElement(output_list, output_text);
             }
@@ -192,8 +203,8 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
                     else if(jps_syntaxSecondTop(syntax_stack)==LB)  //after we pop out '[', the next element on top of syntax stack is '['
                     {  
                         elt_ary_e(current_state, syntax_stack, query_stack); 
-                        increase_counter(current_state);
                         add_object_output(query_automaton, current_state, "]", lexer, output_list);
+                        increase_counter(current_state);
                     }
                 }
                 
