@@ -54,5 +54,6 @@ static inline void freeLexer(Lexer* lexer)
     free(lexer);
 }
 
-int nextToken(Lexer* lexer); //getting the next symbol from JSON data
+//getting the next symbol from JSON data
+int nextToken(Lexer* lexer); 
 #endif // !__LEXING_H__

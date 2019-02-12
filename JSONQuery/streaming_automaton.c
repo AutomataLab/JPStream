@@ -3,65 +3,32 @@
 static inline void increase_counter(QueryStackElement* current_state)
 {
     current_state->count++;
-   //printf("new state %d count %d\n", current_state->state, current_state->count);
 }
 
-static inline void add_primitive_output(JSONQueryDFA* query_automaton, QueryStackElement* current_state, char* text_content, TupleList* tuple_list) 
+// verify whether the current state and current counter satisfy the matched condition
+// 1 -- satisfy 0 -- not satisfy
+static int is_a_match(JSONQueryDFA* query_automaton, QueryStackElement* current_state)
 {
-    if(getDFAAcceptType(query_automaton, current_state->state))  //current_state is a match
+    int match = 0;
+    //it is a matched output
+    if(getDFAAcceptType(query_automaton, current_state->state)==JSONQueryDFA_OUTPUT_TYPE)  
     {
         JSONQueryIndexPair pair = getDFAArrayIndex(query_automaton, current_state->state);
         int lower = pair.lower; 
         int upper = pair.upper;
-        if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes
+        //check array indexes
+        if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  
         {
-            addTupleListElement(tuple_list, current_state->state, text_content);
-            //addListElement(output_list, text_content);  //printf("output %s\n", text_content);
+            match = 1;
         }
     }
+    return match;
 }
 
-static inline void add_object_output(JSONQueryDFA* query_automaton, QueryStackElement* current_state, char* text_content, Lexer* lexer, TupleList* tuple_list) 
+// implementation of state transition rules based on based on input symbol, query state, top elements on syntax stack and query stack
+static inline void obj_s(int symbol, SyntaxStack* syn_stack)
 {
-    /*if(strcmp(text_content, "]")==0)
-    {
-        JQ_index_pair pair = jqd_getArrayIndex(query_automaton, current_state->state);
-        int lower = pair.lower; 
-        int upper = pair.upper;
-        printf("output ] %s count %d state %d lower %d upper %d\n", text_content, current_state->count, current_state->state, lower, upper);
-    }*/
-    //if(jqd_getAcceptType(query_automaton, current_state->state)==JQ_DFA_PREDICATE_TYPE)
-       // printf(" checking extra output %s count %d start %d\n", text_content, current_state->count, current_state->matched_start);
-    if(getDFAAcceptType(query_automaton, current_state->state)==JSONQueryDFA_OUTPUT_TYPE)  //current_state is a match
-    {
-        JSONQueryIndexPair pair = getDFAArrayIndex(query_automaton, current_state->state);
-        int lower = pair.lower; 
-        int upper = pair.upper;
-        if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes
-        {   //printf(" checking output %s lower %d upper %d count %d start %d state %d\n", text_content, lower, upper, current_state->count, current_state->matched_start, current_state->state);
-            if(strcmp(text_content, "{")==0||strcmp(text_content, "[")==0)
-            {
-                int position = lexer->next_start - lexer->begin_stream - 1; 
-                current_state->matched_start = position;  
-                //printf(" checking output' %s lower %d upper %d count %d start %d state %d\n", text_content, lower, upper, current_state->count, current_state->matched_start, current_state->state);
-            }
-            else if(current_state->matched_start>0&&(strcmp(text_content, "}")==0||strcmp(text_content, "]")==0))
-            {   
-                int position = lexer->next_start - lexer->begin_stream;
-                char* output_text;
-                output_text = substring(lexer->begin_stream, current_state->matched_start, position);  //printf("output %s lower %d upper %d count %d state %d\n", output_text, lower, upper, current_state->count, current_state->state);
-                current_state->matched_start = -1;
-                addTupleListElement(tuple_list, current_state->state, text_content);
-                //addListElement(output_list, output_text);
-            }
-        }
-    }
-}
-
-//different state transition rules based on input symbol and syntax stack
-static inline void obj_s(int input, SyntaxStack* syn_stack)
-{
-    syntaxStackPush(syn_stack, input);
+    syntaxStackPush(syn_stack, symbol);
 }
 
 static inline void obj_e(SyntaxStack* syn_stack)
@@ -81,20 +48,25 @@ static inline void elt_obj_e(SyntaxStack* syn_stack)
     syntaxStackPop(syn_stack);
 }
 
-static inline void ary_s(JSONQueryDFA* query_automaton, QueryStackElement* current_state, int input, SyntaxStack* syn_stack, QueryStack* query_stack)  
+static inline void ary_s(JSONQueryDFA* query_automaton, QueryStackElement* current_state, int symbol, SyntaxStack* syn_stack, QueryStack* query_stack)  
 {
-    syntaxStackPush(syn_stack, input);
-    queryStackPush(query_stack, *current_state);   //push current state into stack
-    QueryStackElement next_state;                      //move onto next state
+    syntaxStackPush(syn_stack, symbol);
+    //push current state into query stack
+    queryStackPush(query_stack, *current_state);   
+    //move onto next state
+    QueryStackElement next_state;                      
     JSONQueryIndexPair pair = getDFAArrayIndex(query_automaton, current_state->state);
     int lower = pair.lower;
     int upper = pair.upper; 
-    if(!((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes 
+    int counter = current_state->count;
+    //check array indexes 
+    if(!((lower==0&&upper==0)||(counter>=lower && counter<upper)))  
         next_state.state = 0;
     else{ next_state.state = dfaNextStateByStr(query_automaton, current_state->state, JSONQueryDFA_ARRAY);} 
     next_state.count = 0;
     next_state.matched_start = -1;
-    *current_state  = next_state; //update current state
+    //update current state
+    *current_state  = next_state; 
 }
 
 static inline void ary_e(QueryStackElement* current_state, SyntaxStack* syn_stack, QueryStack* query_stack)
@@ -117,26 +89,26 @@ static inline void elt_ary_e(QueryStackElement* current_state, SyntaxStack* syn_
     syntaxStackPop(syn_stack); 
 }
 
-static inline void key(JSONQueryDFA* query_automaton, QueryStackElement* current_state, int input, char* content, SyntaxStack* syn_stack, QueryStack* query_stack)  
+static inline void key(JSONQueryDFA* query_automaton, QueryStackElement* current_state, int symbol, char* symbol_content, SyntaxStack* syn_stack, QueryStack* query_stack)  
 {
-    syntaxStackPush(syn_stack, input);
-    QueryStackElement c_state;
-    c_state.state = current_state->state;
-    c_state.count = current_state->count;
-    if(current_state->matched_start>0) c_state.matched_start = current_state->matched_start;
-    else c_state.matched_start = -1;
-    queryStackPush(query_stack, c_state);     //push current state in query stack
-    QueryStackElement next_state;                 //move onto next state
-    JSONQueryIndexPair pair = getDFAArrayIndex(query_automaton, c_state.state);
+    syntaxStackPush(syn_stack, symbol);
+    //push current state into query stack
+    queryStackPush(query_stack, *current_state);
+    //move onto next state    
+    QueryStackElement next_state;                 
+    JSONQueryIndexPair pair = getDFAArrayIndex(query_automaton, current_state->state);
     int lower = pair.lower; 
     int upper = pair.upper; 
-    if(!((lower==0&&upper==0)||(c_state.count>=lower && c_state.count<upper)))  //check array indexes
+    int counter = current_state->count;
+    //check array indexes
+    if(!((lower==0&&upper==0)||(counter>=lower && counter<upper)))  
         next_state.state = 0; 
-    else 
-        next_state.state = dfaNextStateByStr(query_automaton, current_state->state, content);  //get next state based on content  
+    else //get next state based on key field
+        next_state.state = dfaNextStateByStr(query_automaton, current_state->state, symbol_content);  
     next_state.count = 0;
     next_state.matched_start = -1;
-    *current_state  = next_state; //update current state
+    //update current state
+    *current_state  = next_state;
 }
 
 static inline void val_pmt(QueryStackElement* current_state, SyntaxStack* syn_stack, QueryStack* query_stack)
@@ -145,15 +117,13 @@ static inline void val_pmt(QueryStackElement* current_state, SyntaxStack* syn_st
     syntaxStackPop(syn_stack);
 }
 
-//state transition rules for streaming automaton
-void jsr_state_transition(StreamingAutomaton* streaming_automaton, char* json_stream)
+// the execution of streaming automaton
+void executeAutomaton(StreamingAutomaton* streaming_automaton, char* json_stream)
 {
-    JSONQueryDFA* query_automaton = streaming_automaton->query_automaton;
-    SyntaxStack* syntax_stack = &streaming_automaton->syntax_stack;
-    QueryStack* query_stack = &streaming_automaton->query_stack;
-    ///Lexer* lexer = &streaming_automaton->lexer;   //change this to the following code
-    //List* output_list = streaming_automaton->output_list;
-    TupleList* tuple_list = streaming_automaton->tuple_list;
+    JSONQueryDFA* query_automaton = streaming_automaton->query_automaton; //query automaton
+    SyntaxStack* syntax_stack = &streaming_automaton->syntax_stack;   //syntax stack
+    QueryStack* query_stack = &streaming_automaton->query_stack;  //query stack
+    TupleList* tuple_list = streaming_automaton->tuple_list;  //tuple list
     QueryStackElement* current_state = &streaming_automaton->current_state;
 
     //initialize lexer
@@ -162,13 +132,18 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, char* json_st
 
     int symbol = nextToken(&lexer);
     
+    //select transition rules based on input symbol, query state, top elements on syntax stack and query stack
     while(symbol!=END)
     {   
         switch(symbol)
         {   
             case LCB:   //left curly branket
                 obj_s(symbol, syntax_stack);  
-                add_object_output(query_automaton, current_state, "{", &lexer, NULL); 
+                //it is a matched output
+                if(is_a_match(query_automaton, current_state)==1)  
+                { 
+                    current_state->matched_start = lexer.next_start - lexer.begin_stream - 1; 
+                }
                 break;
             case RCB:   //right curly branket
                 //syntax stack only has one '{'
@@ -191,38 +166,56 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, char* json_st
                          increase_counter(current_state); 
                      }
                 } 
-                add_object_output(query_automaton, current_state, "}", &lexer, tuple_list);
+                //it is a matched output
+                if(current_state->matched_start>-1&&is_a_match(query_automaton, current_state)==1)  
+                { 
+                    int position = lexer.next_start - lexer.begin_stream;
+                    char* output_text = substring(lexer.begin_stream, current_state->matched_start, position); 
+                    current_state->matched_start = -1;
+                    addTupleListElement(tuple_list, current_state->state, output_text); 
+                }
                 break;
-            case LB:   //left square branket  
-                add_object_output(query_automaton, current_state, "[", &lexer, NULL);
+            case LB:   //left square branket 
+                //it is a matched output
+                if(is_a_match(query_automaton, current_state)==1)  
+                { 
+                    current_state->matched_start = lexer.next_start - lexer.begin_stream - 1;  
+                }
                 ary_s(query_automaton, current_state, symbol, syntax_stack, query_stack);
                 break;
             case RB:   //right square branket
-                //syntax stack only has one '['
-                if(syntaxStackSize(syntax_stack) == 1)  
-                {   
-                    ary_e(current_state, syntax_stack, query_stack); 
-                    add_object_output(query_automaton, current_state, "]", &lexer, tuple_list);
-                }
-                //syntax stack has at least two elements, the top element is '['
-                else if(syntaxStackSize(syntax_stack) > 1)  
-                {   
-                    //after we pop out '[', the next element on top of syntax stack is a key field
-                    if(syntaxStackSecondTop(syntax_stack)==KY)  
+                if(syntaxStackSize(syntax_stack) >= 1)  
+                {
+                    QueryStackElement checked_state = queryStackTop(query_stack);
+                    //it is a matched output
+                    if(is_a_match(query_automaton, &checked_state)==1)  
+                    { 
+                        int position = lexer.next_start - lexer.begin_stream;
+                        char* output_text = substring(lexer.begin_stream, checked_state.matched_start, position); 
+                        checked_state.matched_start = -1;
+                        addTupleListElement(tuple_list, checked_state.state, output_text);  
+                    }
+                    //syntax stack only has one '['
+                    if(syntaxStackSize(syntax_stack) == 1)  
                     {   
-                        QueryStackElement checked_state = queryStackTop(query_stack);
-                        add_object_output(query_automaton, &checked_state, "]", &lexer, tuple_list);
-                        val_ary_e(current_state, syntax_stack, query_stack); 
+                        ary_e(current_state, syntax_stack, query_stack); 
                     }
-                    //after we pop out '[', the next element on top of syntax stack is '['
-                    else if(syntaxStackSecondTop(syntax_stack)==LB)  
-                    {  
-                        elt_ary_e(current_state, syntax_stack, query_stack); 
-                        add_object_output(query_automaton, current_state, "]", &lexer,tuple_list);
-                        increase_counter(current_state);
+                    //syntax stack has at least two elements, the top element is '['
+                    else if(syntaxStackSize(syntax_stack) > 1)  
+                    {   
+                        //after we pop out '[', the next element on top of syntax stack is a key field
+                        if(syntaxStackSecondTop(syntax_stack)==KY)  
+                        {   
+                            val_ary_e(current_state, syntax_stack, query_stack); 
+                        }
+                        //after we pop out '[', the next element on top of syntax stack is '['
+                        else if(syntaxStackSecondTop(syntax_stack)==LB)  
+                        {  
+                            elt_ary_e(current_state, syntax_stack, query_stack); 
+                            increase_counter(current_state);
+                        }
                     }
                 }
-                
                 break;
             case COM:   //comma
                 break;
@@ -232,17 +225,20 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, char* json_st
             case PRI:   //primitive
                 if(syntaxStackSize(syntax_stack) >= 1)
                 {
+                    //it is a matched output
+                    if(is_a_match(query_automaton, current_state)==1)  
+                    { 
+                        addTupleListElement(tuple_list, current_state->state, lexer.content);  
+                    }
                     //the top element on syntax stack is a key field
                     if(syntaxStackTop(syntax_stack)==KY)  
                     {
-                        add_primitive_output(query_automaton, current_state, lexer.content, tuple_list);
                         val_pmt(current_state, syntax_stack, query_stack); 
                     }
                     //the top element on syntax stack is '['
                     else if(syntaxStackTop(syntax_stack)==LB)  
                     {
                         increase_counter(current_state);
-                        add_primitive_output(query_automaton, current_state, lexer.content, tuple_list); 
                     }
                 }
                 break;
@@ -252,12 +248,6 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton, char* json_st
     destroyLexer(&lexer);
     printf("syntax size %d query state %d %d\n", syntaxStackSize(syntax_stack), current_state->state, query_stack->top_item);
     printf("output size %d\n", getTupleListSize(tuple_list));
-    //printf("output size %d\n", getListSize(output_list));
-}
-
-void executeAutomaton(StreamingAutomaton* streaming_automaton, char* json_stream)
-{
-    jsr_state_transition(streaming_automaton, json_stream);
 }
 
 

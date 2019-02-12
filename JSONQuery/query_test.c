@@ -28,7 +28,7 @@ void Test1()
     double duration;
     //loading inputs
     char* stream = loadJSONStream("../../dataset/bb.json");
-    //JSONStream* stream = jps_createJSONStream("bb.json",1);
+    //char* stream = loadJSONStream("bb.json");
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.root.products[*].categoryPath[*].id";
 
@@ -92,7 +92,7 @@ void Test3()
     //loading inputs
     char* stream = loadJSONStream("../../dataset/twitter.json");
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
-   //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+    //char* stream = loadJSONStream("twitter_store1.txt");
    // char* path = "$.root[2:5].id";
     char* path = "$.root[*].quoted_status.entities.user_mentions[*].indices[*]";
     //loading dfa
@@ -272,7 +272,7 @@ void Test9()
     char* stream = loadJSONStream("../../dataset/bb.json");
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
-    char* path = "$.root.products[?(@.sku)].categoryPath[1:2]";
+    char* path = "$.root.products[?(@.sku)].categoryPath[1:3]";  //?(@.sku)
 
     //loading dfa
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
