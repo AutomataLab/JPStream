@@ -1,7 +1,7 @@
-#ifndef __OUTPUT_H__
-#define __OUTPUT_H__
+#ifndef __LIST_H__
+#define __LIST_H__
 
-#include "basic.h"
+#include "utility.h"
 
 #define MAX_OUTPUTLIST 99000
 #define MAX_TEXT 1000
@@ -63,4 +63,4 @@ static inline int getListSize(List* list)
 
 
 
-#endif // !__OUTPUT_H__
+#endif // !__LIST_H__

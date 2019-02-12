@@ -2,7 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sched.h>
-#include "basic.h"
+#include "utility.h"
 #include "lexing.h"
 
 int nextToken(Lexer* lexer)

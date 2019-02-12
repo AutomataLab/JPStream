@@ -4,12 +4,10 @@
 #include <stdlib.h>
 
 #define MAX_STACK 100  //max size of stack
-#define SYN_STACK 1    //tag for syntax stack
-#define QY_STACK 2     //tag for query stack
 #define INVALID -1  //invalid state
 
 typedef struct QueryStackElement{
-    int state;
+    int query_state;
     int count;
     int matched_start; 
 }QueryStackElement;
@@ -79,7 +77,7 @@ static inline QueryStackElement queryStackPop(QueryStack* qs)
     else
     {
         QueryStackElement exception;
-        exception.state = INVALID;
+        exception.query_state = INVALID;
         exception.count = 0;
         top_state = exception;
     }
@@ -113,7 +111,7 @@ static inline QueryStackElement queryStackTop(QueryStack* qs)
     else
     {
         QueryStackElement exception;
-        exception.state = INVALID;
+        exception.query_state = INVALID;
         exception.count = 0;
         exception.matched_start = -1; 
         return exception;
@@ -133,7 +131,7 @@ static inline QueryStackElement queryStackSecondTop(QueryStack* qs)
     else
     {
         QueryStackElement exception;
-        exception.state = INVALID;
+        exception.query_state = INVALID;
         exception.count = 0;
         exception.matched_start = -1; 
         return exception;

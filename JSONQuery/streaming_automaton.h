@@ -11,34 +11,34 @@ typedef struct StreamingAutomaton{
     SyntaxStack syntax_stack;
     QueryStack query_stack; 
     TupleList* tuple_list;
-    //a structure type, which saves query_state, counter, and matched start position of object or array
-    QueryStackElement current_state; 
+    //a structure type, which saves query state, counter, and matched start position of object or array
+    QueryStackElement state_info; 
 }StreamingAutomaton;
 
-
-static inline void initStreamingAutomaton(StreamingAutomaton* streaming_automaton, JSONQueryDFA* query_automaton)
+// sa -- streaming automaton qa -- query automaton
+static inline void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* qa)
 {
-    streaming_automaton->query_automaton = query_automaton;
-    initSyntaxStack(&streaming_automaton->syntax_stack);
-    initQueryStack(&streaming_automaton->query_stack);
-    streaming_automaton->tuple_list = createTupleList(); 
+    sa->query_automaton = qa;
+    initSyntaxStack(&sa->syntax_stack);
+    initQueryStack(&sa->query_stack);
+    sa->tuple_list = createTupleList(); 
     //initialize starting state, counter and matched start position
-    streaming_automaton->current_state.state = 1;   
-    streaming_automaton->current_state.count = 0;  
-    streaming_automaton->current_state.matched_start = -1;
+    sa->state_info.query_state = 1;   
+    sa->state_info.count = 0;  
+    sa->state_info.matched_start = -1;
 }
 
-static inline void destroyStreamingAutomaton(StreamingAutomaton* streaming_automaton)
+static inline void destroyStreamingAutomaton(StreamingAutomaton* sa)
 {
-    if(streaming_automaton->query_automaton != NULL)
+    if(sa->query_automaton != NULL)
     {
-        destoryJSONQueryDFA(streaming_automaton->query_automaton);
+        destoryJSONQueryDFA(sa->query_automaton);
     }
-    if(streaming_automaton->tuple_list != NULL)
+    if(sa->tuple_list != NULL)
     {
-        freeTupleList(streaming_automaton->tuple_list);
+        freeTupleList(sa->tuple_list);
     }  
 }
 
-void executeAutomaton(StreamingAutomaton* streaming_automaton, char* json_stream);
+void executeAutomaton(StreamingAutomaton* sa, char* json_stream);
 #endif // !__STREAMING_AUTOMATON_H__

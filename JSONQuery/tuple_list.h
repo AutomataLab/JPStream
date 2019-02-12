@@ -1,7 +1,7 @@
 #ifndef __TUPLE_LIST_H__
 #define __TUPLE_LIST_H__
 
-#include "basic.h"
+#include "utility.h"
 
 #define MAX_TUPLE_LIST 300000
 #define MAX_TEXT 100
