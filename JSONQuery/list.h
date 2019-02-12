@@ -6,12 +6,12 @@
 #define MAX_OUTPUTLIST 990000
 #define MAX_TEXT 100
 
-typedef struct OutputList{
+typedef struct List{
     char** element;
     int count;
-}OutputList;
+}List;
 
-static inline void jpo_OutputListCtor(OutputList* list)
+static inline void initList(List* list)
 {
     list->element = (char**)malloc(MAX_OUTPUTLIST*sizeof(char*));
     int i;
@@ -22,7 +22,7 @@ static inline void jpo_OutputListCtor(OutputList* list)
     list->count = -1;
 }
 
-static inline void jpo_OutputListDtor(OutputList* list)
+static inline void destroyList(List* list)
 {
     int i;
     for(i=0; i<MAX_OUTPUTLIST; i++)
@@ -32,36 +32,31 @@ static inline void jpo_OutputListDtor(OutputList* list)
     free(list->element);
 }
 
-static inline OutputList* jpo_createOutputList()
+static inline List* createList()
 {
-    OutputList* list = (OutputList*)malloc(sizeof(OutputList));
-    jpo_OutputListCtor(list);
+    List* list = (List*)malloc(sizeof(List));
+    initList(list);
     return list;
 }
 
-static inline void jpo_freeOutputList(OutputList* list)
+static inline void freeList(List* list)
 {
-    jpo_OutputListDtor(list);
+    destroyList(list);
     free(list);
 }
 
-static inline void jpo_addElement(OutputList* list, char* text)
+static inline void addListElement(List* list, char* text)
 {
     int index = (++list->count);
     strcopy(text, list->element[index]);
 }
 
-static inline void jpo_removeLastElement(OutputList* list)
-{
-    --list->count;
-}
-
-static inline void jpo_removeLastnElements(OutputList* list, int number)
+static inline void removeListElement(List* list, int number)
 {
     list->count-=number;
 }
 
-static inline int jpo_getSize(OutputList* list)
+static inline int getListSize(List* list)
 {
     return list->count+1;
 }

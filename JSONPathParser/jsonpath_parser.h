@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-extern JSONPathNode* jpp_Analysis(const char* data);
+extern JSONPathNode* analysisJSONPath(const char* data);
 
 #ifdef __cplusplus
 }

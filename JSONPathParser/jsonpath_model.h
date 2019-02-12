@@ -33,92 +33,92 @@ typedef struct JSONPathNode {
     struct JSONPathNode *left, *right;
 } JSONPathNode;
 
-static inline JSONPathNode* jpn_Create() {
+static inline JSONPathNode* jsonPathNodeCreate() {
     JSONPathNode* jpn = (JSONPathNode*) malloc(sizeof(JSONPathNode));
     jpn->left = NULL;
     jpn->right = NULL;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateNumber(double data) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateNumber(double data) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_number;
     jpn->number = data;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateString(char* data) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateString(char* data) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_string;
     jpn->string = data;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateID(char* name) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateID(char* name) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_id;
     jpn->string = name;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateFunction(char* name) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateFunction(char* name) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_function;
     jpn->string = name;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateAttribute(char* name) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateAttribute(char* name) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_attribute;
     jpn->string = name;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateVariable(char* name) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateVariable(char* name) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_variable;
     jpn->string = name;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateRoot() {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateRoot() {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_root;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateWildcard() {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateWildcard() {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_wildcard;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateRef() {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateRef() {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_reference;
     return jpn;
 }
 
 
-static inline JSONPathNode* jpn_CreateConcat(JSONPathNode* left, JSONPathNode* right) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateConcat(JSONPathNode* left, JSONPathNode* right) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_concat;
     jpn->left = left;
     jpn->right = right;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateRange(JSONPathNode* left, JSONPathNode* right) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateRange(JSONPathNode* left, JSONPathNode* right) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_range;
     jpn->left = left;
     jpn->right = right;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateParentConcat(JSONPathNode* left, JSONPathNode* right) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateParentConcat(JSONPathNode* left, JSONPathNode* right) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_parent_concat;
     jpn->left = left;
     jpn->right = right;
@@ -126,16 +126,16 @@ static inline JSONPathNode* jpn_CreateParentConcat(JSONPathNode* left, JSONPathN
 }
 
 
-static inline JSONPathNode* jpn_CreatePredicate(JSONPathNode* left, JSONPathNode* right) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreatePredicate(JSONPathNode* left, JSONPathNode* right) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_predicate;
     jpn->left = left;
     jpn->right = right;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateOperator(JSONPathOperatorType opt, JSONPathNode* left, JSONPathNode* right) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateOperator(JSONPathOperatorType opt, JSONPathNode* left, JSONPathNode* right) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_operator;
     jpn->opt = opt;
     jpn->left = left;
@@ -143,8 +143,8 @@ static inline JSONPathNode* jpn_CreateOperator(JSONPathOperatorType opt, JSONPat
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateOperatorOne(JSONPathOperatorType opt, JSONPathNode* left) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateOperatorOne(JSONPathOperatorType opt, JSONPathNode* left) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_operator;
     jpn->opt = opt;
     jpn->left = left;
@@ -152,22 +152,22 @@ static inline JSONPathNode* jpn_CreateOperatorOne(JSONPathOperatorType opt, JSON
 }
 
 
-static inline JSONPathNode* jpn_CreateScript(JSONPathNode* left) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateScript(JSONPathNode* left) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_script;
     jpn->left = left;
     return jpn;
 }
 
-static inline JSONPathNode* jpn_CreateFliter(JSONPathNode* left) {
-    JSONPathNode* jpn = jpn_Create();
+static inline JSONPathNode* jsonPathNodeCreateFliter(JSONPathNode* left) {
+    JSONPathNode* jpn = jsonPathNodeCreate();
     jpn->node_type = jnt_fliter;
     jpn->left = left;
     return jpn;
 }
 
 
-static inline void jpn_print_space(int n) {
+static inline void printIndentation(int n) {
     for (int i = 0; i < n; ++i) printf("  ");
 }
 /**
@@ -176,7 +176,7 @@ static inline void jpn_print_space(int n) {
     jot_add, jot_minus, jot_multiply, jot_div, jot_mod, // calculation
     jot_union // node-set union
 */
-static inline void jpn_print_opt(JSONPathOperatorType opt) {
+static inline void printJsonPathOperator(JSONPathOperatorType opt) {
     const char* name_mapping[] = {
         "or", "and", 
         "=", "<", ">", "!=", "<=", ">=",
@@ -187,10 +187,10 @@ static inline void jpn_print_opt(JSONPathOperatorType opt) {
 }
 
 
-static inline void jpn_print_jnode(JSONPathNode* node, int depth, bool print_return) {
+static inline void printJsonPathSubAST(JSONPathNode* node, int depth, bool print_return) {
     bool children_print_return = true;
     int right_is_child = 0;
-    jpn_print_space(depth);
+    printIndentation(depth);
     switch (node->node_type) {
         case jnt_concat: {
             printf(".");
@@ -230,7 +230,7 @@ static inline void jpn_print_jnode(JSONPathNode* node, int depth, bool print_ret
             break;
         }
         case jnt_operator: {
-            jpn_print_opt(node->opt);
+            printJsonPathOperator(node->opt);
             right_is_child = 1;
             break;
         }
@@ -259,12 +259,12 @@ static inline void jpn_print_jnode(JSONPathNode* node, int depth, bool print_ret
             break;
     }
     if (print_return) printf("\n");
-    if (node->left) jpn_print_jnode(node->left, depth+1, children_print_return);
-    if (node->right) jpn_print_jnode(node->right, depth+1, children_print_return);
+    if (node->left) printJsonPathSubAST(node->left, depth+1, children_print_return);
+    if (node->right) printJsonPathSubAST(node->right, depth+1, children_print_return);
 }
 
-static inline void jpn_Print(JSONPathNode* root) {
-    jpn_print_jnode(root, 0, true);
+static inline void printJsonPathAST(JSONPathNode* root) {
+    printJsonPathSubAST(root, 0, true);
 } 
 
 

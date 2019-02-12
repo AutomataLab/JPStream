@@ -15,25 +15,25 @@ void Test1()
     char* path = "$.root.products[*].categoryPath[*].id";
 
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     //create streaming automaton
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //run streaming automaton
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 void Test2()
@@ -47,24 +47,24 @@ void Test2()
     char* path = "$..root..id";
 
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 void Test3()
@@ -78,24 +78,24 @@ void Test3()
    // char* path = "$.root[2:5].id";
     char* path = "$.root[*].quoted_status.entities.user_mentions[*].indices[*]";
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 void Test4()
@@ -107,24 +107,24 @@ void Test4()
     char* path = "$.meta.view.columns[*].position";
 
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 void Test5()
@@ -136,24 +136,24 @@ void Test5()
     char* path = "$.root[*].claims.P150[0:100].mainsnak.property";
 
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 void Test6()
@@ -165,24 +165,24 @@ void Test6()
     char* path = "$.root[*].friends[*].id";
 
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 void Test7()
@@ -194,24 +194,24 @@ void Test7()
     char* path = "$.data[*]";
 
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 void Test8()
@@ -226,24 +226,24 @@ void Test8()
     char* path = "$.root[*].quoted_status.entities.symbols";
 
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 void Test9()
@@ -257,24 +257,24 @@ void Test9()
     char* path = "$.root.products[*].categoryPath[*]";
 
     //loading dfa
-    JQ_CONTEXT* ctx = (JQ_CONTEXT*)malloc(sizeof(JQ_CONTEXT));
-    JQ_DFA* dfa = dfa_Create(path, ctx);
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    jsr_StreamingAutomatonCtor(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, stream, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    jsr_automaton_execution(&streaming_automaton);
+    executeAutomaton(&streaming_automaton);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
     //free up dynamic memories
-    jsr_StreamingAutomatonDtor(&streaming_automaton);
+    destroyStreamingAutomaton(&streaming_automaton);
 }
 
 int main()

@@ -26,7 +26,7 @@ typedef struct JSONPathKeyValuePair {
     JSONPathValue value;
 } JSONPathKeyValuePair;
 
-static inline JSONPathValue jpe_Find(const char* name, JSONPathKeyValuePair* table) {
+static inline JSONPathValue findValueInTable(const char* name, JSONPathKeyValuePair* table) {
     int i = 0;
     while (table[i].key != NULL) {
         int r = strcmp(table[i].key, name);
@@ -39,13 +39,13 @@ static inline JSONPathValue jpe_Find(const char* name, JSONPathKeyValuePair* tab
     return v;
 }
 
-static inline JSONPathValue jpe_Opt1(JSONPathOperatorType opt, JSONPathValue v1) {
+static inline JSONPathValue computeUnaryOperator(JSONPathOperatorType opt, JSONPathValue v1) {
     JSONPathValue v = {jvt_null};
     return v;
 }
 
 
-static inline JSONPathValue jpe_TypeCast(JSONPathValue v) {
+static inline JSONPathValue computeTypeCast(JSONPathValue v) {
     if (v.vtype == jvt_null) v.boolean = false;
     if (v.vtype == jvt_number) v.boolean = (v.number != 0.0);
     if (v.vtype == jvt_string) v.boolean = (v.string != NULL);
@@ -61,12 +61,12 @@ static inline JSONPathValue jpe_TypeCast(JSONPathValue v) {
     jot_union // node-set union
 */
 
-static inline JSONPathValue jpe_Opt2(JSONPathOperatorType opt, JSONPathValue v1, JSONPathValue v2) {
+static inline JSONPathValue computeBinaryOperator(JSONPathOperatorType opt, JSONPathValue v1, JSONPathValue v2) {
     JSONPathValue v;
     // type casting
     if (opt == jot_or || opt == jot_and) {
-        v1 = jpe_TypeCast(v1);
-        v2 = jpe_TypeCast(v2);
+        v1 = computeTypeCast(v1);
+        v2 = computeTypeCast(v2);
     }
     // calculate 
     switch (opt) {
@@ -142,19 +142,19 @@ static inline JSONPathValue jpe_Opt2(JSONPathOperatorType opt, JSONPathValue v1,
 
 
 
-static inline JSONPathValue jpe_EvaluateExp(JSONPathNode* node, JSONPathKeyValuePair* table) {
+static inline JSONPathValue evaluateExpression(JSONPathNode* node, JSONPathKeyValuePair* table) {
     switch (node->node_type) {
         case jnt_operator: {
             JSONPathValue v1, v2;
-            v1 = jpe_EvaluateExp(node->left, table);
+            v1 = evaluateExpression(node->left, table);
             if (node->right) {
-                v2 = jpe_EvaluateExp(node->right, table);
-                return jpe_Opt2(node->opt, v1, v2);
+                v2 = evaluateExpression(node->right, table);
+                return computeBinaryOperator(node->opt, v1, v2);
             }
-            return jpe_Opt1(node->opt, v1);
+            return computeUnaryOperator(node->opt, v1);
         }
         case jnt_variable: {
-            JSONPathValue v = jpe_Find(node->string, table);
+            JSONPathValue v = findValueInTable(node->string, table);
             return v;
         }
         case jnt_string: {
@@ -176,24 +176,24 @@ static inline JSONPathValue jpe_EvaluateExp(JSONPathNode* node, JSONPathKeyValue
 
 /**
  * Before calling this function, please replace the '@.proptery' subtree to a single node - jnt_variable
- * You can create it by calling @jpn_CreateVariable(var_name)
+ * You can create it by calling @jsonPathNodeCreateVariable(var_name)
  * When I calculate the result, I will try to search the table to find the values of those variable nodes.
  */
 static inline JSONPathValue jpe_Evaluate(JSONPathNode* node, JSONPathKeyValuePair* table) {
-    JSONPathValue v = jpe_EvaluateExp(node, table);
-    return jpe_TypeCast(v);
+    JSONPathValue v = evaluateExpression(node, table);
+    return computeTypeCast(v);
 }
 
 
 
-static inline JSONPathNode* jpe_ModifyRef(JSONPathNode* node) {
+static inline JSONPathNode* evaluatorModifyReference(JSONPathNode* node) {
     JSONPathNode* ret = 0;
     if (node->left) {
-        ret = jpe_ModifyRef(node->left);
+        ret = evaluatorModifyReference(node->left);
         if (ret != NULL) node->left = ret;
     }
     if (node->right) {
-        ret = jpe_ModifyRef(node->right);
+        ret = evaluatorModifyReference(node->right);
         if (ret != NULL) node->right = ret;
     }
     if (node->node_type == jnt_reference) {
@@ -206,7 +206,7 @@ static inline JSONPathNode* jpe_ModifyRef(JSONPathNode* node) {
         if (node->left->node_type == jnt_reference) {
             char* name = (char*) malloc(sizeof(char) * (strlen(node->right->string) + 1));
             strcpy(name, node->right->string);
-            JSONPathNode* new_node = jpn_CreateVariable(name);
+            JSONPathNode* new_node = jsonPathNodeCreateVariable(name);
             free(node->left);
             free(node->right->string);
             free(node->right);

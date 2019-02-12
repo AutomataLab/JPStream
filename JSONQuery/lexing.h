@@ -25,7 +25,7 @@ typedef struct Lexer{
 }Lexer; 
 
 
-static inline void jsl_LexerCtor(Lexer* lexer, JSONStream* json_stream)
+static inline void initLexer(Lexer* lexer, JSONStream* json_stream)
 {
     lexer->current_start = json_stream->input_stream[0]; 
     lexer->next_start = lexer->current_start;
@@ -35,23 +35,23 @@ static inline void jsl_LexerCtor(Lexer* lexer, JSONStream* json_stream)
     lexer->content = (char*)malloc(MAX_SIZE_PRIMITIVE*sizeof(char));
 }
 
-static inline void jsl_LexerDtor(Lexer* lexer)
+static inline void destroyLexer(Lexer* lexer)
 {
     if(lexer->content!=NULL) free(lexer->content);
 }
 
-static inline Lexer* jsl_createLexer(JSONStream* json_stream)
+static inline Lexer* createLexer(JSONStream* json_stream)
 {
     Lexer* lexer = (Lexer*)malloc(sizeof(Lexer));
-    jsl_LexerCtor(lexer, json_stream);
+    initLexer(lexer, json_stream);
     return lexer;
 }
 
-static inline void jsl_freeLexer(Lexer* lexer)
+static inline void freeLexer(Lexer* lexer)
 {
-    jsl_LexerDtor(lexer);
+    destroyLexer(lexer);
     free(lexer);
 }
 
-int jsl_next_token(Lexer* lexer); //getting the next symbol from JSON data
+int nextToken(Lexer* lexer); //getting the next symbol from JSON data
 #endif // !__LEXING_H__

@@ -238,7 +238,7 @@ struct StackContext {
                 case jnt_fliter: {
                     st.push_back({set_array_all});
                     create_dfa();
-                    jpe_ModifyRef(p);
+                    evaluatorModifyReference(p);
                     state_handle_now = model->size()-1;
                     states_mapping[state_handle_now] = vector<int>(0);
                     filter_trees.push_back(p->left);
@@ -263,8 +263,8 @@ struct StackContext {
 
 extern "C" {
 
-static JQ_DFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
-    JQ_DFA* dfa = jqd_Create(cpd_dfa->getStateSum(), cpd_dfa->getInputSize());
+static JSONQueryDFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
+    JSONQueryDFA* dfa = createJSONQueryDFA(cpd_dfa->getStateSum(), cpd_dfa->getInputSize());
     for (int i = 0; i < dfa->states_num; ++i) {
         for (int j = 0; j < dfa->inputs_num; ++j ) {
             dfa->table[i * dfa->inputs_num + j] = cpd_dfa->nextState(i, j);
@@ -280,9 +280,9 @@ static JQ_DFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
                 dfa->stop_state[i] = 0;
             }
             if (ctx->output_states.find(stop_state) != ctx->output_states.end()) {
-                dfa->accept_type[i] = JQ_DFA_OUTPUT_TYPE;
+                dfa->accept_type[i] = JSONQueryDFA_OUTPUT_TYPE;
             } else 
-                dfa->accept_type[i] = JQ_DFA_PREDICATE_TYPE;
+                dfa->accept_type[i] = JSONQueryDFA_PREDICATE_TYPE;
         }
     }
     dfa->names[1] = str_copy("other");
@@ -302,14 +302,14 @@ static int acc_id2state(DFACompressed* cpd_dfa, int acc) {
     return -1;
 } 
 
-static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_DFA* m_dfa, JQ_CONTEXT* context) {
+static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JSONQueryDFA* m_dfa, JSONQueryDFAContext* context) {
     context->states_num = cpd_dfa->getStateSum();
     context->subtrees = (JSONPathNode**) calloc(cpd_dfa->getStateSum()+1, sizeof(JSONPathNode*));
-    context->states_mapping = (JQ_IntVerPair*) calloc(cpd_dfa->getStateSum()+1, sizeof(JQ_IntVerPair));
+    context->states_mapping = (JSONQueryIntVecPair*) calloc(cpd_dfa->getStateSum()+1, sizeof(JSONQueryIntVecPair));
     context->array_predicate_states.value_size = 0;
     context->array_predicate_states.value = (int*)calloc(cpd_dfa->getStateSum(), sizeof(int));
     for (int i = 0; i < cpd_dfa->getStateSum(); ++i) {
-        int acc = jqd_getStopState(m_dfa, i);
+        int acc = getDFAStopState(m_dfa, i);
         if (acc) {
             context->subtrees[i] = ctx->tree_mapping[acc-1];
             const auto& vec = ctx->states_mapping[acc-1];
@@ -320,7 +320,7 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_DFA* m_
                     context->states_mapping[i].value[j] = acc_id2state(cpd_dfa, vec[j]+1);
                 }
             }
-            if (m_dfa->accept_type[i] == JQ_DFA_PREDICATE_TYPE) {
+            if (m_dfa->accept_type[i] == JSONQueryDFA_PREDICATE_TYPE) {
                 for (int j = 0; j < cpd_dfa->getStateSum(); ++j) {
                     if (cpd_dfa->nextState(j, 2) == i) {
                         int k = context->array_predicate_states.value_size++;
@@ -333,13 +333,13 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JQ_DFA* m_
     }
 }
 
-JQ_DFA* dfa_Create(const char* json_path, JQ_CONTEXT* context) {
+JSONQueryDFA* buildJSONQueryDFA(const char* json_path, JSONQueryDFAContext* context) {
     printf("\noriginal: %s\n", json_path);
-    JSONPathNode* root = jpp_Analysis(json_path);
-    return dfa_CreateFromAST(root, context);
+    JSONPathNode* root = analysisJSONPath(json_path);
+    return buildJSONQueryDFAFromAST(root, context);
 }
 
-JQ_DFA* dfa_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
+JSONQueryDFA* buildJSONQueryDFAFromAST(JSONPathNode* json_path, JSONQueryDFAContext* context) {
     RegexModel* model = new RegexModel();
 
     StackContext* ctx = new StackContext(model, json_path);
@@ -359,9 +359,9 @@ JQ_DFA* dfa_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
     DFACompressed* dfa = (DFACompressed*)(data->main_dfa);
     // dfa->print();
 
-    JQ_DFA* m_dfa = create_dfa(ctx, dfa);
+    JSONQueryDFA* m_dfa = create_dfa(ctx, dfa);
     create_context(ctx, dfa, m_dfa, context);
-    jqd_print(m_dfa);
+    printDFA(m_dfa);
 
     delete model;
     delete start;
@@ -372,12 +372,12 @@ JQ_DFA* dfa_CreateFromAST(JSONPathNode* json_path, JQ_CONTEXT* context) {
 }
 
 
-JQ_DFA* dfa_CreateMultiple(int num, const char* json_path[]) {
+JSONQueryDFA* buildJSONQueryDFAMultiple(int num, const char* json_path[]) {
     // TODO: Implement merging multiple JSON Query DFAs
     return NULL;
 }
 
-JQ_DFA* dfa_CreateMultipleFromAST(int num, JSONPathNode* json_path[]) {
+JSONQueryDFA* buildJSONQueryDFAMultipleFromAST(int num, JSONPathNode* json_path[]) {
     return NULL;
 }
 

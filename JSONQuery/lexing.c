@@ -5,7 +5,7 @@
 #include "basic.h"
 #include "lexing.h"
 
-int jsl_next_token(Lexer* lexer)
+int nextToken(Lexer* lexer)
 {
     char* start = lexer->current_start;
     char* p = lexer->next_start;

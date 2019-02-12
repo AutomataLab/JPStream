@@ -50,54 +50,54 @@ void jerror (JLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *ms
 AllPath: LocationPath { *root = $1; }
        ;
 
-LocationPath: '$' { $$ = jpn_CreateRoot(); }
-            | LocationPath '.' Property { $$ = jpn_CreateConcat($1, $3); }
-            | LocationPath PARENT Property  { $$ = jpn_CreateParentConcat($1, $3); }
-            | LocationPath '[' Predicate ']' { $$ = jpn_CreatePredicate($1, $3); }
+LocationPath: '$' { $$ = jsonPathNodeCreateRoot(); }
+            | LocationPath '.' Property { $$ = jsonPathNodeCreateConcat($1, $3); }
+            | LocationPath PARENT Property  { $$ = jsonPathNodeCreateParentConcat($1, $3); }
+            | LocationPath '[' Predicate ']' { $$ = jsonPathNodeCreatePredicate($1, $3); }
             ;
 
-Property: NCNAME {$$ = jpn_CreateID($1); }
-    | '*' { $$ = jpn_CreateWildcard(); }
+Property: NCNAME {$$ = jsonPathNodeCreateID($1); }
+    | '*' { $$ = jsonPathNodeCreateWildcard(); }
     ;
 
-Predicate: Number ':' Number {$$ = jpn_CreateRange($1, $3);}
-    | ':' Number {$$ = jpn_CreateRange(NULL, $2);}
-    | Number ':' {$$ = jpn_CreateRange($1, NULL);}
-    | '*' { $$ = jpn_CreateWildcard(); }
-    | '?' '(' Expr ')' {$$ = jpn_CreateFliter($3);}
-    | '(' Expr ')' {$$ = jpn_CreateScript($2);}
+Predicate: Number ':' Number {$$ = jsonPathNodeCreateRange($1, $3);}
+    | ':' Number {$$ = jsonPathNodeCreateRange(NULL, $2);}
+    | Number ':' {$$ = jsonPathNodeCreateRange($1, NULL);}
+    | '*' { $$ = jsonPathNodeCreateWildcard(); }
+    | '?' '(' Expr ')' {$$ = jsonPathNodeCreateFliter($3);}
+    | '(' Expr ')' {$$ = jsonPathNodeCreateScript($2);}
     | IndexList
     ;
 
 IndexList: Number
-    | STRING  { $$ = jpn_CreateString($1); }
-    | IndexList ',' Number  { $$ = jpn_CreateConcat($1, $3); }
-    | IndexList ',' STRING  { $$ = jpn_CreateConcat($1, jpn_CreateString($3)); }
+    | STRING  { $$ = jsonPathNodeCreateString($1); }
+    | IndexList ',' Number  { $$ = jsonPathNodeCreateConcat($1, $3); }
+    | IndexList ',' STRING  { $$ = jsonPathNodeCreateConcat($1, jsonPathNodeCreateString($3)); }
     ;
 
-Expr: Expr OR Expr  { $$ = jpn_CreateOperator(jot_or, $1, $3); }
-    | Expr AND Expr  { $$ = jpn_CreateOperator(jot_and, $1, $3); }
-    | Expr EQ Expr  { $$ = jpn_CreateOperator(jot_equal, $1, $3); }
-    | Expr NEQ Expr  { $$ = jpn_CreateOperator(jot_neq, $1, $3); }
-    | Expr '<' Expr  { $$ = jpn_CreateOperator(jot_less, $1, $3); }
-    | Expr '>' Expr  { $$ = jpn_CreateOperator(jot_greater, $1, $3); }
-    | Expr LEQ Expr  { $$ = jpn_CreateOperator(jot_leq, $1, $3); }
-    | Expr GEQ Expr  { $$ = jpn_CreateOperator(jot_geq, $1, $3); }
-    | Expr '+' Expr  { $$ = jpn_CreateOperator(jot_add, $1, $3); }
-    | Expr '-' Expr  { $$ = jpn_CreateOperator(jot_minus, $1, $3); }
-    | Expr '*' Expr  { $$ = jpn_CreateOperator(jot_multiply, $1, $3); }
-    | Expr '/' Expr  { $$ = jpn_CreateOperator(jot_div, $1, $3); }
-    | Expr '%' Expr  { $$ = jpn_CreateOperator(jot_mod, $1, $3); }
-    | '@' { $$ = jpn_CreateRef(); }
+Expr: Expr OR Expr  { $$ = jsonPathNodeCreateOperator(jot_or, $1, $3); }
+    | Expr AND Expr  { $$ = jsonPathNodeCreateOperator(jot_and, $1, $3); }
+    | Expr EQ Expr  { $$ = jsonPathNodeCreateOperator(jot_equal, $1, $3); }
+    | Expr NEQ Expr  { $$ = jsonPathNodeCreateOperator(jot_neq, $1, $3); }
+    | Expr '<' Expr  { $$ = jsonPathNodeCreateOperator(jot_less, $1, $3); }
+    | Expr '>' Expr  { $$ = jsonPathNodeCreateOperator(jot_greater, $1, $3); }
+    | Expr LEQ Expr  { $$ = jsonPathNodeCreateOperator(jot_leq, $1, $3); }
+    | Expr GEQ Expr  { $$ = jsonPathNodeCreateOperator(jot_geq, $1, $3); }
+    | Expr '+' Expr  { $$ = jsonPathNodeCreateOperator(jot_add, $1, $3); }
+    | Expr '-' Expr  { $$ = jsonPathNodeCreateOperator(jot_minus, $1, $3); }
+    | Expr '*' Expr  { $$ = jsonPathNodeCreateOperator(jot_multiply, $1, $3); }
+    | Expr '/' Expr  { $$ = jsonPathNodeCreateOperator(jot_div, $1, $3); }
+    | Expr '%' Expr  { $$ = jsonPathNodeCreateOperator(jot_mod, $1, $3); }
+    | '@' { $$ = jsonPathNodeCreateRef(); }
     | Number
-    | STRING { $$ = jpn_CreateString($1); }
+    | STRING { $$ = jsonPathNodeCreateString($1); }
     | '(' Expr ')' { $$ = $2; }
-    | Expr '.' Property { $$ = jpn_CreateConcat($1, $3); }
-    | Expr PARENT Property  { $$ = jpn_CreateParentConcat($1, $3); }
+    | Expr '.' Property { $$ = jsonPathNodeCreateConcat($1, $3); }
+    | Expr PARENT Property  { $$ = jsonPathNodeCreateParentConcat($1, $3); }
     ;
 
-Number: NUMBER { $$ = jpn_CreateNumber($1); }
-    | '-' NUMBER { $$ = jpn_CreateNumber(-$2); }
+Number: NUMBER { $$ = jsonPathNodeCreateNumber($1); }
+    | '-' NUMBER { $$ = jsonPathNodeCreateNumber(-$2); }
     ;
 
 %%
@@ -111,7 +111,7 @@ void jerror (JLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *ms
 }
 
 
-JSONPathNode* jpp_Analysis(const char* data) {
+JSONPathNode* analysisJSONPath(const char* data) {
     JSONPathNode* root;
     yyscan_t sc;
     int res;

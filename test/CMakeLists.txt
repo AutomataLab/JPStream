@@ -15,8 +15,8 @@ target_link_libraries(jsonpath_test DFABuilder JSONPathParser)
 add_test(NAME JSONPathTest COMMAND jsonpath_test)
 
 
-add_executable(query_test ${CMAKE_CURRENT_SOURCE_DIR}/query_test.c)
-target_link_libraries(query_test JSONQueryEngine DFABuilder JSONPathParser pthread)
+# add_executable(query_test ${CMAKE_CURRENT_SOURCE_DIR}/query_test.c)
+# target_link_libraries(query_test JSONQueryEngine DFABuilder JSONPathParser pthread)
 # add_test(NAME JSONQueryTest COMMAND query_test)
 
 

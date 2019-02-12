@@ -7,8 +7,8 @@
 #define EXPECT_NE(a, b) if ((a) == (b)) { printf("Expect %s != %s failed.\n", #a, #b); return 1; }
 
 int test1() {
-    JSONPathNode* root = jpp_Analysis("$[?(@.a)]");
-    jpn_Print(root);
+    JSONPathNode* root = analysisJSONPath("$[?(@.a)]");
+    printJsonPathAST(root);
     EXPECT_NE(root, NULL);
     EXPECT_EQ(root->node_type, jnt_predicate);
     EXPECT_NE(root->left, NULL);
@@ -19,9 +19,9 @@ int test1() {
 }
 
 int test_verify() {
-    JSONPathNode* root = jpp_Analysis("$[?(((@.a.k||@.d.bi.dfa)&&(@.e||@.f))&&(@.b||@.c))]");
-    jpe_ModifyRef(root); // never use it like root = jpe_ModifyRef(root)
-    jpn_Print(root);
+    JSONPathNode* root = analysisJSONPath("$[?(((@.a.k||@.d.bi.dfa)&&(@.e||@.f))&&(@.b||@.c))]");
+    evaluatorModifyReference(root); // never use it like root = evaluatorModifyReference(root)
+    printJsonPathAST(root);
     JSONPathNode* node = root->right->left;
     JSONPathKeyValuePair table[] = {
         {"a.k", {.vtype = jvt_boolean, .boolean = true}},
@@ -40,14 +40,14 @@ int test_verify() {
     else
         printf("v = false\n");
 
-    root = jpp_Analysis("$[?(@.text=='bbb')]");
-    jpe_ModifyRef(root);
+    root = analysisJSONPath("$[?(@.text=='bbb')]");
+    evaluatorModifyReference(root);
     node = root->right->left;
     JSONPathKeyValuePair table2[] = {
         {"text", {.vtype = jvt_string, .string = "ccc"}},
         {NULL, {0}}
     };
-    jpn_Print(node);
+    printJsonPathAST(node);
     v = jpe_Evaluate(node, table2);
     EXPECT_EQ(v.vtype, jvt_boolean);
     EXPECT_EQ(v.boolean, false);
@@ -56,14 +56,14 @@ int test_verify() {
     else
         printf("v2 = false\n");
 
-    root = jpp_Analysis("$[?(@.text=='bbb')]");
-    jpe_ModifyRef(root);
+    root = analysisJSONPath("$[?(@.text=='bbb')]");
+    evaluatorModifyReference(root);
     node = root->right->left;
     JSONPathKeyValuePair table3[] = {
         {"text", {.vtype = jvt_string, .string = "bbb"}},
         {NULL, {0}}
     };
-    jpn_Print(node);
+    printJsonPathAST(node);
     v = jpe_Evaluate(node, table3);
     EXPECT_EQ(v.vtype, jvt_boolean);
     EXPECT_EQ(v.boolean, true);
@@ -73,14 +73,14 @@ int test_verify() {
         printf("v3 = false\n");
     
 
-    root = jpp_Analysis("$[?(@.value)]");
-    jpe_ModifyRef(root);
+    root = analysisJSONPath("$[?(@.value)]");
+    evaluatorModifyReference(root);
     node = root->right->left;
     JSONPathKeyValuePair table4[] = {
         {"value", {.vtype = jvt_number, .number = 10.9}},
         {NULL, {0}}
     };
-    jpn_Print(node);
+    printJsonPathAST(node);
     v = jpe_Evaluate(node, table4);
     EXPECT_EQ(v.vtype, jvt_boolean);
     EXPECT_EQ(v.boolean, true);
@@ -91,52 +91,52 @@ int test_verify() {
     return 0;
 }
 
-int test_dfa_Create() {
-    JQ_CONTEXT ctx;
-    JQ_DFA* dfa;
+int test_buildJSONQueryDFA() {
+    JSONQueryDFAContext ctx;
+    JSONQueryDFA* dfa;
 
-    dfa = dfa_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
-    dfa_print(&ctx);
-    printf("next: %d, %s\n", jqd_nextStateByStr(dfa, 1, "root"), "root");
-    printf("next: %d, %s\n", jqd_nextStateByStr(dfa, 2, JQ_DFA_ARRAY), "JQ_DFA_ARRAY");
+    dfa = buildJSONQueryDFA("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
+    printJSONQueryDFAContext(&ctx);
+    printf("next: %d, %s\n", dfaNextStateByStr(dfa, 1, "root"), "root");
+    printf("next: %d, %s\n", dfaNextStateByStr(dfa, 2, JSONQueryDFA_ARRAY), "JSONQueryDFA_ARRAY");
 
     if (dfa == NULL) return 1;
     
-    dfa = dfa_Create("$.root[12:20].title", &ctx);
-    dfa_print(&ctx);
+    dfa = buildJSONQueryDFA("$.root[12:20].title", &ctx);
+    printJSONQueryDFAContext(&ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root.id", &ctx);
+    dfa = buildJSONQueryDFA("$.root.id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$..root.id", &ctx);
+    dfa = buildJSONQueryDFA("$..root.id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.*.root", &ctx);
+    dfa = buildJSONQueryDFA("$.*.root", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$..*.root", &ctx);
+    dfa = buildJSONQueryDFA("$..*.root", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root[*].title", &ctx);
+    dfa = buildJSONQueryDFA("$.root[*].title", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property", &ctx);
+    dfa = buildJSONQueryDFA("$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id", &ctx);
+    dfa = buildJSONQueryDFA("$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root.products[*].productId", &ctx);
+    dfa = buildJSONQueryDFA("$.root.products[*].productId", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root[?(@.id)].quoted_status.entities.user_mentions[?(@.indices&&@.id_str)].id", &ctx);
+    dfa = buildJSONQueryDFA("$.root[?(@.id)].quoted_status.entities.user_mentions[?(@.indices&&@.id_str)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root[?(@.text&&@.contributors)].id", &ctx);
+    dfa = buildJSONQueryDFA("$.root[?(@.text&&@.contributors)].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position", &ctx);
+    dfa = buildJSONQueryDFA("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position", &ctx);
     if (dfa == NULL) return 1;
 
     return 0;
@@ -144,26 +144,26 @@ int test_dfa_Create() {
 
 
 int main() {
-    if (test_dfa_Create()) return 1;
+    if (test_buildJSONQueryDFA()) return 1;
     if (test1()) return 1;
     if (test_verify()) return 1;
 
     printf("=============\n");
-    JSONPathNode* root = jpp_Analysis("$.store.book[?(@.price < 10)].title");
-    jpn_Print(root);
-    jpe_ModifyRef(root); // never use it like root = jpe_ModifyRef(root)
-    jpn_Print(root);
+    JSONPathNode* root = analysisJSONPath("$.store.book[?(@.price < 10)].title");
+    printJsonPathAST(root);
+    evaluatorModifyReference(root); // never use it like root = evaluatorModifyReference(root)
+    printJsonPathAST(root);
     printf("=============\n");
     
-    root = jpp_Analysis("$[?(@.a&&(@.b||@.c))]");
-    jpn_Print(root);
-    jpe_ModifyRef(root); // never use it like root = jpe_ModifyRef(root)
-    jpn_Print(root);
+    root = analysisJSONPath("$[?(@.a&&(@.b||@.c))]");
+    printJsonPathAST(root);
+    evaluatorModifyReference(root); // never use it like root = evaluatorModifyReference(root)
+    printJsonPathAST(root);
     printf("=============\n");
-    root = jpp_Analysis("$[?((@.a.k||@.d.bi.dfa&&(@.e||@.f))&&(@.b||@.c))]");
-    jpn_Print(root);
-    jpe_ModifyRef(root); // never use it like root = jpe_ModifyRef(root)
-    jpn_Print(root);
+    root = analysisJSONPath("$[?((@.a.k||@.d.bi.dfa&&(@.e||@.f))&&(@.b||@.c))]");
+    printJsonPathAST(root);
+    evaluatorModifyReference(root); // never use it like root = evaluatorModifyReference(root)
+    printJsonPathAST(root);
     printf("=============\n");
     printf("correct\n");
     return 0;

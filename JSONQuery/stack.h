@@ -8,12 +8,12 @@
 #define QY_STACK 2     //tag for query stack
 #define INVALID_ST -1  //invalid state
 
-typedef struct QueryElement{
+typedef struct QueryStackElement{
     int state;
     int count;
     int start_obj;
     int end_obj;
-}QueryElement;
+}QueryStackElement;
 
 typedef struct SyntaxStackElement{
     int symbol;
@@ -27,21 +27,21 @@ typedef struct SyntaxStack
 
 typedef struct QueryStack
 {
-    QueryElement item[MAX_STACK];
+    QueryStackElement item[MAX_STACK];
     int count;
 }QueryStack;
 
-static inline void jps_SyntaxStackCtor(SyntaxStack* ss)
+static inline void initSyntaxStack(SyntaxStack* ss)
 {
     ss->count = -1;
 }
 
-static inline void jps_QueryStackCtor(QueryStack* qs)
+static inline void initQueryStack(QueryStack* qs)
 {
     qs->count = -1;
 }
 
-static inline void jps_syntaxPush(SyntaxStack* ss, int data)
+static inline void syntaxStackPush(SyntaxStack* ss, int data)
 {
     if(ss->count<MAX_STACK-1)
     {
@@ -50,7 +50,7 @@ static inline void jps_syntaxPush(SyntaxStack* ss, int data)
     }
 }
 
-static inline void jps_queryPush(QueryStack* qs, QueryElement data)
+static inline void queryStackPush(QueryStack* qs, QueryStackElement data)
 {
     if(qs->count<MAX_STACK-1)
     {
@@ -59,7 +59,7 @@ static inline void jps_queryPush(QueryStack* qs, QueryElement data)
     }
 }
 
-static inline int jps_syntaxPop(SyntaxStack* ss)
+static inline int syntaxStackPop(SyntaxStack* ss)
 {
     int top_symbol; 
     if(ss->count>-1){
@@ -73,16 +73,16 @@ static inline int jps_syntaxPop(SyntaxStack* ss)
     return top_symbol;
 }
 
-static inline QueryElement jps_queryPop(QueryStack* qs)
+static inline QueryStackElement queryStackPop(QueryStack* qs)
 {
-    QueryElement top_state;
+    QueryStackElement top_state;
     if(qs->count>-1) {
         top_state = qs->item[qs->count];
         --qs->count;
     }
     else
     {
-        QueryElement exception;
+        QueryStackElement exception;
         exception.state = INVALID_ST;
         exception.count = 0;
         top_state = exception;
@@ -90,7 +90,7 @@ static inline QueryElement jps_queryPop(QueryStack* qs)
     return top_state;
 }
 
-static inline int jps_syntaxTop(SyntaxStack* ss)
+static inline int syntaxStackTop(SyntaxStack* ss)
 {
     if(ss->count>-1) return ss->symbol[ss->count];
     else
@@ -99,7 +99,7 @@ static inline int jps_syntaxTop(SyntaxStack* ss)
     }
 }
 
-static inline int jps_syntaxSecondTop(SyntaxStack* ss)
+static inline int syntaxStackSecondTop(SyntaxStack* ss)
 {
     if(ss->count>0) return ss->symbol[ss->count-1];
     else
@@ -108,12 +108,12 @@ static inline int jps_syntaxSecondTop(SyntaxStack* ss)
     }
 }
 
-static inline QueryElement jps_queryTop(QueryStack* qs)
+static inline QueryStackElement queryStackTop(QueryStack* qs)
 {
     if(qs->count>-1) return qs->item[qs->count];
     else
     {
-        QueryElement exception;
+        QueryStackElement exception;
         exception.state = INVALID_ST;
         exception.count = 0;
         exception.start_obj = -1;
@@ -122,17 +122,17 @@ static inline QueryElement jps_queryTop(QueryStack* qs)
     }
 }
 
-static inline void jps_queryTopUpdate(QueryStack* qs, QueryElement data)
+static inline void queryStackTopUpdate(QueryStack* qs, QueryStackElement data)
 {
     qs->item[qs->count] = data;
 }
 
-static inline QueryElement jps_querySecondTop(QueryStack* qs)
+static inline QueryStackElement queryStackSecondTop(QueryStack* qs)
 {
     if(qs->count>0) return qs->item[qs->count-1];
     else
     {
-        QueryElement exception;
+        QueryStackElement exception;
         exception.state = INVALID_ST;
         exception.count = 0;
         exception.start_obj = -1;
@@ -141,7 +141,7 @@ static inline QueryElement jps_querySecondTop(QueryStack* qs)
     }
 }
 
-static inline int jps_syntaxSize(SyntaxStack* ss)
+static inline int syntaxStackSize(SyntaxStack* ss)
 {
     return ss->count+1;
 }
