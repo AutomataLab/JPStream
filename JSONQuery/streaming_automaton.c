@@ -15,20 +15,13 @@ static inline void add_primitive_output(JSONQueryDFA* query_automaton, QueryStac
         int upper = pair.upper;
         if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes
         {
-<<<<<<< HEAD
-            addListElement(output_list, text_content);
-=======
-            jpo_addElement(output_list, text_content);  //printf("output %s\n", text_content);
->>>>>>> 9a36e4fbcb9b7e52682dd1ba5ad2d321b1770a85
+            addListElement(output_list, text_content);  //printf("output %s\n", text_content);
         }
     }
 }
 
 static inline void add_object_output(JSONQueryDFA* query_automaton, QueryStackElement* current_state, char* text_content, Lexer* lexer, List* output_list) 
 {
-<<<<<<< HEAD
-    if(getDFAAcceptType(query_automaton, current_state->state)==JSONQueryDFA_OUTPUT_TYPE)  //current_state is a match
-=======
     /*if(strcmp(text_content, "]")==0)
     {
         JQ_index_pair pair = jqd_getArrayIndex(query_automaton, current_state->state);
@@ -38,8 +31,7 @@ static inline void add_object_output(JSONQueryDFA* query_automaton, QueryStackEl
     }*/
     //if(jqd_getAcceptType(query_automaton, current_state->state)==JQ_DFA_PREDICATE_TYPE)
        // printf(" checking extra output %s count %d start %d\n", text_content, current_state->count, current_state->start_obj);
-    if(jqd_getAcceptType(query_automaton, current_state->state)==JQ_DFA_OUTPUT_TYPE)  //current_state is a match
->>>>>>> 9a36e4fbcb9b7e52682dd1ba5ad2d321b1770a85
+    if(getDFAAcceptType(query_automaton, current_state->state)==JSONQueryDFA_OUTPUT_TYPE)  //current_state is a match
     {
         JSONQueryIndexPair pair = getDFAArrayIndex(query_automaton, current_state->state);
         int lower = pair.lower; 

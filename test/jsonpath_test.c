@@ -145,13 +145,13 @@ int test_buildJSONQueryDFA() {
     dfa = buildJSONQueryDFA("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root[*].quoted_status.entities.symbols", &ctx);
+    dfa = buildJSONQueryDFA("$.root[*].quoted_status.entities.symbols", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.root[*].friends[*].id", &ctx);
+    dfa = buildJSONQueryDFA("$.root[*].friends[*].id", &ctx);
     if (dfa == NULL) return 1;
 
-    dfa = dfa_Create("$.meta.view.columns[*].position", &ctx);
+    dfa = buildJSONQueryDFA("$.meta.view.columns[*].position", &ctx);
     if (dfa == NULL) return 1;
 
     return 0;
