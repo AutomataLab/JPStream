@@ -7,7 +7,7 @@ static inline void increase_array_counter(QueryStackElement* si)
 
 // verify whether the current state and current counter satisfy the matched condition
 // 1 -- satisfy 0 -- not satisfy
-static int is_a_match(JSONQueryDFA* qa, QueryStackElement* si)
+static int is_matched_state(JSONQueryDFA* qa, QueryStackElement* si)
 {
     int match = 0;
     //it is a matched output
@@ -71,7 +71,7 @@ static inline void ary_s(JSONQueryDFA* qa, QueryStackElement* si, int symbol, Sy
         next_si.query_state = 0;
     else{ next_si.query_state = dfaNextStateByStr(qa, si->query_state, JSONQueryDFA_ARRAY);} 
     next_si.count = 0;
-    next_si.matched_start = -1;
+    next_si.matched_start = INVALID;
     //update current state info
     *si  = next_si; 
 }
@@ -113,7 +113,7 @@ static inline void key(JSONQueryDFA* qa, QueryStackElement* si, int symbol, char
     else //get next state based on key field
         next_si.query_state = dfaNextStateByStr(qa, si->query_state, symbol_content);  
     next_si.count = 0;
-    next_si.matched_start = -1;
+    next_si.matched_start = INVALID;
     //update current state info
     *si  = next_si;
 }
@@ -147,7 +147,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
             case LCB:   //left curly branket
                 obj_s(symbol, ss);  
                 //it is a matched output
-                if(is_a_match(qa, si)==1)  
+                if(is_matched_state(qa, si)==1)  
                 { 
                     si->matched_start = lexer.next_start - lexer.begin_stream - 1; 
                 }
@@ -174,17 +174,17 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                      }
                 } 
                 //it is a matched output
-                if(si->matched_start>-1&&is_a_match(qa, si)==1)  
+                if(si->matched_start!=INVALID && is_matched_state(qa, si)==1)  
                 { 
                     int position = lexer.next_start - lexer.begin_stream;
                     char* output_text = substring(lexer.begin_stream, si->matched_start, position); 
-                    si->matched_start = -1;
+                    si->matched_start = INVALID;
                     addTupleListElement(tl, si->query_state, output_text); 
                 }
                 break;
             case LB:   //left square branket 
                 //it is a matched output
-                if(is_a_match(qa, si)==1)  
+                if(is_matched_state(qa, si)==1)  
                 { 
                     si->matched_start = lexer.next_start - lexer.begin_stream - 1;  
                 }
@@ -195,11 +195,11 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                 {
                     QueryStackElement top_si = queryStackTop(qs);
                     //it is a matched output
-                    if(is_a_match(qa, &top_si)==1)  
+                    if(top_si.matched_start!=INVALID && is_matched_state(qa, &top_si)==1)  
                     { 
                         int position = lexer.next_start - lexer.begin_stream;
                         char* output_text = substring(lexer.begin_stream, top_si.matched_start, position); 
-                        top_si.matched_start = -1;
+                        top_si.matched_start = INVALID;
                         addTupleListElement(tl, top_si.query_state, output_text);  
                     }
                     //syntax stack only has one '['
@@ -233,7 +233,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                 if(syntaxStackSize(ss) >= 1)
                 {
                     //it is a matched output
-                    if(is_a_match(qa, si)==1)  
+                    if(is_matched_state(qa, si)==1)  
                     { 
                         addTupleListElement(tl, si->query_state, lexer.content);  
                     }

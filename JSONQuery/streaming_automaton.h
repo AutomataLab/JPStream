@@ -25,7 +25,7 @@ static inline void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* 
     //initialize starting state, counter and matched start position
     sa->state_info.query_state = 1;   
     sa->state_info.count = 0;  
-    sa->state_info.matched_start = -1;
+    sa->state_info.matched_start = INVALID;
 }
 
 static inline void destroyStreamingAutomaton(StreamingAutomaton* sa)

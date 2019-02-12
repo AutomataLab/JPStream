@@ -113,7 +113,7 @@ static inline QueryStackElement queryStackTop(QueryStack* qs)
         QueryStackElement exception;
         exception.query_state = INVALID;
         exception.count = 0;
-        exception.matched_start = -1; 
+        exception.matched_start = INVALID; 
         return exception;
     }
 }
@@ -133,7 +133,7 @@ static inline QueryStackElement queryStackSecondTop(QueryStack* qs)
         QueryStackElement exception;
         exception.query_state = INVALID;
         exception.count = 0;
-        exception.matched_start = -1; 
+        exception.matched_start = INVALID; 
         return exception;
     }
 }
