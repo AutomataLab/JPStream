@@ -30,26 +30,26 @@ static inline void add_object_output(JSONQueryDFA* query_automaton, QueryStackEl
         printf("output ] %s count %d state %d lower %d upper %d\n", text_content, current_state->count, current_state->state, lower, upper);
     }*/
     //if(jqd_getAcceptType(query_automaton, current_state->state)==JQ_DFA_PREDICATE_TYPE)
-       // printf(" checking extra output %s count %d start %d\n", text_content, current_state->count, current_state->start_obj);
+       // printf(" checking extra output %s count %d start %d\n", text_content, current_state->count, current_state->matched_start);
     if(getDFAAcceptType(query_automaton, current_state->state)==JSONQueryDFA_OUTPUT_TYPE)  //current_state is a match
     {
         JSONQueryIndexPair pair = getDFAArrayIndex(query_automaton, current_state->state);
         int lower = pair.lower; 
         int upper = pair.upper;
         if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes
-        {   //printf(" checking output %s lower %d upper %d count %d start %d state %d\n", text_content, lower, upper, current_state->count, current_state->start_obj, current_state->state);
+        {   //printf(" checking output %s lower %d upper %d count %d start %d state %d\n", text_content, lower, upper, current_state->count, current_state->matched_start, current_state->state);
             if(strcmp(text_content, "{")==0||strcmp(text_content, "[")==0)
             {
                 int position = lexer->next_start - lexer->begin_stream - 1; 
-                current_state->start_obj = position;  
-                //printf(" checking output' %s lower %d upper %d count %d start %d state %d\n", text_content, lower, upper, current_state->count, current_state->start_obj, current_state->state);
+                current_state->matched_start = position;  
+                //printf(" checking output' %s lower %d upper %d count %d start %d state %d\n", text_content, lower, upper, current_state->count, current_state->matched_start, current_state->state);
             }
-            else if(current_state->start_obj>0&&(strcmp(text_content, "}")==0||strcmp(text_content, "]")==0))
+            else if(current_state->matched_start>0&&(strcmp(text_content, "}")==0||strcmp(text_content, "]")==0))
             {   
                 int position = lexer->next_start - lexer->begin_stream;
                 char* output_text;
-                output_text = substring(lexer->begin_stream, current_state->start_obj, position);  //printf("output %s lower %d upper %d count %d state %d\n", output_text, lower, upper, current_state->count, current_state->state);
-                current_state->start_obj = -1;
+                output_text = substring(lexer->begin_stream, current_state->matched_start, position);  //printf("output %s lower %d upper %d count %d state %d\n", output_text, lower, upper, current_state->count, current_state->state);
+                current_state->matched_start = -1;
                 addListElement(output_list, output_text);
             }
         }
@@ -91,7 +91,7 @@ static inline void ary_s(JSONQueryDFA* query_automaton, QueryStackElement* curre
         next_state.state = 0;
     else{ next_state.state = dfaNextStateByStr(query_automaton, current_state->state, JSONQueryDFA_ARRAY);} 
     next_state.count = 0;
-    next_state.start_obj = -1;
+    next_state.matched_start = -1;
     *current_state  = next_state; //update current state
 }
 
@@ -121,8 +121,8 @@ static inline void key(JSONQueryDFA* query_automaton, QueryStackElement* current
     QueryStackElement c_state;
     c_state.state = current_state->state;
     c_state.count = current_state->count;
-    if(current_state->start_obj>0) c_state.start_obj = current_state->start_obj;
-    else c_state.start_obj = -1;
+    if(current_state->matched_start>0) c_state.matched_start = current_state->matched_start;
+    else c_state.matched_start = -1;
     queryStackPush(query_stack, c_state);     //push current state in query stack
     QueryStackElement next_state;                 //move onto next state
     JSONQueryIndexPair pair = getDFAArrayIndex(query_automaton, c_state.state);
@@ -133,7 +133,7 @@ static inline void key(JSONQueryDFA* query_automaton, QueryStackElement* current
     else 
         next_state.state = dfaNextStateByStr(query_automaton, current_state->state, content);  //get next state based on content  
     next_state.count = 0;
-    next_state.start_obj = -1;
+    next_state.matched_start = -1;
     *current_state  = next_state; //update current state
 }
 
@@ -246,7 +246,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
         }
         symbol = nextToken(lexer); 
     }
-    printf("syntax size %d query state %d %d\n", syntaxStackSize(syntax_stack), current_state->state, query_stack->count);
+    printf("syntax size %d query state %d %d\n", syntaxStackSize(syntax_stack), current_state->state, query_stack->top_item);
     printf("output size %d\n", getListSize(output_list));
 }
 

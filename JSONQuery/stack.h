@@ -6,144 +6,144 @@
 #define MAX_STACK 100  //max size of stack
 #define SYN_STACK 1    //tag for syntax stack
 #define QY_STACK 2     //tag for query stack
-#define INVALID_ST -1  //invalid state
+#define INVALID -1  //invalid state
 
 typedef struct QueryStackElement{
     int state;
     int count;
-    int start_obj;
-    int end_obj;
+    int matched_start; 
 }QueryStackElement;
-
-typedef struct SyntaxStackElement{
-    int symbol;
-}SyntaxElement;
 
 typedef struct SyntaxStack
 {
     int symbol[MAX_STACK];
-    int count;
+    int top_item;
 }SyntaxStack;
 
 typedef struct QueryStack
 {
     QueryStackElement item[MAX_STACK];
-    int count;
+    int top_item;
 }QueryStack;
 
 static inline void initSyntaxStack(SyntaxStack* ss)
 {
-    ss->count = -1;
+    ss->top_item = -1;
 }
 
 static inline void initQueryStack(QueryStack* qs)
 {
-    qs->count = -1;
+    qs->top_item = -1;
 }
 
 static inline void syntaxStackPush(SyntaxStack* ss, int data)
 {
-    if(ss->count<MAX_STACK-1)
+    if(ss->top_item<MAX_STACK-1)
     {
-        ++ss->count;
-        ss->symbol[ss->count] = data;
+        ++ss->top_item;
+        ss->symbol[ss->top_item] = data;
     }
 }
 
 static inline void queryStackPush(QueryStack* qs, QueryStackElement data)
 {
-    if(qs->count<MAX_STACK-1)
+    if(qs->top_item<MAX_STACK-1)
     {
-        ++qs->count;
-        qs->item[qs->count] = data;
+        ++qs->top_item;
+        qs->item[qs->top_item] = data;
     }
 }
 
 static inline int syntaxStackPop(SyntaxStack* ss)
 {
     int top_symbol; 
-    if(ss->count>-1){
-        top_symbol = ss->symbol[ss->count];
-        --ss->count;
+    if(ss->top_item>-1){
+        top_symbol = ss->symbol[ss->top_item];
+        --ss->top_item;
     }
     else
     {
-        top_symbol = INVALID_ST;
+        top_symbol = INVALID;
     }
     return top_symbol;
 }
 
+// pop out QueryStackElement from query stack
 static inline QueryStackElement queryStackPop(QueryStack* qs)
 {
     QueryStackElement top_state;
-    if(qs->count>-1) {
-        top_state = qs->item[qs->count];
-        --qs->count;
+    if(qs->top_item>-1) {
+        top_state = qs->item[qs->top_item];
+        --qs->top_item;
     }
     else
     {
         QueryStackElement exception;
-        exception.state = INVALID_ST;
+        exception.state = INVALID;
         exception.count = 0;
         top_state = exception;
     }
     return top_state;
 }
 
+// get the top element on syntax stack
 static inline int syntaxStackTop(SyntaxStack* ss)
 {
-    if(ss->count>-1) return ss->symbol[ss->count];
+    if(ss->top_item>-1) return ss->symbol[ss->top_item];
     else
     {
-        return INVALID_ST;
+        return INVALID;
     }
 }
 
+// get the second top element on syntax stack
 static inline int syntaxStackSecondTop(SyntaxStack* ss)
 {
-    if(ss->count>0) return ss->symbol[ss->count-1];
+    if(ss->top_item>0) return ss->symbol[ss->top_item-1];
     else
     {
-        return INVALID_ST;
+        return INVALID;
     }
 }
 
+// get the top element on query stack
 static inline QueryStackElement queryStackTop(QueryStack* qs)
 {
-    if(qs->count>-1) return qs->item[qs->count];
+    if(qs->top_item>-1) return qs->item[qs->top_item];
     else
     {
         QueryStackElement exception;
-        exception.state = INVALID_ST;
+        exception.state = INVALID;
         exception.count = 0;
-        exception.start_obj = -1;
-        exception.end_obj = -1;
+        exception.matched_start = -1; 
         return exception;
     }
 }
 
+// update top element on query stack
 static inline void queryStackTopUpdate(QueryStack* qs, QueryStackElement data)
 {
-    qs->item[qs->count] = data;
+    qs->item[qs->top_item] = data;
 }
 
+// get the second top element on query stack
 static inline QueryStackElement queryStackSecondTop(QueryStack* qs)
 {
-    if(qs->count>0) return qs->item[qs->count-1];
+    if(qs->top_item>0) return qs->item[qs->top_item-1];
     else
     {
         QueryStackElement exception;
-        exception.state = INVALID_ST;
+        exception.state = INVALID;
         exception.count = 0;
-        exception.start_obj = -1;
-        exception.end_obj = -1;
+        exception.matched_start = -1; 
         return exception;
     }
 }
 
+// get the size of syntax stack
 static inline int syntaxStackSize(SyntaxStack* ss)
 {
-    return ss->count+1;
+    return ss->top_item+1;
 }
 
 
