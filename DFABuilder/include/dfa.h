@@ -128,11 +128,11 @@ static inline void printDFA(JSONQueryDFA* dfa) {
         int l;
         if ((l = getDFAStopState(dfa, i)) != 0) {
             printf("#%d",l);
-            if (getDFAAcceptType(dfa, i) == JSONQueryDFA_OUTPUT_TYPE) 
-                printf("!");
-            else
-                printf("*");
         }
+        if (getDFAAcceptType(dfa, i) == JSONQueryDFA_OUTPUT_TYPE) 
+            printf("!");
+        if (getDFAAcceptType(dfa, i) == JSONQueryDFA_PREDICATE_TYPE) 
+            printf("*");
         for (int j = 1; j< inputs; ++j) {
             int next = dfaNextState(dfa, i, j);
             if (next != 0)

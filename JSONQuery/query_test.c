@@ -133,7 +133,7 @@ void Test5()
     double duration;
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/wiki.json",1);
-    char* path = "$.root[*].claims.P150[0:100].mainsnak.property";
+    char* path = "$.root[*].claims.P150[2:4].mainsnak.property";
 
     //loading dfa
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
@@ -191,7 +191,7 @@ void Test7()
     double duration;
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/rowstest.json",1);
-    char* path = "$.data[*]";
+    char* path = "$.data[1:3]";
 
     //loading dfa
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
@@ -254,7 +254,7 @@ void Test9()
     JSONStream* stream = jps_createJSONStream("../../dataset/bb.json",1);
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
-    char* path = "$.root.products[*].categoryPath[*]";
+    char* path = "$.root.products[?(@.sku)].categoryPath[1:2]";
 
     //loading dfa
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
@@ -279,14 +279,14 @@ void Test9()
 
 int main()
 {
-    Test1();
-    Test2();
-    Test3();
-    Test4();
-    Test5();
-    Test6();
-    //Test7();
-    Test8();
-    Test9();
+    Test1(); //78
+    Test2(); //78
+    Test3(); //2
+    Test4(); //43
+    Test5(); //32
+    Test6(); //189
+    Test7(); //2
+    Test8(); //1
+    Test9(); //26
     return 1;
 }

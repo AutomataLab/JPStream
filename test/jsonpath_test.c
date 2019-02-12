@@ -95,6 +95,12 @@ int test_buildJSONQueryDFA() {
     JSONQueryDFAContext ctx;
     JSONQueryDFA* dfa;
 
+    dfa = buildJSONQueryDFA("$.a[1:2].b", &ctx);
+    printJSONQueryDFAContext(&ctx);
+
+    dfa = buildJSONQueryDFA("$.a[1:2]", &ctx);
+    printJSONQueryDFAContext(&ctx);
+
     dfa = buildJSONQueryDFA("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
     printJSONQueryDFAContext(&ctx);
     printf("next: %d, %s\n", dfaNextStateByStr(dfa, 1, "root"), "root");
@@ -137,6 +143,15 @@ int test_buildJSONQueryDFA() {
     if (dfa == NULL) return 1;
 
     dfa = buildJSONQueryDFA("$.root.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position", &ctx);
+    if (dfa == NULL) return 1;
+
+    dfa = dfa_Create("$.root[*].quoted_status.entities.symbols", &ctx);
+    if (dfa == NULL) return 1;
+
+    dfa = dfa_Create("$.root[*].friends[*].id", &ctx);
+    if (dfa == NULL) return 1;
+
+    dfa = dfa_Create("$.meta.view.columns[*].position", &ctx);
     if (dfa == NULL) return 1;
 
     return 0;

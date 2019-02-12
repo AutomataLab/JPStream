@@ -75,6 +75,7 @@ struct StackContext {
     RegexModel* model;
     JSONPathNode* root;
     vector<StackElement> st;
+    bool last_st_generated;
     unordered_map<string, int> name_mapping;
     // 0 is end, 1 is other, 2 is array 3-n are names
     vector<string> input_mapping;
@@ -88,6 +89,11 @@ struct StackContext {
 
     StackContext(RegexModel* model, JSONPathNode* root) : model(model), root(root), st(0), input_mapping(3), array_range(0) {}
     ~StackContext() {}
+
+    void push(StackElement&& s) {
+        last_st_generated = false;
+        st.push_back(std::forward<StackElement>(s));
+    }
 
     void print() {
         printf("$");
@@ -112,8 +118,9 @@ struct StackContext {
         printf("\n");
     }
 
-    void create_dfa(bool output = false) {
+    void create_dfa() {
         print();
+        last_st_generated = true;
         for (auto& se: st) 
             if (se.stype == set_dot_property || 
                 se.stype == set_parent_property) {
@@ -157,9 +164,6 @@ struct StackContext {
         model->Add(list);
         array_range.push_back({0,0});
         tree_mapping.push_back(NULL);
-        if (output) {
-            output_states.insert(model->size());
-        }
     }
 
     void construct_filter(JSONPathNode* node) {
@@ -170,7 +174,7 @@ struct StackContext {
             int count = 0;
             while (std::getline(tokenStream, token, '.')) {
                 count++;
-                st.push_back({set_dot_property, token.c_str()});
+                push({set_dot_property, token.c_str()});
             }
             create_dfa();
             states_mapping[state_handle_now].push_back(model->size()-1);
@@ -197,19 +201,19 @@ struct StackContext {
         case jnt_concat: {
             // .*
             if (node->right && node->right->node_type == jnt_wildcard)
-                st.push_back({set_dot_all});
+                push({set_dot_all});
             // .property
             if (node->right && node->right->node_type == jnt_id) 
-                st.push_back({set_dot_property, node->right->string});
+                push({set_dot_property, node->right->string});
             break;
         }
         case jnt_parent_concat: {
             // ..*
             if (node->right && node->right->node_type == jnt_wildcard) 
-                st.push_back({set_parent_all});
+                push({set_parent_all});
             // ..property
             if (node->right && node->right->node_type == jnt_id) 
-                st.push_back({set_parent_property, node->right->string});
+                push({set_parent_property, node->right->string});
             break;
         }
         case jnt_predicate: {
@@ -224,19 +228,19 @@ struct StackContext {
                     else begin = INT_MIN;
                     if (p->right) end = p->right->number;
                     else end = INT_MAX;
-                    st.push_back({set_array_index, begin, end});
+                    push({set_array_index, begin, end});
                     create_dfa();
                     array_range[model->size()-1] = {begin, end};
                     break;
                 }
                 // [*]
                 case jnt_wildcard: {
-                    st.push_back({set_array_all});
+                    push({set_array_all});
                     break;
                 }
                 // [?()]
                 case jnt_fliter: {
-                    st.push_back({set_array_all});
+                    push({set_array_all});
                     create_dfa();
                     evaluatorModifyReference(p);
                     state_handle_now = model->size()-1;
@@ -274,15 +278,18 @@ static JSONQueryDFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
         int stop_state = cpd_dfa->isStopState(i);
         dfa->stop_state[i] = stop_state;
         if (stop_state) {
+            if (ctx->output_states.find(stop_state) != ctx->output_states.end())
+                dfa->accept_type[i] = JSONQueryDFA_OUTPUT_TYPE;
+            else
+                dfa->accept_type[i] = JSONQueryDFA_PREDICATE_TYPE;
             auto pair = ctx->array_range[stop_state-1];
             if (pair.first || pair.second) {
                 dfa->array_index[i] = {pair.first, pair.second};
-                dfa->stop_state[i] = 0;
+                if (dfa->accept_type[i] != JSONQueryDFA_OUTPUT_TYPE) {
+                    dfa->stop_state[i] = 0;
+                    dfa->accept_type[i] = 0;
+                }
             }
-            if (ctx->output_states.find(stop_state) != ctx->output_states.end()) {
-                dfa->accept_type[i] = JSONQueryDFA_OUTPUT_TYPE;
-            } else 
-                dfa->accept_type[i] = JSONQueryDFA_PREDICATE_TYPE;
         }
     }
     dfa->names[1] = str_copy("other");
@@ -344,7 +351,9 @@ JSONQueryDFA* buildJSONQueryDFAFromAST(JSONPathNode* json_path, JSONQueryDFACont
 
     StackContext* ctx = new StackContext(model, json_path);
     ctx->construct_dfa(json_path);
-    ctx->create_dfa(true);
+    if (ctx->last_st_generated == false)
+        ctx->create_dfa();
+    ctx->output_states.insert(model->size());
     
     printf("-------------------\n");
     model->input_max = ctx->input_mapping.size();
