@@ -12,8 +12,7 @@ typedef struct StreamingAutomaton{
     JSONStream* json_stream;  //remove this
     JSONQueryDFA* query_automaton;
     SyntaxStack syntax_stack;
-    QueryStack query_stack;
-    Lexer lexer;              //remove this
+    QueryStack query_stack; 
     //List* output_list;
     TupleList* tuple_list;
     QueryStackElement current_state; //remove this and add three new variables
@@ -26,7 +25,7 @@ static inline void initStreamingAutomaton(StreamingAutomaton* streaming_automato
     streaming_automaton->query_automaton = query_automaton;
     initSyntaxStack(&streaming_automaton->syntax_stack);
     initQueryStack(&streaming_automaton->query_stack);
-    initLexer(&streaming_automaton->lexer, json_stream);
+    //initLexer(&streaming_automaton->lexer, json_stream);
     streaming_automaton->tuple_list = createTupleList(); 
     ///streaming_automaton->output_list = createList();
     //change the implemenations for the following 4 sentences
@@ -53,8 +52,7 @@ static inline void destroyStreamingAutomaton(StreamingAutomaton* streaming_autom
     if(streaming_automaton->tuple_list != NULL)
     {
         freeTupleList(streaming_automaton->tuple_list);
-    } 
-    destroyLexer(&streaming_automaton->lexer);
+    }  
 }
 
 void executeAutomaton(StreamingAutomaton* streaming_automaton);

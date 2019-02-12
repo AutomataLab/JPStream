@@ -1,8 +1,26 @@
+#include <malloc.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <sys/file.h>
 #include "streaming_automaton.h"
+
+char* load_file(char* file_name)
+{
+    FILE *fp; 
+    int size;
+    fp = fopen(file_name,"rb");
+    if (fp==NULL) { return NULL;}
+    fseek (fp, 0, SEEK_END);
+    size=ftell(fp);
+    rewind(fp); 
+    char* stream =(char*)malloc((size+1)*sizeof(char));
+    fread(stream,1,size,fp); 
+    stream[size]='\0';
+    fclose(fp);
+    return stream;
+}
 
 void Test1()
 {
@@ -74,7 +92,7 @@ void Test3()
     //loading inputs
     JSONStream* stream = jps_createJSONStream("../../dataset/twitter.json",1);
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
-  // JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+   //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
    // char* path = "$.root[2:5].id";
     char* path = "$.root[*].quoted_status.entities.user_mentions[*].indices[*]";
     //loading dfa
