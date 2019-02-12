@@ -6,7 +6,7 @@ static inline void increase_counter(QueryStackElement* current_state)
    //printf("new state %d count %d\n", current_state->state, current_state->count);
 }
 
-static inline void add_primitive_output(JSONQueryDFA* query_automaton, QueryStackElement* current_state, char* text_content, List* output_list) 
+static inline void add_primitive_output(JSONQueryDFA* query_automaton, QueryStackElement* current_state, char* text_content, TupleList* tuple_list) 
 {
     if(getDFAAcceptType(query_automaton, current_state->state))  //current_state is a match
     {
@@ -15,12 +15,13 @@ static inline void add_primitive_output(JSONQueryDFA* query_automaton, QueryStac
         int upper = pair.upper;
         if(((lower==0&&upper==0)||(current_state->count>=lower && current_state->count<upper)))  //check array indexes
         {
-            addListElement(output_list, text_content);  //printf("output %s\n", text_content);
+            addTupleListElement(tuple_list, current_state->state, text_content);
+            //addListElement(output_list, text_content);  //printf("output %s\n", text_content);
         }
     }
 }
 
-static inline void add_object_output(JSONQueryDFA* query_automaton, QueryStackElement* current_state, char* text_content, Lexer* lexer, List* output_list) 
+static inline void add_object_output(JSONQueryDFA* query_automaton, QueryStackElement* current_state, char* text_content, Lexer* lexer, TupleList* tuple_list) 
 {
     /*if(strcmp(text_content, "]")==0)
     {
@@ -50,7 +51,8 @@ static inline void add_object_output(JSONQueryDFA* query_automaton, QueryStackEl
                 char* output_text;
                 output_text = substring(lexer->begin_stream, current_state->matched_start, position);  //printf("output %s lower %d upper %d count %d state %d\n", output_text, lower, upper, current_state->count, current_state->state);
                 current_state->matched_start = -1;
-                addListElement(output_list, output_text);
+                addTupleListElement(tuple_list, current_state->state, text_content);
+                //addListElement(output_list, output_text);
             }
         }
     }
@@ -150,13 +152,14 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
     SyntaxStack* syntax_stack = &streaming_automaton->syntax_stack;
     QueryStack* query_stack = &streaming_automaton->query_stack;
     Lexer* lexer = &streaming_automaton->lexer;   //change this to the following code
-    List* output_list = streaming_automaton->output_list;
+    //List* output_list = streaming_automaton->output_list;
+    TupleList* tuple_list = streaming_automaton->tuple_list;
     QueryStackElement* current_state = &streaming_automaton->current_state;
 
     //initialize lexer
     /*Lexer lexer;
-    initLexer(&lexer, json_stream);*/
-
+    initLexer(&lexer, json_stream);
+*/
     int symbol = nextToken(lexer);
     
     while(symbol!=END)
@@ -188,7 +191,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
                          increase_counter(current_state); 
                      }
                 } 
-                add_object_output(query_automaton, current_state, "}", lexer, output_list);
+                add_object_output(query_automaton, current_state, "}", lexer, tuple_list);
                 break;
             case LB:   //left square branket  
                 add_object_output(query_automaton, current_state, "[", lexer, NULL);
@@ -199,7 +202,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
                 if(syntaxStackSize(syntax_stack) == 1)  
                 {   
                     ary_e(current_state, syntax_stack, query_stack); 
-                    add_object_output(query_automaton, current_state, "]", lexer, output_list);
+                    add_object_output(query_automaton, current_state, "]", lexer, tuple_list);
                 }
                 //syntax stack has at least two elements, the top element is '['
                 else if(syntaxStackSize(syntax_stack) > 1)  
@@ -208,14 +211,14 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
                     if(syntaxStackSecondTop(syntax_stack)==KY)  
                     {   
                         QueryStackElement checked_state = queryStackTop(query_stack);
-                        add_object_output(query_automaton, &checked_state, "]", lexer, output_list);
+                        add_object_output(query_automaton, &checked_state, "]", lexer, tuple_list);
                         val_ary_e(current_state, syntax_stack, query_stack); 
                     }
                     //after we pop out '[', the next element on top of syntax stack is '['
                     else if(syntaxStackSecondTop(syntax_stack)==LB)  
                     {  
                         elt_ary_e(current_state, syntax_stack, query_stack); 
-                        add_object_output(query_automaton, current_state, "]", lexer, output_list);
+                        add_object_output(query_automaton, current_state, "]", lexer,tuple_list);
                         increase_counter(current_state);
                     }
                 }
@@ -232,14 +235,14 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
                     //the top element on syntax stack is a key field
                     if(syntaxStackTop(syntax_stack)==KY)  
                     {
-                        add_primitive_output(query_automaton, current_state, lexer->content, output_list);
+                        add_primitive_output(query_automaton, current_state, lexer->content, tuple_list);
                         val_pmt(current_state, syntax_stack, query_stack); 
                     }
                     //the top element on syntax stack is '['
                     else if(syntaxStackTop(syntax_stack)==LB)  
                     {
                         increase_counter(current_state);
-                        add_primitive_output(query_automaton, current_state, lexer->content, output_list); 
+                        add_primitive_output(query_automaton, current_state, lexer->content, tuple_list); 
                     }
                 }
                 break;
@@ -247,7 +250,8 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
         symbol = nextToken(lexer); 
     }
     printf("syntax size %d query state %d %d\n", syntaxStackSize(syntax_stack), current_state->state, query_stack->top_item);
-    printf("output size %d\n", getListSize(output_list));
+    printf("output size %d\n", getTupleListSize(tuple_list));
+    //printf("output size %d\n", getListSize(output_list));
 }
 
 void executeAutomaton(StreamingAutomaton* streaming_automaton)

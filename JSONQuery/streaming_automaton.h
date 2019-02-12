@@ -4,7 +4,8 @@
 #include "json_stream.h"
 #include "dfa_builder.h"
 #include "stack.h"
-#include "list.h"
+//#include "list.h"
+#include "tuple_list.h"
 #include "lexing.h"
 
 typedef struct StreamingAutomaton{
@@ -13,7 +14,8 @@ typedef struct StreamingAutomaton{
     SyntaxStack syntax_stack;
     QueryStack query_stack;
     Lexer lexer;              //remove this
-    List* output_list;
+    //List* output_list;
+    TupleList* tuple_list;
     QueryStackElement current_state; //remove this and add three new variables
 }StreamingAutomaton;
 
@@ -25,7 +27,8 @@ static inline void initStreamingAutomaton(StreamingAutomaton* streaming_automato
     initSyntaxStack(&streaming_automaton->syntax_stack);
     initQueryStack(&streaming_automaton->query_stack);
     initLexer(&streaming_automaton->lexer, json_stream);
-    streaming_automaton->output_list = createList();
+    streaming_automaton->tuple_list = createTupleList(); 
+    ///streaming_automaton->output_list = createList();
     //change the implemenations for the following 4 sentences
     streaming_automaton->current_state.state = 1;   //starting state
     streaming_automaton->current_state.count = 0;  
@@ -43,10 +46,14 @@ static inline void destroyStreamingAutomaton(StreamingAutomaton* streaming_autom
     {
         destoryJSONQueryDFA(streaming_automaton->query_automaton);
     }
-    if(streaming_automaton->output_list != NULL)
+    /*if(streaming_automaton->output_list != NULL)
     {
         freeList(streaming_automaton->output_list);
-    }
+    }*/
+    if(streaming_automaton->tuple_list != NULL)
+    {
+        freeTupleList(streaming_automaton->tuple_list);
+    } 
     destroyLexer(&streaming_automaton->lexer);
 }
 
