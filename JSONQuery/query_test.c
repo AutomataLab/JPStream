@@ -6,7 +6,7 @@
 #include <sys/file.h>
 #include "streaming_automaton.h"
 
-char* load_file(char* file_name)
+char* loadJSONStream(char* file_name)
 {
     FILE *fp; 
     int size;
@@ -27,7 +27,7 @@ void Test1()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/bb.json",1);
+    char* stream = loadJSONStream("../../dataset/bb.json");
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.root.products[*].categoryPath[*].id";
@@ -39,12 +39,12 @@ void Test1()
    
     //create streaming automaton
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //run streaming automaton
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
@@ -59,7 +59,7 @@ void Test2()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/bb.json",1);
+    char* stream = loadJSONStream("../../dataset/bb.json");
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$..root..id";
@@ -70,12 +70,12 @@ void Test2()
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
@@ -90,7 +90,7 @@ void Test3()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/twitter.json",1);
+    char* stream = loadJSONStream("../../dataset/twitter.json");
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
    // char* path = "$.root[2:5].id";
@@ -101,12 +101,12 @@ void Test3()
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
@@ -121,7 +121,7 @@ void Test4()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/rowstest.json",1);
+    char* stream = loadJSONStream("../../dataset/rowstest.json");
     char* path = "$.meta.view.columns[*].position";
 
     //loading dfa
@@ -130,12 +130,12 @@ void Test4()
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
@@ -150,7 +150,7 @@ void Test5()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/wiki.json",1);
+    char* stream = loadJSONStream("../../dataset/wiki.json");
     char* path = "$.root[*].claims.P150[2:4].mainsnak.property";
 
     //loading dfa
@@ -159,12 +159,12 @@ void Test5()
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
@@ -179,7 +179,7 @@ void Test6()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/random.json",1);
+    char* stream = loadJSONStream("../../dataset/random.json");
     char* path = "$.root[*].friends[*].id";
 
     //loading dfa
@@ -188,12 +188,12 @@ void Test6()
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
@@ -208,7 +208,7 @@ void Test7()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/rowstest.json",1);
+    char* stream = loadJSONStream("../../dataset/rowstest.json");
     char* path = "$.data[1:3]";
 
     //loading dfa
@@ -217,12 +217,12 @@ void Test7()
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
@@ -237,7 +237,7 @@ void Test8()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/twitter.json",1);
+    char* stream = loadJSONStream("../../dataset/twitter.json");
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
    // JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
    // char* path = "$.root[2:5].id";
@@ -249,12 +249,12 @@ void Test8()
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
@@ -269,7 +269,7 @@ void Test9()
     struct timeval begin,end;
     double duration;
     //loading inputs
-    JSONStream* stream = jps_createJSONStream("../../dataset/bb.json",1);
+    char* stream = loadJSONStream("../../dataset/bb.json");
     //JSONStream* stream = jps_createJSONStream("bb.json",1);
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     char* path = "$.root.products[?(@.sku)].categoryPath[1:2]";
@@ -280,12 +280,12 @@ void Test9()
     if (dfa == NULL) return;
    
     StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, stream, dfa);
+    initStreamingAutomaton(&streaming_automaton, dfa);
 
     //query execution
     printf("begin executing input JSONPath query\n");
     gettimeofday(&begin,NULL);
-    executeAutomaton(&streaming_automaton);
+    executeAutomaton(&streaming_automaton, stream);
 
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;

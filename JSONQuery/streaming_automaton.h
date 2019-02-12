@@ -1,7 +1,6 @@
 #ifndef __STREAMING_AUTOMATON_H__
 #define __STREAMING_AUTOMATON_H__
 
-#include "json_stream.h"
 #include "dfa_builder.h"
 #include "stack.h"
 //#include "list.h"
@@ -9,7 +8,6 @@
 #include "lexing.h"
 
 typedef struct StreamingAutomaton{
-    JSONStream* json_stream;  //remove this
     JSONQueryDFA* query_automaton;
     SyntaxStack syntax_stack;
     QueryStack query_stack; 
@@ -19,9 +17,9 @@ typedef struct StreamingAutomaton{
 }StreamingAutomaton;
 
 
-static inline void initStreamingAutomaton(StreamingAutomaton* streaming_automaton, JSONStream* json_stream, JSONQueryDFA* query_automaton)
+static inline void initStreamingAutomaton(StreamingAutomaton* streaming_automaton, JSONQueryDFA* query_automaton)
 {
-    streaming_automaton->json_stream = json_stream;  //remove this
+    //streaming_automaton->json_stream = json_stream;  //remove this
     streaming_automaton->query_automaton = query_automaton;
     initSyntaxStack(&streaming_automaton->syntax_stack);
     initQueryStack(&streaming_automaton->query_stack);
@@ -37,10 +35,10 @@ static inline void initStreamingAutomaton(StreamingAutomaton* streaming_automato
 
 static inline void destroyStreamingAutomaton(StreamingAutomaton* streaming_automaton)
 {
-    if(streaming_automaton->json_stream != NULL)  //remove this
+    /*if(streaming_automaton->json_stream != NULL)  //remove this
     {
         jps_freeJSONStream(streaming_automaton->json_stream);
-    }
+    }*/
     if(streaming_automaton->query_automaton != NULL)
     {
         destoryJSONQueryDFA(streaming_automaton->query_automaton);
@@ -55,5 +53,5 @@ static inline void destroyStreamingAutomaton(StreamingAutomaton* streaming_autom
     }  
 }
 
-void executeAutomaton(StreamingAutomaton* streaming_automaton);
+void executeAutomaton(StreamingAutomaton* streaming_automaton, char* json_stream);
 #endif // !__STREAMING_AUTOMATON_H__

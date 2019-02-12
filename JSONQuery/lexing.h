@@ -1,7 +1,8 @@
 #ifndef __LEXING_H__
 #define __LEXING_H__
 
-#include "json_stream.h"
+#include <malloc.h> 
+#include <string.h>
 
 #define LCB 1   //'{'
 #define RCB 2   //'}'
@@ -25,12 +26,12 @@ typedef struct Lexer{
 }Lexer; 
 
 
-static inline void initLexer(Lexer* lexer, JSONStream* json_stream)
+static inline void initLexer(Lexer* lexer, char* json_stream)
 {
-    lexer->current_start = json_stream->input_stream[0]; 
+    lexer->current_start = json_stream; 
     lexer->next_start = lexer->current_start;
-    lexer->begin_stream = json_stream->input_stream[0];
-    lexer->end_stream = json_stream->input_stream[0] + strlen(json_stream->input_stream[0]);
+    lexer->begin_stream = json_stream;
+    lexer->end_stream = json_stream + strlen(json_stream);
     lexer->lex_state = 0;
     lexer->content = (char*)malloc(MAX_SIZE_PRIMITIVE*sizeof(char));
 }
@@ -40,7 +41,7 @@ static inline void destroyLexer(Lexer* lexer)
     if(lexer->content!=NULL) free(lexer->content);
 }
 
-static inline Lexer* createLexer(JSONStream* json_stream)
+static inline Lexer* createLexer(char* json_stream)
 {
     Lexer* lexer = (Lexer*)malloc(sizeof(Lexer));
     initLexer(lexer, json_stream);

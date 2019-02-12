@@ -146,7 +146,7 @@ static inline void val_pmt(QueryStackElement* current_state, SyntaxStack* syn_st
 }
 
 //state transition rules for streaming automaton
-void jsr_state_transition(StreamingAutomaton* streaming_automaton)
+void jsr_state_transition(StreamingAutomaton* streaming_automaton, char* json_stream)
 {
     JSONQueryDFA* query_automaton = streaming_automaton->query_automaton;
     SyntaxStack* syntax_stack = &streaming_automaton->syntax_stack;
@@ -158,7 +158,7 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
 
     //initialize lexer
     Lexer lexer;
-    initLexer(&lexer, streaming_automaton->json_stream);
+    initLexer(&lexer, json_stream);
 
     int symbol = nextToken(&lexer);
     
@@ -249,14 +249,15 @@ void jsr_state_transition(StreamingAutomaton* streaming_automaton)
         }
         symbol = nextToken(&lexer); 
     }
+    destroyLexer(&lexer);
     printf("syntax size %d query state %d %d\n", syntaxStackSize(syntax_stack), current_state->state, query_stack->top_item);
     printf("output size %d\n", getTupleListSize(tuple_list));
     //printf("output size %d\n", getListSize(output_list));
 }
 
-void executeAutomaton(StreamingAutomaton* streaming_automaton)
+void executeAutomaton(StreamingAutomaton* streaming_automaton, char* json_stream)
 {
-    jsr_state_transition(streaming_automaton);
+    jsr_state_transition(streaming_automaton, json_stream);
 }
 
 
