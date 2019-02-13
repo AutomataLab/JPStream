@@ -11,7 +11,7 @@ static int is_matched_state(JSONQueryDFA* qa, QueryStackElement* si)
 {
     int match = 0;
     //it is a matched output
-    if(getDFAAcceptType(qa, si->query_state)==JSONQueryDFA_OUTPUT_TYPE)  
+    if(getDFAAcceptType(qa, si->query_state)==DFA_OUTPUT_TYPE)  
     {
         JSONQueryIndexPair pair = getDFAArrayIndex(qa, si->query_state);
         int lower = pair.lower; 
@@ -69,7 +69,7 @@ static inline void ary_s(JSONQueryDFA* qa, QueryStackElement* si, int symbol, Sy
     //check array indexes 
     if(!((lower==0&&upper==0)||(counter>=lower && counter<upper)))  
         next_si.query_state = 0;
-    else{ next_si.query_state = dfaNextStateByStr(qa, si->query_state, JSONQueryDFA_ARRAY);} 
+    else{ next_si.query_state = dfaNextStateByStr(qa, si->query_state, DFA_ARRAY);} 
     next_si.count = 0;
     next_si.matched_start = INVALID;
     //update current state info

@@ -104,7 +104,7 @@ int test_buildJSONQueryDFA() {
     dfa = buildJSONQueryDFA("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
     printJSONQueryDFAContext(&ctx);
     printf("next: %d, %s\n", dfaNextStateByStr(dfa, 1, "root"), "root");
-    printf("next: %d, %s\n", dfaNextStateByStr(dfa, 2, JSONQueryDFA_ARRAY), "JSONQueryDFA_ARRAY");
+    printf("next: %d, %s\n", dfaNextStateByStr(dfa, 2, DFA_ARRAY), "DFA_ARRAY");
 
     if (dfa == NULL) return 1;
     

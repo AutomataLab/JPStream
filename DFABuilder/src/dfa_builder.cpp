@@ -279,13 +279,13 @@ static JSONQueryDFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
         dfa->stop_state[i] = stop_state;
         if (stop_state) {
             if (ctx->output_states.find(stop_state) != ctx->output_states.end())
-                dfa->accept_type[i] = JSONQueryDFA_OUTPUT_TYPE;
+                dfa->accept_type[i] = DFA_OUTPUT_TYPE;
             else
-                dfa->accept_type[i] = JSONQueryDFA_PREDICATE_TYPE;
+                dfa->accept_type[i] = DFA_PREDICATE_TYPE;
             auto pair = ctx->array_range[stop_state-1];
             if (pair.first || pair.second) {
                 dfa->array_index[i] = {pair.first, pair.second};
-                if (dfa->accept_type[i] != JSONQueryDFA_OUTPUT_TYPE) {
+                if (dfa->accept_type[i] != DFA_OUTPUT_TYPE) {
                     dfa->stop_state[i] = 0;
                     dfa->accept_type[i] = 0;
                 }
@@ -327,7 +327,7 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JSONQueryD
                     context->states_mapping[i].value[j] = acc_id2state(cpd_dfa, vec[j]+1);
                 }
             }
-            if (m_dfa->accept_type[i] == JSONQueryDFA_PREDICATE_TYPE) {
+            if (m_dfa->accept_type[i] == DFA_PREDICATE_TYPE) {
                 for (int j = 0; j < cpd_dfa->getStateSum(); ++j) {
                     if (cpd_dfa->nextState(j, 2) == i) {
                         int k = context->array_predicate_states.value_size++;
