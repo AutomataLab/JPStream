@@ -24,7 +24,18 @@ typedef struct JSONPathValue {
 typedef struct JSONPathKeyValuePair {
     char* key;
     JSONPathValue value;
+    int state;
 } JSONPathKeyValuePair;
+
+static inline void clearKeyValuePair(JSONPathKeyValuePair* table) {
+    int i = 0;
+    while (table[i].key != NULL) {
+        JSONPathValue v = {jvt_null};
+        table[i].value = v;
+        i++;
+    }
+}
+
 
 static inline JSONPathValue findValueInTable(const char* name, JSONPathKeyValuePair* table) {
     int i = 0;
