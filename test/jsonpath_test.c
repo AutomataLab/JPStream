@@ -101,6 +101,9 @@ int test_dfa_Create() {
     dfa = dfa_Create("$.a[1:2]", &ctx);
     dfa_print(&ctx);
 
+    dfa = dfa_Create("$.a[?(@.b)]", &ctx);
+    dfa_print(&ctx);
+
     dfa = dfa_Create("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
     dfa_print(&ctx);
     printf("next: %d, %s\n", jqd_nextStateByStr(dfa, 1, "root"), "root");
