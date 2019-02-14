@@ -27,8 +27,9 @@ typedef struct JSONQueryDFA {
 
 #define DFA_ARRAY ((const char*)0)
 
-#define DFA_OUTPUT_TYPE (1)
-#define DFA_PREDICATE_TYPE (2)
+#define DFA_OUTPUT_CANDIDATE (1)
+#define DFA_CONDITION (2)
+#define DFA_PREDICATE (3)
 
 static inline void initJSONQueryDFA(JSONQueryDFA* dfa, uint32_t states_num, uint32_t inputs_num) {
     dfa->states_num = states_num;
@@ -129,9 +130,9 @@ static inline void printDFA(JSONQueryDFA* dfa) {
         if ((l = getDFAStopState(dfa, i)) != 0) {
             printf("#%d",l);
         }
-        if (getDFAAcceptType(dfa, i) == DFA_OUTPUT_TYPE) 
+        if (getDFAAcceptType(dfa, i) == DFA_OUTPUT_CANDIDATE) 
             printf("!");
-        if (getDFAAcceptType(dfa, i) == DFA_PREDICATE_TYPE) 
+        if (getDFAAcceptType(dfa, i) == DFA_CONDITION) 
             printf("*");
         for (int j = 1; j< inputs; ++j) {
             int next = dfaNextState(dfa, i, j);
