@@ -54,6 +54,11 @@ static inline void freeLexer(Lexer* lexer)
     free(lexer);
 }
 
+typedef struct Token{
+    char* content;
+    int token_type;
+}Token;
+
 //getting the next symbol from JSON data
-int nextToken(Lexer* lexer); 
+Token nextToken(Lexer* lexer); 
 #endif // !__LEXING_H__

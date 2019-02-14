@@ -11,8 +11,12 @@ typedef struct StreamingAutomaton{
     SyntaxStack syntax_stack;
     QueryStack query_stack; 
     TupleList* tuple_list;
-    //a structure type, which saves query state, counter, and matched start position of object or array
-    QueryStackElement state_info; 
+    // current query state
+    int query_state; 
+    // array index counter
+    int count;  
+    // matched starting position of object or array
+    int matched_start; 
 }StreamingAutomaton;
 
 // sa -- streaming automaton qa -- query automaton
@@ -23,9 +27,9 @@ static inline void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* 
     initQueryStack(&sa->query_stack);
     sa->tuple_list = createTupleList(); 
     //initialize starting state, counter and matched start position
-    sa->state_info.query_state = 1;   
-    sa->state_info.count = 0;  
-    sa->state_info.matched_start = INVALID;
+    sa->query_state = 1;   
+    sa->count = 0;  
+    sa->matched_start = INVALID;
 }
 
 static inline void destroyStreamingAutomaton(StreamingAutomaton* sa)
