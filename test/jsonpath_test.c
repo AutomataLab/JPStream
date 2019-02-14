@@ -101,6 +101,9 @@ int test_buildJSONQueryDFA() {
     dfa = buildJSONQueryDFA("$.a[1:2]", &ctx);
     printJSONQueryDFAContext(&ctx);
 
+    dfa = buildJSONQueryDFA("$.a[?(@.b)]", &ctx);
+    printJSONQueryDFAContext(&ctx);
+
     dfa = buildJSONQueryDFA("$.root[?(@.index && @.guid)].friends[?(@.name)].id", &ctx);
     printJSONQueryDFAContext(&ctx);
     printf("next: %d, %s\n", dfaNextStateByStr(dfa, 1, "root"), "root");

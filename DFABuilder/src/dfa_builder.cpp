@@ -76,6 +76,7 @@ struct StackContext {
     JSONPathNode* root;
     vector<StackElement> st;
     bool last_st_generated;
+    int  last_id_generated;
     unordered_map<string, int> name_mapping;
     // 0 is end, 1 is other, 2 is array 3-n are names
     vector<string> input_mapping;
@@ -118,7 +119,7 @@ struct StackContext {
         printf("\n");
     }
 
-    void create_dfa() {
+    void create_dfa(bool in_predicate = false) {
         print();
         last_st_generated = true;
         for (auto& se: st) 
@@ -162,6 +163,7 @@ struct StackContext {
             }
         }
         model->Add(list);
+        if (!in_predicate) last_id_generated = model->size();
         array_range.push_back({0,0});
         tree_mapping.push_back(NULL);
     }
@@ -176,7 +178,7 @@ struct StackContext {
                 count++;
                 push({set_dot_property, token.c_str()});
             }
-            create_dfa();
+            create_dfa(true);
             states_mapping[state_handle_now].push_back(model->size()-1);
             tree_mapping[model->size()-1] = node;
             for (int i = 0; i < count; ++i)
@@ -353,7 +355,7 @@ JSONQueryDFA* buildJSONQueryDFAFromAST(JSONPathNode* json_path, JSONQueryDFACont
     ctx->construct_dfa(json_path);
     if (ctx->last_st_generated == false)
         ctx->create_dfa();
-    ctx->output_states.insert(model->size());
+    ctx->output_states.insert(ctx->last_id_generated);
     
     printf("-------------------\n");
     model->input_max = ctx->input_mapping.size();
