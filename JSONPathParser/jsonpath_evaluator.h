@@ -91,6 +91,7 @@ static inline JSONPathValue computeBinaryOperator(JSONPathOperatorType opt, JSON
             return v;
         case jot_equal:
             v.vtype = jvt_boolean;
+            v.boolean = false;
             if (v1.vtype == v2.vtype && v1.vtype == jvt_boolean)
                 v.boolean = (v1.boolean == v2.boolean);
             else if (v1.vtype == v2.vtype && v1.vtype == jvt_number)
@@ -98,18 +99,13 @@ static inline JSONPathValue computeBinaryOperator(JSONPathOperatorType opt, JSON
             else if (v1.vtype == v2.vtype && v1.vtype == jvt_string) {
                 int r = strcmp(v1.string, v2.string);
                 v.boolean = (r == 0);
+            } else if (v1.vtype == v2.vtype && v1.vtype == jvt_null) {
+                v.boolean = true;
             }
             return v;
         case jot_neq:
-            v.vtype = jvt_boolean;
-            if (v1.vtype == v2.vtype && v1.vtype == jvt_boolean)
-                v.boolean = (v1.boolean != v2.boolean);
-            else if (v1.vtype == v2.vtype && v1.vtype == jvt_number)
-                v.boolean = (v1.number != v2.number);
-            else if (v1.vtype == v2.vtype && v1.vtype == jvt_string) {
-                int r = strcmp(v1.string, v2.string);
-                v.boolean = (r != 0);
-            }
+            v = computeBinaryOperator(jot_equal, v1, v2);
+            v.boolean = !(v.boolean);
             return v;
         case jot_less:
             v.vtype = jvt_boolean;
