@@ -106,7 +106,7 @@ struct StackContext {
                 case set_dot_property:      str += "."; str += se.str; break;
                 case set_parent_property:   str += ".."; str += se.str; break;
                 case set_array_all:         str += "[*]"; break;
-                case set_array_index:       str += "["; str+=se.range.first; str+=":"; str+=se.range.second; str+="]"; break;
+                case set_array_index:       str += "["; str+=to_string(se.range.first); str+=":"; str+=to_string(se.range.second); str+="]"; break;
             }
         }
         return str;
