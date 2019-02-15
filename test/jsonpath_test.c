@@ -157,6 +157,10 @@ int test_buildJSONQueryDFA() {
     dfa = buildJSONQueryDFA("$.meta.view.columns[*].position", &ctx);
     if (dfa == NULL) return 1;
 
+    dfa = buildJSONQueryDFA("$.root[?((@.index+@.b>2)&&(@.guid||@.b))].friends[?(@.name)].id", &ctx);
+    printJSONQueryDFAContext(&ctx);
+    if (dfa == NULL) return 1;
+
     return 0;
 }
 

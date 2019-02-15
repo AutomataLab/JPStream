@@ -78,6 +78,7 @@ struct StackContext {
     bool last_st_generated;
     int  last_id_generated;
     unordered_map<string, int> name_mapping;
+    unordered_map<string, int> check;
     // 0 is end, 1 is other, 2 is array 3-n are names
     vector<string> input_mapping;
     vector<JSONPathNode*> filter_trees;
@@ -96,19 +97,23 @@ struct StackContext {
         st.push_back(std::forward<StackElement>(s));
     }
 
-    void print() {
-        printf("$");
+    string getOutput() {
+        string str = "$";
         for (auto& se: st) {
             switch (se.stype) {
-                case set_dot_all:           printf(".*"); break;
-                case set_parent_all:        printf("..*"); break;
-                case set_dot_property:      printf(".%s", se.str); break;
-                case set_parent_property:   printf("..%s", se.str); break;
-                case set_array_all:         printf("[*]"); break;
-                case set_array_index:       printf("[%d:%d]", se.range.first, se.range.second); break;
+                case set_dot_all:           str += ".*"; break;
+                case set_parent_all:        str += "..*"; break;
+                case set_dot_property:      str += "."; str += se.str; break;
+                case set_parent_property:   str += ".."; str += se.str; break;
+                case set_array_all:         str += "[*]"; break;
+                case set_array_index:       str += "["; str+=se.range.first; str+=":"; str+=se.range.second; str+="]"; break;
             }
         }
-        printf("\n");
+        return str;
+    }
+
+    void print() {
+        printf("%s\n", getOutput().c_str());
     }
 
     void print_header() {
@@ -119,7 +124,10 @@ struct StackContext {
         printf("\n");
     }
 
-    void create_dfa(bool in_predicate = false) {
+    bool create_dfa(bool in_predicate = false) {
+        string s = getOutput();
+        if (check.find(s) == check.end()) check[s] = model->size()+1;
+        else return true;
         print();
         last_st_generated = true;
         for (auto& se: st) 
@@ -166,6 +174,7 @@ struct StackContext {
         if (!in_predicate) last_id_generated = model->size();
         array_range.push_back({0,0});
         tree_mapping.push_back(NULL);
+        return false;
     }
 
     void construct_filter(JSONPathNode* node) {
@@ -178,9 +187,11 @@ struct StackContext {
                 count++;
                 push({set_dot_property, token.c_str()});
             }
-            create_dfa(true);
-            states_mapping[state_handle_now].push_back(model->size()-1);
-            tree_mapping[model->size()-1] = node;
+            bool ignore = create_dfa(true);
+            if (!ignore) {
+                states_mapping[state_handle_now].push_back(model->size()-1);
+                tree_mapping[model->size()-1] = node;
+            }
             for (int i = 0; i < count; ++i)
                 st.pop_back();
         }
