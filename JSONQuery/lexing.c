@@ -5,7 +5,7 @@
 #include "utility.h"
 #include "lexing.h"
 
-int nextToken(Lexer* lexer)
+Token nextToken(Lexer* lexer)
 {
     char* start = lexer->current_start;
     char* p = lexer->next_start;
@@ -14,7 +14,10 @@ int nextToken(Lexer* lexer)
     int state = lexer->lex_state; //lex_state 
     int templen = 0;
     int token_len = 0;
-    char* token_pointer = p; int tempcount;
+    char* token_pointer = p; 
+    int tempcount;
+    Token token;
+
     for (; p < end; p++)
     {   
         switch(state)
@@ -27,36 +30,41 @@ int nextToken(Lexer* lexer)
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
                         lexer->lex_state = 0;
-                        lexer->next_start = p+1;  
-                        return LCB;
+                        lexer->next_start = p+1; 
+                        token.token_type = LCB; 
+                        return token;
                     case '}':
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;
-                        return RCB;
+                        token.token_type = RCB;
+                        return token;
                     case '[':
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;
-                        return LB;
+                        token.token_type = LB;
+                        return token;
                     case ']':
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;
-                        return RB;
+                        token.token_type = RB;
+                        return token;
                     case ',': 
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;  
-                        return COM;
+                        token.token_type = COM;
+                        return token;
                     case '"': //text or key field
                         token_len = p - start;
                         token_pointer = start + token_len;
@@ -98,7 +106,7 @@ int nextToken(Lexer* lexer)
                             if(count%2==1) {state = 1; break;}  //it is not a string
                         }
                        //string is found 
-                         tempcount = p-start;
+                        tempcount = p-start;
                         templen = tempcount;
                         char* sub1; 
                         sub1=substring(start , 1, tempcount);                
@@ -126,7 +134,9 @@ int nextToken(Lexer* lexer)
                             p++;
                             lexer->lex_state = 0;
                             lexer->next_start = p+1; 
-                            return KY;
+                            token.token_type = KY;
+                            token.content = lexer->content;
+                            return token;
                         }
                         else //primitive value
                         {
@@ -137,7 +147,9 @@ int nextToken(Lexer* lexer)
                             if(sub1!=NULL) free(sub1);
                             lexer->lex_state = 0; 
                             lexer->next_start = p+1; 
-                            return PRI;
+                            token.token_type = PRI;
+                            token.content = lexer->content;
+                            return token;
                         }
                         
                         state = 0;
@@ -177,7 +189,9 @@ int nextToken(Lexer* lexer)
                         p--;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;
-                        return PRI;
+                        token.token_type = PRI;
+                        token.content = lexer->content;
+                        return token;
                     }
                     default:
                         state = 2;
@@ -191,5 +205,6 @@ int nextToken(Lexer* lexer)
         }
         
     }
-    return END;
+    token.token_type = END;
+    return token;
 }

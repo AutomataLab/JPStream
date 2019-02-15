@@ -282,8 +282,15 @@ static JSONQueryDFA* create_dfa(StackContext* ctx, DFACompressed* cpd_dfa) {
         if (stop_state) {
             if (ctx->output_states.find(stop_state) != ctx->output_states.end())
                 dfa->accept_type[i] = DFA_OUTPUT_CANDIDATE;
-            else
+            else {
                 dfa->accept_type[i] = DFA_CONDITION;
+                for (int j = 0; j < cpd_dfa->getStateSum(); ++j) {
+                    if (cpd_dfa->nextState(j, 2) == i) {
+                        dfa->accept_type[i] = DFA_PREDICATE;
+                        break;
+                    }
+                }
+            }
             auto pair = ctx->array_range[stop_state-1];
             if (pair.first || pair.second) {
                 dfa->array_index[i] = {pair.first, pair.second};
@@ -329,14 +336,9 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JSONQueryD
                     context->states_mapping[i].value[j] = acc_id2state(cpd_dfa, vec[j]+1);
                 }
             }
-            if (m_dfa->accept_type[i] == DFA_CONDITION) {
-                for (int j = 0; j < cpd_dfa->getStateSum(); ++j) {
-                    if (cpd_dfa->nextState(j, 2) == i) {
-                        int k = context->array_predicate_states.value_size++;
-                        context->array_predicate_states.value[k] = i;
-                        break;
-                    }
-                }
+            if (m_dfa->accept_type[i] == DFA_PREDICATE) {
+                int k = context->array_predicate_states.value_size++;
+                context->array_predicate_states.value[k] = i;
             }
         }
     }

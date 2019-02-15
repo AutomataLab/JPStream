@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <sys/file.h>
 #include "streaming_automaton.h"
+#include "predicate.h"
 
 char* loadJSONStream(char* file_name)
 {
@@ -287,10 +288,209 @@ void Test9()
     gettimeofday(&begin,NULL);
     executeAutomaton(&streaming_automaton, stream);
 
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);  
     
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
+void Test10()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/bb.json");
+    //char* stream = loadJSONStream("bb.json");
+    //JSONStream* stream = jps_createJSONStream("bb.json",1);
+    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+    char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream);
+    gettimeofday(&begin,NULL);
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
+void Test11()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    //char* stream = loadJSONStream("twitter_store1.txt");
+    char* stream = loadJSONStream("../../dataset/twitter.json");
+    //JSONStream* stream = jps_createJSONStream("bb.json",1);
+    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+    //char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
+    //char* path = "$.root[?(@.id)&&(@.user.screen_name)].quoted_status.entities.user_mentions[?(@.indices)&&(@.id_str)].id";
+    char* path = "$.root[?(@.text=='@rob_b1991 fine for what?')].id"; 
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
+void Test12()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/rowstest.json");
+    //JSONStream* stream = jps_createJSONStream("bb.json",1);
+    //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
+    //char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
+    //char* path = "$.root[?(@.id)&&(@.user.screen_name)].quoted_status.entities.user_mentions[?(@.indices)&&(@.id_str)].id";
+    char* path = "$.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position";;
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
+void Test13()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/wiki.json");
+    char* path = "$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property";
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
+void Test14()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/random.json");
+    char* path = "$.root[?(@.index&&(@.guid||@.b))].friends[?(@.name)].id";
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
     //free up dynamic memories
     destroyStreamingAutomaton(&streaming_automaton);
 }
@@ -306,5 +506,11 @@ int main()
     Test7(); //2
     Test8(); //1
     Test9(); //26
+    
+    Test10();
+    Test11();
+    Test12();
+    Test13();
+    Test14();
     return 1;
 }

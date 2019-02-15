@@ -3,7 +3,7 @@
 
 #include "utility.h"
 
-#define MAX_TUPLE_LIST 300000
+#define MAX_TUPLE_LIST 100000
 #define MAX_TEXT 100
 
 typedef struct TupleElement{
@@ -38,7 +38,12 @@ static inline void addTupleListElement(TupleList* tl, int state, char* text)
 {
     int index = (++tl->count);
     tl->element[index].state = state;
-    strcopy(text, tl->element[index].text); 
+    strcopy(text, tl->element[index].text); //printf("%d %s\n",state, text); 
+}
+
+static inline TupleElement getTupleListElement(TupleList* tl, int index)
+{
+    return tl->element[index];
 }
 
 static inline int getTupleListSize(TupleList* tl)
