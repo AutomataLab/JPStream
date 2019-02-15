@@ -3,8 +3,8 @@
 
 #include "utility.h"
 
-#define MAX_OUTPUT 99000
-#define MAX_TEXT 1000
+#define MAX_OUTPUT 290000
+#define MAX_STRING 500
 
 typedef struct Output{
     char** element;
@@ -17,7 +17,7 @@ static inline void initOutput(Output* output)
     int i;
     for(i=0; i<MAX_OUTPUT; i++)
     {
-        output->element[i] = (char*)malloc(MAX_TEXT*sizeof(char));
+        output->element[i] = (char*)malloc(MAX_STRING*sizeof(char));
     }
     output->count = -1;
 }
@@ -49,6 +49,11 @@ static inline void addOutputElement(Output* output, char* text)
 {
     int index = (++output->count);
     strcopy(text, output->element[index]);
+}
+
+static inline char* getOutputElement(Output* output, int index)
+{
+    return output->element[index];
 }
 
 static inline void removeOutputElement(Output* output, int number)

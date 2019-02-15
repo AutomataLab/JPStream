@@ -182,14 +182,18 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                 {
                     //after popping out '{', the next element on top of syntax stack is a key field
                     if(syntaxStackSecondTop(ss)==KY)	 
-                    {
-                        val_obj_e(qs_elt, ss, qs); 
+                    {   
+                        val_obj_e(qs_elt, ss, qs);
                     }
                     //after popping out '{', the next element on top of syntax stack is '['
                     else if(syntaxStackSecondTop(ss)==LB)  
                     {
                         elt_obj_e(ss);
-                        increaseArrayCounter(qs_elt); 
+                        increaseArrayCounter(qs_elt);
+                        if(getMatchedType(qa, qs_elt)==DFA_PREDICATE)
+                        {  
+                            addTupleListElement(tl, qs_elt->query_state, "}");
+                        }
                     }
                 } 
                 //it is a matched output
@@ -199,11 +203,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                     char* output_text = substring(lexer.begin_stream, qs_elt->matched_start, position); 
                     qs_elt->matched_start = INVALID;
                     addTupleListElement(tl, qs_elt->query_state, output_text); 
-                }
-                else if(getMatchedType(qa, qs_elt)==DFA_PREDICATE)
-                {
-                    addTupleListElement(tl, qs_elt->query_state, "}");
-                }
+                } 
                 break;
             case LB:   //left square branket 
                 {
@@ -255,8 +255,8 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                 break;
             case COM:   //comma
                 break;
-            case KY:    //key field
-                key(qa, qs_elt, token.content, ss, qs); 
+            case KY:    //key field 
+                key(qa, qs_elt, token.content, ss, qs);
                 break;
             case PRI:   //primitive
                 if(syntaxStackSize(ss) >= 1)
