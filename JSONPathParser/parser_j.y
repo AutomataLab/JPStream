@@ -43,6 +43,7 @@ void jerror (JLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *ms
 %left NEQ LEQ GEQ EQ '<' '>'
 %left '+' '-'
 %left '*' '/' 
+%right '!'
 %left '('
 
 %%
@@ -88,6 +89,7 @@ Expr: Expr OR Expr  { $$ = jsonPathNodeCreateOperator(jot_or, $1, $3); }
     | Expr '*' Expr  { $$ = jsonPathNodeCreateOperator(jot_multiply, $1, $3); }
     | Expr '/' Expr  { $$ = jsonPathNodeCreateOperator(jot_div, $1, $3); }
     | Expr '%' Expr  { $$ = jsonPathNodeCreateOperator(jot_mod, $1, $3); }
+    | '!' Expr { $$ = jsonPathNodeCreateOperatorOne(jot_not, $2); }
     | '@' { $$ = jsonPathNodeCreateRef(); }
     | Number
     | STRING { $$ = jsonPathNodeCreateString($1); }

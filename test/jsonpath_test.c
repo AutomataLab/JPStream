@@ -73,7 +73,7 @@ int test_verify() {
         printf("v3 = false\n");
     
 
-    root = analysisJSONPath("$[?(@.value)]");
+    root = analysisJSONPath("$[?(!@.value)]");
     evaluatorModifyReference(root);
     node = root->right->left;
     JSONPathKeyValuePair table4[] = {
@@ -83,7 +83,7 @@ int test_verify() {
     printJsonPathAST(node);
     v = jpe_Evaluate(node, table4);
     EXPECT_EQ(v.vtype, jvt_boolean);
-    EXPECT_EQ(v.boolean, true);
+    EXPECT_EQ(v.boolean, false);
     if (v.boolean)
         printf("v4 = true\n");
     else

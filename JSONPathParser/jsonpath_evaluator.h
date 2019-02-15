@@ -50,12 +50,6 @@ static inline JSONPathValue findValueInTable(const char* name, JSONPathKeyValueP
     return v;
 }
 
-static inline JSONPathValue computeUnaryOperator(JSONPathOperatorType opt, JSONPathValue v1) {
-    JSONPathValue v = {jvt_null};
-    return v;
-}
-
-
 static inline JSONPathValue computeTypeCast(JSONPathValue v) {
     if (v.vtype == jvt_null) v.boolean = false;
     if (v.vtype == jvt_number) v.boolean = (v.number != 0.0);
@@ -64,6 +58,22 @@ static inline JSONPathValue computeTypeCast(JSONPathValue v) {
     return v;
 }
 
+
+static inline JSONPathValue computeUnaryOperator(JSONPathOperatorType opt, JSONPathValue v1) {
+    JSONPathValue v = {jvt_null};
+    switch (opt)
+    {
+        case jot_not:
+            v1 = computeTypeCast(v1);
+            v.vtype = jvt_boolean;
+            v.boolean = !(v1.boolean);
+            break;
+    
+        default:
+            break;
+    }
+    return v;
+}
 
 /**
     jot_or = 0, jot_and, // boolean

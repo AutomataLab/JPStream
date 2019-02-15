@@ -16,7 +16,7 @@ typedef enum JSONPathNodeType {
 } JSONPathNodeType;
 
 typedef enum JSONPathOperatorType {
-    jot_or = 0, jot_and, // boolean
+    jot_or = 0, jot_and, jot_not, // boolean
     jot_equal, jot_less, jot_greater, jot_neq, jot_leq, jot_geq,  // comparing
     jot_add, jot_minus, jot_multiply, jot_div, jot_mod, // calculation
     jot_union // node-set union
@@ -178,7 +178,7 @@ static inline void printIndentation(int n) {
 */
 static inline void printJsonPathOperator(JSONPathOperatorType opt) {
     const char* name_mapping[] = {
-        "or", "and", 
+        "or", "and", "!", 
         "=", "<", ">", "!=", "<=", ">=",
         "+", "-", "*", "div", "mod",
         "|"

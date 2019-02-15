@@ -66,6 +66,8 @@ Digits			[0-9]+
 
 "||"					return OR;
 
+"!"						return '!';
+
 "$"						return '$';
 
 "@"						return '@';
