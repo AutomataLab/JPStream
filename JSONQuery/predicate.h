@@ -71,10 +71,12 @@ static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQ
     {
     	int pred_state = getContextPredicateStates(ctx, i);
         int con_size = getContextSizeOfMapping(ctx, pred_state);
+        printJSONQueryDFAContext(ctx);
+        
         //get sub tree
         pf->state_mapping[pred_state].sub_tree = getContextSubtree(ctx, pred_state);
         //generate condition state list
-        pf->state_mapping[pred_state].con_state_list = (JSONPathKeyValuePair*)malloc((con_size+1)*sizeof(JSONPathKeyValuePair));
+        pf->state_mapping[pred_state].con_state_list = (JSONPathKeyValuePair*)malloc((con_size+1)*sizeof(JSONPathKeyValuePair)); 
         pf->state_mapping[pred_state].num_con_state = con_size;
         JSONPathKeyValuePair* con_state_list = pf->state_mapping[pred_state].con_state_list;
         //set default values to all elements in predicate condition list
@@ -82,7 +84,7 @@ static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQ
         //fill in condition state list (needs another field)
         for(int j=0;j<con_size;j++)
         {
-            int con_state = getContextValueOfMapping(ctx, pred_state, j);
+            int con_state = getContextValueOfMapping(ctx, pred_state, j); 
             JSONPathNode* node = getContextSubtree(ctx, con_state);
             con_state_list[j].key = node->string;
             con_state_list[j].state = con_state;

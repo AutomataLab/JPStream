@@ -33,9 +33,8 @@ Output* generateFinalOutput(PredicateFilter* pf)
             int pred_state = ps_ele.predicate_state;
             PredicateStateInfo ps_info = pf->state_mapping[pred_state];
             JSONPathNode* root = ps_info.sub_tree; 
-            //evaluate predicate logics
+            //evaluate predicate logics 
             JSONPathValue v = jpe_Evaluate(root, ps_info.con_state_list);
-            
             int first_idx = ps_ele.first_candidate_pos;
             int buf_size = getOutputSize(buffer);
             int rmv_num = buf_size - first_idx;

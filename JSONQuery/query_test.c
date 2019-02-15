@@ -353,7 +353,8 @@ void Test11()
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     //char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
     //char* path = "$.root[?(@.id)&&(@.user.screen_name)].quoted_status.entities.user_mentions[?(@.indices)&&(@.id_str)].id";
-    char* path = "$.root[?(@.text=='@rob_b1991 fine for what?')].id"; 
+    //char* path = "$.root[?(@.text=='@rob_b1991 fine for what?')].id"; 
+    char* path = "$.root[?(@.text&&(!@.contributors))].id"; 
 
     //loading dfa
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
@@ -465,7 +466,7 @@ void Test14()
     double duration;
     //loading inputs
     char* stream = loadJSONStream("../../dataset/random.json");
-    char* path = "$.root[?(@.index&&(@.guid||@.b))].friends[?(@.name)].id";
+    char* path = "$.root[?((@.index+@.b>2)&&(@.guid||@.name))].friends[?(@.name)].id";
 
     //loading dfa
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
