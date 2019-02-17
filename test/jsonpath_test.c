@@ -32,10 +32,9 @@ int test_verify() {
         {"c", "false"},
         {NULL, NULL}
     };
-    JSONPathValue v = evaluateExpression(node, table);
-    EXPECT_EQ(v.vtype, jvt_boolean);
-    EXPECT_EQ(v.boolean, true);
-    if (v.boolean)
+    bool v = evaluateExpression(node, table);
+    EXPECT_EQ(v, true);
+    if (v)
         printf("v = true\n");
     else
         printf("v = false\n");
@@ -49,9 +48,8 @@ int test_verify() {
     };
     printJsonPathAST(node);
     v = evaluateExpression(node, table2);
-    EXPECT_EQ(v.vtype, jvt_boolean);
-    EXPECT_EQ(v.boolean, false);
-    if (v.boolean)
+    EXPECT_EQ(v, false);
+    if (v)
         printf("v2 = true\n");
     else
         printf("v2 = false\n");
@@ -65,9 +63,8 @@ int test_verify() {
     };
     printJsonPathAST(node);
     v = evaluateExpression(node, table3);
-    EXPECT_EQ(v.vtype, jvt_boolean);
-    EXPECT_EQ(v.boolean, true);
-    if (v.boolean)
+    EXPECT_EQ(v, true);
+    if (v)
         printf("v3 = true\n");
     else
         printf("v3 = false\n");
@@ -82,9 +79,8 @@ int test_verify() {
     };
     printJsonPathAST(node);
     v = evaluateExpression(node, table4);
-    EXPECT_EQ(v.vtype, jvt_boolean);
-    EXPECT_EQ(v.boolean, false);
-    if (v.boolean)
+    EXPECT_EQ(v, false);
+    if (v)
         printf("v4 = true\n");
     else
         printf("v4 = false\n");
