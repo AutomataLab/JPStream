@@ -18,19 +18,19 @@
 %define api.prefix {xx}
 %lex-param {yyscan_t yyscanner}
 %locations 
-%parse-param {yyscan_t yyscanner}{JSONPathNode **root}
+%parse-param {yyscan_t yyscanner}{ASTNode **root}
 
 %define parse.error verbose
 
 %code provides{
 YY_DECL;
-void xxerror (XXLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *msg);
+void xxerror (XXLTYPE * yylloc, yyscan_t locp, ASTNode **root, const char *msg);
 }
 
 %union {
     double number;
 	char *string;
-    JSONPathNode *node;
+    ASTNode *node;
 }
 
 %token <string> STRING NCNAME REFERENCE
@@ -115,7 +115,7 @@ QName: NCNAME ':' NCNAME
 
 %%
 
-void xxerror (XXLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *msg) {
+void xxerror (XXLTYPE * yylloc, yyscan_t locp, ASTNode **root, const char *msg) {
 	fprintf(stderr, "error> %s\n", msg);
 	// TODO: add line number and detail
 	exit(1);

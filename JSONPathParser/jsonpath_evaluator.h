@@ -8,6 +8,12 @@
 extern "C" {
 #endif
 
+typedef struct PredicateCondition{
+    char* name;
+    char* text;
+} PredicateCondition;
+
+
 typedef enum JSONPathValueType {
     jvt_null = 0, jvt_number, jvt_string, jvt_boolean
 } JSONPathValueType;
@@ -27,14 +33,7 @@ typedef struct JSONPathKeyValuePair {
     int state;
 } JSONPathKeyValuePair;
 
-static inline void clearKeyValuePair(JSONPathKeyValuePair* table) {
-    int i = 0;
-    while (table[i].key != NULL) {
-        JSONPathValue v = {jvt_null};
-        table[i].value = v;
-        i++;
-    }
-}
+
 
 
 static inline JSONPathValue findValueInTable(const char* name, JSONPathKeyValuePair* table) {
@@ -157,15 +156,63 @@ static inline JSONPathValue computeBinaryOperator(JSONPathOperatorType opt, JSON
     return v;
 }
 
+static inline JSONPathValue stringToValue(const char* str) {
+    JSONPathValue v = {.vtype = jvt_null};
+    if (str == NULL) return v;
+    if (strcmp(str, "true") == 0) {
+        v.vtype = jvt_boolean; v.boolean = true;
+        return v;
+    }
+    if (strcmp(str, "false") == 0) {
+        v.vtype = jvt_boolean; v.boolean = false;
+        return v;
+    }
+    if (strcmp(str, "null") == 0) {
+        v.vtype = jvt_null; 
+        return v;
+    }
+    int len = strlen(str);
+    if (str[0] == '"') { 
+        char* s = (char*) malloc(sizeof(char) * (len-1));
+        strncpy(s, str+1, len-2);
+        s[len-2] = '\0';
+        v.vtype = jvt_string; v.string = s;
+        return v;
+    }
+    if (isdigit(str[0])) {
+        v.vtype = jvt_string; v.number = atof(str);
+        return v;
+    }
+    return v;
+} 
 
+static inline JSONPathKeyValuePair* createTableFromConditions(PredicateCondition* conditions) {
+    int length = 0;
+    while (conditions[length].name != NULL) length++;
 
-static inline JSONPathValue evaluateExpression(JSONPathNode* node, JSONPathKeyValuePair* table) {
-    switch (node->node_type) {
+    JSONPathKeyValuePair* table = (JSONPathKeyValuePair*) calloc(sizeof(JSONPathKeyValuePair), length+1);
+    for (int i = 0; i < length; ++i) {
+        table[i].key = conditions[i].name;
+        table[i].value = stringToValue(conditions[i].text);
+    }
+    return table;
+}
+
+static inline void clearKeyValuePair(PredicateCondition* table) {
+    int i = 0;
+    while (table[i].name != NULL) {
+        table[i].text = NULL;
+        i++;
+    }
+}
+
+static inline JSONPathValue calculateExpression(ASTNode* node, JSONPathKeyValuePair* table) {
+     switch (node->node_type) {
         case jnt_operator: {
             JSONPathValue v1, v2;
-            v1 = evaluateExpression(node->left, table);
+            v1 = calculateExpression(node->left, table);
             if (node->right) {
-                v2 = evaluateExpression(node->right, table);
+                v2 = calculateExpression(node->right, table);
                 return computeBinaryOperator(node->opt, v1, v2);
             }
             return computeUnaryOperator(node->opt, v1);
@@ -191,20 +238,22 @@ static inline JSONPathValue evaluateExpression(JSONPathNode* node, JSONPathKeyVa
     }
 }
 
+
 /**
  * Before calling this function, please replace the '@.proptery' subtree to a single node - jnt_variable
- * You can create it by calling @jsonPathNodeCreateVariable(var_name)
+ * You can create it by calling @ASTNodeCreateVariable(var_name)
  * When I calculate the result, I will try to search the table to find the values of those variable nodes.
  */
-static inline JSONPathValue jpe_Evaluate(JSONPathNode* node, JSONPathKeyValuePair* table) {
-    JSONPathValue v = evaluateExpression(node, table);
+static inline JSONPathValue evaluateExpression(ASTNode* node, PredicateCondition* conditions) {
+    JSONPathKeyValuePair* table = createTableFromConditions(conditions);
+    JSONPathValue v = calculateExpression(node, table);
     return computeTypeCast(v);
 }
 
 
 
-static inline JSONPathNode* evaluatorModifyReference(JSONPathNode* node) {
-    JSONPathNode* ret = 0;
+static inline ASTNode* evaluatorModifyReference(ASTNode* node) {
+    ASTNode* ret = 0;
     if (node->left) {
         ret = evaluatorModifyReference(node->left);
         if (ret != NULL) node->left = ret;
@@ -223,7 +272,7 @@ static inline JSONPathNode* evaluatorModifyReference(JSONPathNode* node) {
         if (node->left->node_type == jnt_reference) {
             char* name = (char*) malloc(sizeof(char) * (strlen(node->right->string) + 1));
             strcpy(name, node->right->string);
-            JSONPathNode* new_node = jsonPathNodeCreateVariable(name);
+            ASTNode* new_node = ASTNodeCreateVariable(name);
             free(node->left);
             free(node->right->string);
             free(node->right);

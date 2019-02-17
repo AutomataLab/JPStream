@@ -18,19 +18,19 @@
 %define api.prefix {j}
 %lex-param {yyscan_t yyscanner}
 %locations 
-%parse-param {yyscan_t yyscanner}{JSONPathNode **root}
+%parse-param {yyscan_t yyscanner}{ASTNode **root}
 
 %define parse.error verbose
 
 %code provides{
 YY_DECL;
-void jerror (JLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *msg);
+void jerror (JLTYPE * yylloc, yyscan_t locp, ASTNode **root, const char *msg);
 }
 
 %union {
     double number;
 	char *string;
-    JSONPathNode *node;
+    ASTNode *node;
 }
 
 %token <string> STRING NCNAME
@@ -51,60 +51,60 @@ void jerror (JLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *ms
 AllPath: LocationPath { *root = $1; }
        ;
 
-LocationPath: '$' { $$ = jsonPathNodeCreateRoot(); }
-            | LocationPath '.' Property { $$ = jsonPathNodeCreateConcat($1, $3); }
-            | LocationPath PARENT Property  { $$ = jsonPathNodeCreateParentConcat($1, $3); }
-            | LocationPath '[' Predicate ']' { $$ = jsonPathNodeCreatePredicate($1, $3); }
+LocationPath: '$' { $$ = ASTNodeCreateRoot(); }
+            | LocationPath '.' Property { $$ = ASTNodeCreateConcat($1, $3); }
+            | LocationPath PARENT Property  { $$ = ASTNodeCreateParentConcat($1, $3); }
+            | LocationPath '[' Predicate ']' { $$ = ASTNodeCreatePredicate($1, $3); }
             ;
 
-Property: NCNAME {$$ = jsonPathNodeCreateID($1); }
-    | '*' { $$ = jsonPathNodeCreateWildcard(); }
+Property: NCNAME {$$ = ASTNodeCreateID($1); }
+    | '*' { $$ = ASTNodeCreateWildcard(); }
     ;
 
-Predicate: Number ':' Number {$$ = jsonPathNodeCreateRange($1, $3);}
-    | ':' Number {$$ = jsonPathNodeCreateRange(NULL, $2);}
-    | Number ':' {$$ = jsonPathNodeCreateRange($1, NULL);}
-    | '*' { $$ = jsonPathNodeCreateWildcard(); }
-    | '?' '(' Expr ')' {$$ = jsonPathNodeCreateFliter($3);}
-    | '(' Expr ')' {$$ = jsonPathNodeCreateScript($2);}
+Predicate: Number ':' Number {$$ = ASTNodeCreateRange($1, $3);}
+    | ':' Number {$$ = ASTNodeCreateRange(NULL, $2);}
+    | Number ':' {$$ = ASTNodeCreateRange($1, NULL);}
+    | '*' { $$ = ASTNodeCreateWildcard(); }
+    | '?' '(' Expr ')' {$$ = ASTNodeCreateFliter($3);}
+    | '(' Expr ')' {$$ = ASTNodeCreateScript($2);}
     | IndexList
     ;
 
 IndexList: Number
-    | STRING  { $$ = jsonPathNodeCreateString($1); }
-    | IndexList ',' Number  { $$ = jsonPathNodeCreateConcat($1, $3); }
-    | IndexList ',' STRING  { $$ = jsonPathNodeCreateConcat($1, jsonPathNodeCreateString($3)); }
+    | STRING  { $$ = ASTNodeCreateString($1); }
+    | IndexList ',' Number  { $$ = ASTNodeCreateConcat($1, $3); }
+    | IndexList ',' STRING  { $$ = ASTNodeCreateConcat($1, ASTNodeCreateString($3)); }
     ;
 
-Expr: Expr OR Expr  { $$ = jsonPathNodeCreateOperator(jot_or, $1, $3); }
-    | Expr AND Expr  { $$ = jsonPathNodeCreateOperator(jot_and, $1, $3); }
-    | Expr EQ Expr  { $$ = jsonPathNodeCreateOperator(jot_equal, $1, $3); }
-    | Expr NEQ Expr  { $$ = jsonPathNodeCreateOperator(jot_neq, $1, $3); }
-    | Expr '<' Expr  { $$ = jsonPathNodeCreateOperator(jot_less, $1, $3); }
-    | Expr '>' Expr  { $$ = jsonPathNodeCreateOperator(jot_greater, $1, $3); }
-    | Expr LEQ Expr  { $$ = jsonPathNodeCreateOperator(jot_leq, $1, $3); }
-    | Expr GEQ Expr  { $$ = jsonPathNodeCreateOperator(jot_geq, $1, $3); }
-    | Expr '+' Expr  { $$ = jsonPathNodeCreateOperator(jot_add, $1, $3); }
-    | Expr '-' Expr  { $$ = jsonPathNodeCreateOperator(jot_minus, $1, $3); }
-    | Expr '*' Expr  { $$ = jsonPathNodeCreateOperator(jot_multiply, $1, $3); }
-    | Expr '/' Expr  { $$ = jsonPathNodeCreateOperator(jot_div, $1, $3); }
-    | Expr '%' Expr  { $$ = jsonPathNodeCreateOperator(jot_mod, $1, $3); }
-    | '!' Expr { $$ = jsonPathNodeCreateOperatorOne(jot_not, $2); }
-    | '@' { $$ = jsonPathNodeCreateRef(); }
+Expr: Expr OR Expr  { $$ = ASTNodeCreateOperator(jot_or, $1, $3); }
+    | Expr AND Expr  { $$ = ASTNodeCreateOperator(jot_and, $1, $3); }
+    | Expr EQ Expr  { $$ = ASTNodeCreateOperator(jot_equal, $1, $3); }
+    | Expr NEQ Expr  { $$ = ASTNodeCreateOperator(jot_neq, $1, $3); }
+    | Expr '<' Expr  { $$ = ASTNodeCreateOperator(jot_less, $1, $3); }
+    | Expr '>' Expr  { $$ = ASTNodeCreateOperator(jot_greater, $1, $3); }
+    | Expr LEQ Expr  { $$ = ASTNodeCreateOperator(jot_leq, $1, $3); }
+    | Expr GEQ Expr  { $$ = ASTNodeCreateOperator(jot_geq, $1, $3); }
+    | Expr '+' Expr  { $$ = ASTNodeCreateOperator(jot_add, $1, $3); }
+    | Expr '-' Expr  { $$ = ASTNodeCreateOperator(jot_minus, $1, $3); }
+    | Expr '*' Expr  { $$ = ASTNodeCreateOperator(jot_multiply, $1, $3); }
+    | Expr '/' Expr  { $$ = ASTNodeCreateOperator(jot_div, $1, $3); }
+    | Expr '%' Expr  { $$ = ASTNodeCreateOperator(jot_mod, $1, $3); }
+    | '!' Expr { $$ = ASTNodeCreateOperatorOne(jot_not, $2); }
+    | '@' { $$ = ASTNodeCreateRef(); }
     | Number
-    | STRING { $$ = jsonPathNodeCreateString($1); }
+    | STRING { $$ = ASTNodeCreateString($1); }
     | '(' Expr ')' { $$ = $2; }
-    | Expr '.' Property { $$ = jsonPathNodeCreateConcat($1, $3); }
-    | Expr PARENT Property  { $$ = jsonPathNodeCreateParentConcat($1, $3); }
+    | Expr '.' Property { $$ = ASTNodeCreateConcat($1, $3); }
+    | Expr PARENT Property  { $$ = ASTNodeCreateParentConcat($1, $3); }
     ;
 
-Number: NUMBER { $$ = jsonPathNodeCreateNumber($1); }
-    | '-' NUMBER { $$ = jsonPathNodeCreateNumber(-$2); }
+Number: NUMBER { $$ = ASTNodeCreateNumber($1); }
+    | '-' NUMBER { $$ = ASTNodeCreateNumber(-$2); }
     ;
 
 %%
 
-void jerror (JLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *msg) {
+void jerror (JLTYPE * yylloc, yyscan_t locp, ASTNode **root, const char *msg) {
 	fprintf(stderr, "error> %s\n", msg);
 	// TODO: add line number and detail
     fprintf(stderr, "pos: %d\n", yylloc->first_column);
@@ -113,8 +113,8 @@ void jerror (JLTYPE * yylloc, yyscan_t locp, JSONPathNode **root, const char *ms
 }
 
 
-JSONPathNode* analysisJSONPath(const char* data) {
-    JSONPathNode* root;
+ASTNode* analysisJSONPath(const char* data) {
+    ASTNode* root;
     yyscan_t sc;
     int res;
     jlex_init(&sc);

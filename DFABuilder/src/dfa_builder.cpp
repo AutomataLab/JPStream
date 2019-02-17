@@ -73,7 +73,7 @@ struct StackElement {
 
 struct StackContext {
     RegexModel* model;
-    JSONPathNode* root;
+    ASTNode* root;
     vector<StackElement> st;
     bool last_st_generated;
     int  last_id_generated;
@@ -81,15 +81,15 @@ struct StackContext {
     unordered_map<string, int> check;
     // 0 is end, 1 is other, 2 is array 3-n are names
     vector<string> input_mapping;
-    vector<JSONPathNode*> filter_trees;
+    vector<ASTNode*> filter_trees;
     vector< pair<int, int> > array_range;
 
     map<int, vector<int> > states_mapping;
     int state_handle_now;
-    vector<JSONPathNode*> tree_mapping;
+    vector<ASTNode*> tree_mapping;
     set<int> output_states;
 
-    StackContext(RegexModel* model, JSONPathNode* root) : model(model), root(root), st(0), input_mapping(3), array_range(0) {}
+    StackContext(RegexModel* model, ASTNode* root) : model(model), root(root), st(0), input_mapping(3), array_range(0) {}
     ~StackContext() {}
 
     void push(StackElement&& s) {
@@ -177,7 +177,7 @@ struct StackContext {
         return false;
     }
 
-    void construct_filter(JSONPathNode* node) {
+    void construct_filter(ASTNode* node) {
         if (node->node_type == jnt_variable) {
             std::string str(node->string);
             std::istringstream tokenStream(str);
@@ -205,7 +205,7 @@ struct StackContext {
 
     }
 
-    void construct_dfa(JSONPathNode* node) {
+    void construct_dfa(ASTNode* node) {
         if (node->left) {
             construct_dfa(node->left);
         }
@@ -231,7 +231,7 @@ struct StackContext {
         }
         case jnt_predicate: {
             // []
-            JSONPathNode* p = node->right;
+            ASTNode* p = node->right;
             if (p) {
                 switch (p->node_type) {
                 // [start:end]
@@ -331,7 +331,7 @@ static int acc_id2state(DFACompressed* cpd_dfa, int acc) {
 
 static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JSONQueryDFA* m_dfa, JSONQueryDFAContext* context) {
     context->states_num = cpd_dfa->getStateSum();
-    context->subtrees = (JSONPathNode**) calloc(cpd_dfa->getStateSum()+1, sizeof(JSONPathNode*));
+    context->subtrees = (ASTNode**) calloc(cpd_dfa->getStateSum()+1, sizeof(ASTNode*));
     context->states_mapping = (JSONQueryIntVecPair*) calloc(cpd_dfa->getStateSum()+1, sizeof(JSONQueryIntVecPair));
     context->array_predicate_states.value_size = 0;
     context->array_predicate_states.value = (int*)calloc(cpd_dfa->getStateSum(), sizeof(int));
@@ -357,11 +357,11 @@ static void create_context(StackContext* ctx, DFACompressed* cpd_dfa, JSONQueryD
 
 JSONQueryDFA* buildJSONQueryDFA(const char* json_path, JSONQueryDFAContext* context) {
     printf("\noriginal: %s\n", json_path);
-    JSONPathNode* root = analysisJSONPath(json_path);
+    ASTNode* root = analysisJSONPath(json_path);
     return buildJSONQueryDFAFromAST(root, context);
 }
 
-JSONQueryDFA* buildJSONQueryDFAFromAST(JSONPathNode* json_path, JSONQueryDFAContext* context) {
+JSONQueryDFA* buildJSONQueryDFAFromAST(ASTNode* json_path, JSONQueryDFAContext* context) {
     RegexModel* model = new RegexModel();
 
     StackContext* ctx = new StackContext(model, json_path);
@@ -401,7 +401,7 @@ JSONQueryDFA* buildJSONQueryDFAMultiple(int num, const char* json_path[]) {
     return NULL;
 }
 
-JSONQueryDFA* buildJSONQueryDFAMultipleFromAST(int num, JSONPathNode* json_path[]) {
+JSONQueryDFA* buildJSONQueryDFAMultipleFromAST(int num, ASTNode* json_path[]) {
     return NULL;
 }
 

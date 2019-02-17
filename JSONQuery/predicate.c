@@ -32,9 +32,9 @@ Output* generateFinalOutput(PredicateFilter* pf)
             PredicateStackElement ps_ele = getTopPredicateStack(&ps);
             int pred_state = ps_ele.predicate_state;
             PredicateStateInfo ps_info = pf->state_mapping[pred_state];
-            JSONPathNode* root = ps_info.sub_tree; 
+            ASTNode* root = ps_info.sub_tree; 
             //evaluate predicate logics 
-            JSONPathValue v = jpe_Evaluate(root, ps_info.con_state_list);
+            JSONPathValue v;// = jpe_Evaluate(root, ps_info.con_state_list);
             int first_idx = ps_ele.first_candidate_pos;
             int buf_size = getOutputSize(buffer);
             int rmv_num = buf_size - first_idx;
@@ -54,7 +54,7 @@ Output* generateFinalOutput(PredicateFilter* pf)
             //clear the last few elements into buffer
             else removeOutputElement(buffer, rmv_num); 
             //set the value of evaluate table to default value
-            clearKeyValuePair(ps_info.con_state_list);
+            // clearKeyValuePair(ps_info.con_state_list);
             popPredicateStack(&ps); 
         }
         else if(getPredicateStackSize(&ps)>0)

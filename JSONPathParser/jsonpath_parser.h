@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-extern JSONPathNode* analysisJSONPath(const char* data);
+extern ASTNode* analysisJSONPath(const char* data);
 
 #ifdef __cplusplus
 }

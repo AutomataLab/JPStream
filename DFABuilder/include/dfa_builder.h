@@ -15,20 +15,20 @@ typedef struct JSONQueryIntVecPair {
 
 typedef struct JSONQueryDFAContext {
     int states_num;
-    JSONPathNode** subtrees;
+    ASTNode** subtrees;
     JSONQueryIntVecPair* states_mapping;
     JSONQueryIntVecPair array_predicate_states;
 } JSONQueryDFAContext;
 
 extern JSONQueryDFA* buildJSONQueryDFA(const char* json_path, JSONQueryDFAContext* context);
 
-extern JSONQueryDFA* buildJSONQueryDFAFromAST(JSONPathNode* json_path, JSONQueryDFAContext* context);
+extern JSONQueryDFA* buildJSONQueryDFAFromAST(ASTNode* json_path, JSONQueryDFAContext* context);
     
 // extern JSONQueryDFA* buildJSONQueryDFAMultiple(int num, const char* json_path[]);
 
-// extern JSONQueryDFA* buildJSONQueryDFAMultipleFromAST(int num, JSONPathNode* json_path[]);
+// extern JSONQueryDFA* buildJSONQueryDFAMultipleFromAST(int num, ASTNode* json_path[]);
 
-static inline JSONPathNode* getContextSubtree(JSONQueryDFAContext* ctx, int stop_state) {
+static inline ASTNode* getContextSubtree(JSONQueryDFAContext* ctx, int stop_state) {
     return ctx->subtrees[stop_state];
 }
 

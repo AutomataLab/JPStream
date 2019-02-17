@@ -11,7 +11,7 @@
 
 typedef struct PredicateStateInfo{
     //sub stree for predicate state
-    JSONPathNode* sub_tree;  //we'll change its name 
+    ASTNode* sub_tree;  //we'll change its name 
     //condition state list
     JSONPathKeyValuePair* con_state_list; //we'll change its name
     int num_con_state;
@@ -85,7 +85,7 @@ static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQ
         for(int j=0;j<con_size;j++)
         {
             int con_state = getContextValueOfMapping(ctx, pred_state, j); 
-            JSONPathNode* node = getContextSubtree(ctx, con_state);
+            ASTNode* node = getContextSubtree(ctx, con_state);
             con_state_list[j].key = node->string;
             con_state_list[j].state = con_state;
             con_state_list[j].value.boolean = false; 
