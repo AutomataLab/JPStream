@@ -244,10 +244,10 @@ static inline JSONPathValue calculateExpression(ASTNode* node, JSONPathKeyValueP
  * You can create it by calling @ASTNodeCreateVariable(var_name)
  * When I calculate the result, I will try to search the table to find the values of those variable nodes.
  */
-static inline JSONPathValue evaluateExpression(ASTNode* node, PredicateCondition* conditions) {
+static inline bool evaluateExpression(ASTNode* node, PredicateCondition* conditions) {
     JSONPathKeyValuePair* table = createTableFromConditions(conditions);
     JSONPathValue v = calculateExpression(node, table);
-    return computeTypeCast(v);
+    return computeTypeCast(v).boolean;
 }
 
 
