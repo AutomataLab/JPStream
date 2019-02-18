@@ -69,15 +69,15 @@ static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQ
 
         //generate condition list for each predicate state
         pf->condition_list[pred_state] = (PredicateCondition*)malloc((con_size+1)*sizeof(PredicateCondition)); 
-        PredicateCondition* condition_list = pf->condition_list[pred_state];
+        PredicateCondition* cl = pf->condition_list[pred_state];
         for(int j=0;j<con_size;j++)
         {
             int con_state = getContextValueOfMapping(ctx, pred_state, j); 
             ASTNode* node = getContextSubtree(ctx, con_state);
-            condition_list[j].name = node->string; 
-            condition_list[j].text = NULL;
+            cl[j].name = node->string; 
+            cl[j].text = NULL;
         }
-        condition_list[con_size].name=NULL;
+        cl[con_size].name=NULL;
     }
 }
 

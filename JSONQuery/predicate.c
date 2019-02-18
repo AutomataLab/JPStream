@@ -46,10 +46,10 @@ Output* generateFinalOutput(PredicateFilter* pf)
         {
             PredicateStackElement ps_elt = getTopPredicateStack(&ps);
             int pred_state = ps_elt.predicate_state;
-            PredicateCondition* condition_list = pf->condition_list[pred_state]; 
+            PredicateCondition* cl = pf->condition_list[pred_state]; 
             ASTNode* node = getContextSubtree(pf->ctx, pred_state);
             //evaluate predicate conditions 
-            bool v = evaluateExpression(node, condition_list); 
+            bool v = evaluateExpression(node, cl); 
             int first_idx = ps_elt.output_buffer_pointer;
             int buf_size = getOutputSize(buffer);
             int rmv_num = buf_size - first_idx;
@@ -69,28 +69,28 @@ Output* generateFinalOutput(PredicateFilter* pf)
             //clear the last few elements into buffer
             else removeOutputElement(buffer, rmv_num); 
             //set the value of evaluate table to default value
-            clearKeyValuePair(condition_list);
+            clearKeyValuePair(cl);
             popPredicateStack(&ps); 
         }
         else if(getPredicateStackSize(&ps)>0)
         {
             PredicateStackElement ps_elt = getTopPredicateStack(&ps);
             int pred_state = ps_elt.predicate_state;
-            PredicateCondition* condition_list = pf->condition_list[pred_state];
+            PredicateCondition* cl = pf->condition_list[pred_state];
         
             //iterate condition list and check whether the current state is a predicate condition
             ASTNode* node = getContextSubtree(pf->ctx, state);
             int index = 0;
             while(node!=NULL)
             {  
-                if(condition_list[index].name==NULL) break;
-                if(strcmp(condition_list[index].name, node->string)==0) break;
+                if(cl[index].name==NULL) break;
+                if(strcmp(cl[index].name, node->string)==0) break;
                 index++;
             }
             //update value for predicate conditions
-            if(node!=NULL&&condition_list[index].name!=NULL)
+            if(node!=NULL&&cl[index].name!=NULL)
             {  
-                condition_list[index].text = allocate_and_copy(text);
+                cl[index].text = allocate_and_copy(text);
             }
             else //add candidate output into buffer
             {
