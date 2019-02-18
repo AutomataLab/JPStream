@@ -39,6 +39,19 @@ char* substring(char *pText, int begin, int end)
     return temp1;
 }
 
+/******************************************************************************
+Function: char* allocate_and_copy(char *pText);
+Description: allocate new memory spaces and copy the content of original string
+Input: pText--the original string; 
+Return: the new string
+******************************************************************************/
+char* allocate_and_copy(char* pText)
+{
+    char* new = (char*)malloc((strlen(pText)+1)*sizeof(char));
+    strcopy(pText, new);
+    return new;
+}
+
 /*************************************************
 Function: char * ltrim(char *s);
 Description: remove the left blankets of a string

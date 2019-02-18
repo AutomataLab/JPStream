@@ -332,8 +332,10 @@ void Test10()
     initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
     Output* final = generateFinalOutput(&pf);
     printf("size of final output is %d\n", getOutputSize(final));
-    destroyPredicateFilter(&pf);
+    destroyPredicateFilter(&pf); 
+    free(ctx);
     freeOutput(final);
+    free(stream);
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);
@@ -376,6 +378,8 @@ void Test11()
     printf("size of final output is %d\n", getOutputSize(final));
     destroyPredicateFilter(&pf);
     freeOutput(final);
+    free(ctx);
+    free(stream);
     gettimeofday(&end,NULL);
     duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
     printf("the total query execution time is %lf\n", duration/1000000);
@@ -466,7 +470,7 @@ void Test14()
     double duration;
     //loading inputs
     char* stream = loadJSONStream("../../dataset/random.json");
-    char* path = "$.root[?((@.index+@.b>2)&&(@.guid||@.name))].friends[?(@.name)].id";
+    char* path = "$.root[?((@.index>0&&@.index<2)&&(@.guid||@.name))].friends[?(@.name)].id";  //+@.b
 
     //loading dfa
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));

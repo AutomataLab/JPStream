@@ -19,66 +19,72 @@ typedef struct PredicateStateInfo{
 
 typedef struct PredicateStackElement{
     int predicate_state;  
-    //start position in output buffer
-    int first_candidate_pos;
+    //point to the first candidate
+    int output_buffer_pointer;  
 }PredicateStackElement;
 
 typedef struct PredicateStack{
     PredicateStackElement elements[MAX_STACK_ELEMENT];
-    int top_item;
+    int top_element;  
 }PredicateStack;
 
 typedef struct PredicateFilter{
     TupleList* tuple_list;
+    //context information for dfa table
+    JSONQueryDFAContext* ctx;
+    //condition list for each predicate state
+    PredicateCondition* condition_list[MAX_PREDICATE_STATE];
     // mappings from predicate state to predicate conditions
-    PredicateStateInfo state_mapping[MAX_PREDICATE_STATE];
+    //PredicateStateInfo state_mapping[MAX_PREDICATE_STATE];
 }PredicateFilter;
 
 static inline void initPredicateStack(PredicateStack* ps)
 {
-    ps->top_item = -1;
+    ps->top_element = -1;
 }
 
-static inline void pushPredicateStack(PredicateStack* ps, PredicateStackElement ps_ele)
+static inline void pushPredicateStack(PredicateStack* ps, PredicateStackElement ps_elt)
 {
-    int top_item = (++ps->top_item);
-    ps->elements[top_item] = ps_ele;
+    int top_element = (++ps->top_element);
+    ps->elements[top_element] = ps_elt;
 }
 
 static inline PredicateStackElement popPredicateStack(PredicateStack* ps)
 {
-    return ps->elements[ps->top_item--];
+    return ps->elements[ps->top_element--];
 }
 
 static inline PredicateStackElement getTopPredicateStack(PredicateStack* ps)
 {
-    return ps->elements[ps->top_item];
+    return ps->elements[ps->top_element];
 }
 
 static inline int getPredicateStackSize(PredicateStack* ps)
 {
-    return ps->top_item+1;
+    return ps->top_element+1;
 }
 
 static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx)  
 {
     pf->tuple_list = tl;
+    pf->ctx = ctx;
     int pred_size = getContextSizeOfPredicateStates(ctx);
     //initialize state mapping table
     for(int i = 0; i<MAX_PREDICATE_STATE; i++)
-        pf->state_mapping[i].sub_tree = 0;
+        pf->condition_list[i] = NULL;
     for(int i = 0; i < pred_size; i++)
     {
     	int pred_state = getContextPredicateStates(ctx, i);
         int con_size = getContextSizeOfMapping(ctx, pred_state);
-        printJSONQueryDFAContext(ctx);
-        
+      //  printJSONQueryDFAContext(ctx);
+       
+        //printf("index %d pred state is %d size %d\n", i, pred_state, con_size); 
         //get sub tree
-        pf->state_mapping[pred_state].sub_tree = getContextSubtree(ctx, pred_state);
+        //pf->state_mapping[pred_state].sub_tree = getContextSubtree(ctx, pred_state);
         //generate condition state list
-        pf->state_mapping[pred_state].con_state_list = (JSONPathKeyValuePair*)malloc((con_size+1)*sizeof(JSONPathKeyValuePair)); 
-        pf->state_mapping[pred_state].num_con_state = con_size;
-        JSONPathKeyValuePair* con_state_list = pf->state_mapping[pred_state].con_state_list;
+        pf->condition_list[pred_state] = (PredicateCondition*)malloc((con_size+1)*sizeof(PredicateCondition)); 
+        //pf->state_mapping[pred_state].num_con_state = con_size;
+        PredicateCondition* condition_list = pf->condition_list[pred_state];
         //set default values to all elements in predicate condition list
         //clearKeyValuePair(con_state_list);
         //fill in condition state list (needs another field)
@@ -86,11 +92,11 @@ static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQ
         {
             int con_state = getContextValueOfMapping(ctx, pred_state, j); 
             ASTNode* node = getContextSubtree(ctx, con_state);
-            con_state_list[j].key = node->string;
-            con_state_list[j].state = con_state;
-            con_state_list[j].value.boolean = false; 
+            condition_list[j].name = node->string; //printf("pred_size %d pred_state %d name %s\n", pred_size, pred_state, condition_list[j].name);
+            condition_list[j].text = NULL;
+            //con_state_list[j].value.boolean = false; 
         }
-        con_state_list[con_size].key=NULL;
+        condition_list[con_size].name=NULL;
     }
 }
 
@@ -98,12 +104,13 @@ static inline void destroyPredicateFilter(PredicateFilter* pf)
 {
     for(int i = 0; i<MAX_PREDICATE_STATE; i++)
     {
-        if(pf->state_mapping[i].sub_tree)
+        if(pf->condition_list[i])
         {    
-            if(pf->state_mapping[i].con_state_list)  
-                free(pf->state_mapping[i].con_state_list);
+            free(pf->condition_list[i]);
+            //if(pf->state_mapping[i].con_state_list)  
+              //  free(pf->state_mapping[i].con_state_list);
         }
-    }
+    } 
 }
 
 Output* generateFinalOutput(PredicateFilter* pf);

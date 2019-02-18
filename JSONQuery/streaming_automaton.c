@@ -163,11 +163,11 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                     }
                     else if(matched_type==DFA_PREDICATE)
                     {
-                        addTupleListElement(tl, qs_elt->query_state, "{"); 
+                        addTuple(tl, qs_elt->query_state, "{"); 
                     }
                     else if(matched_type==DFA_CONDITION)
                     {   
-                        addTupleListElement(tl, qs_elt->query_state, "");
+                        addTuple(tl, qs_elt->query_state, "");
                     }
                 }
                 break;
@@ -192,7 +192,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                         increaseArrayCounter(qs_elt);
                         if(getMatchedType(qa, qs_elt)==DFA_PREDICATE)
                         {  
-                            addTupleListElement(tl, qs_elt->query_state, "}");
+                            addTuple(tl, qs_elt->query_state, "}");
                         }
                     }
                 } 
@@ -202,7 +202,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                     int position = lexer.next_start - lexer.begin_stream;
                     char* output_text = substring(lexer.begin_stream, qs_elt->matched_start, position); 
                     qs_elt->matched_start = INVALID;
-                    addTupleListElement(tl, qs_elt->query_state, output_text); 
+                    addTuple(tl, qs_elt->query_state, output_text); 
                 } 
                 break;
             case LB:   //left square branket 
@@ -214,7 +214,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                     }
                     else if(matched_type==DFA_CONDITION)
                     {
-                        addTupleListElement(tl, qs_elt->query_state, "");
+                        addTuple(tl, qs_elt->query_state, "");
                     }
                 }
                 ary_s(qa, qs_elt, ss, qs);
@@ -229,7 +229,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                         int position = lexer.next_start - lexer.begin_stream;
                         char* output_text = substring(lexer.begin_stream, top_qs_elt.matched_start, position); 
                         top_qs_elt.matched_start = INVALID;
-                        addTupleListElement(tl, top_qs_elt.query_state, output_text);  
+                        addTuple(tl, top_qs_elt.query_state, output_text);  
                     }
                     //syntax stack only has one '['
                     if(syntaxStackSize(ss) == 1)  
@@ -264,11 +264,11 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                     int matched_type = getMatchedType(qa,qs_elt);
                     if(matched_type==DFA_OUTPUT_CANDIDATE)  
                     { 
-                        addTupleListElement(tl, qs_elt->query_state, token.content);  
+                        addTuple(tl, qs_elt->query_state, token.content);  
                     }
                     else if(matched_type==DFA_CONDITION)
                     {
-                        addTupleListElement(tl, qs_elt->query_state, token.content);
+                        addTuple(tl, qs_elt->query_state, token.content);
                     }
                     //the top element on syntax stack is a key field
                     if(syntaxStackTop(ss)==KY)  
