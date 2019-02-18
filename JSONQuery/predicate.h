@@ -25,7 +25,7 @@ typedef struct PredicateFilter{
     //context information for dfa table
     JSONQueryDFAContext* ctx;
     //condition list for each predicate state
-    PredicateCondition* condition_list[MAX_PREDICATE_STATE];
+    PredicateCondition* predicate_conditions[MAX_PREDICATE_STATE];
 }PredicateFilter;
 
 static inline void initPredicateStack(PredicateStack* ps)
@@ -61,23 +61,23 @@ static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQ
     int pred_size = getContextSizeOfPredicateStates(ctx);
     //initialize state mapping table
     for(int i = 0; i<MAX_PREDICATE_STATE; i++)
-        pf->condition_list[i] = NULL;
+        pf->predicate_conditions[i] = NULL;
     for(int i = 0; i < pred_size; i++)
     {
     	int pred_state = getContextPredicateStates(ctx, i);
         int con_size = getContextSizeOfMapping(ctx, pred_state);
 
-        //generate condition list for each predicate state
-        pf->condition_list[pred_state] = (PredicateCondition*)malloc((con_size+1)*sizeof(PredicateCondition)); 
-        PredicateCondition* cl = pf->condition_list[pred_state];
+        //generate predicate condition list for each predicate state
+        pf->predicate_conditions[pred_state] = (PredicateCondition*)malloc((con_size+1)*sizeof(PredicateCondition)); 
+        PredicateCondition* pc = pf->predicate_conditions[pred_state];
         for(int j=0;j<con_size;j++)
         {
             int con_state = getContextValueOfMapping(ctx, pred_state, j); 
             ASTNode* node = getContextSubtree(ctx, con_state);
-            cl[j].name = node->string; 
-            cl[j].text = NULL;
+            pc[j].name = node->string; 
+            pc[j].text = NULL;
         }
-        cl[con_size].name=NULL;
+        pc[con_size].name=NULL;
     }
 }
 
@@ -85,9 +85,9 @@ static inline void destroyPredicateFilter(PredicateFilter* pf)
 {
     for(int i = 0; i<MAX_PREDICATE_STATE; i++)
     {
-        if(pf->condition_list[i]!=NULL)
+        if(pf->predicate_conditions[i]!=NULL)
         {    
-            free(pf->condition_list[i]);
+            free(pf->predicate_conditions[i]);
         }
     } 
 }
