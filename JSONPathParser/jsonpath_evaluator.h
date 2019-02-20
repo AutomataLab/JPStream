@@ -172,6 +172,10 @@ static inline JSONPathValue stringToValue(const char* str) {
         return v;
     }
     int len = strlen(str);
+    if (len == 0) {
+        v.vtype = jvt_boolean; v.boolean = true;
+        return v;
+    }
     if (str[0] == '"') { 
         char* s = (char*) malloc(sizeof(char) * (len-1));
         strncpy(s, str+1, len-2);
