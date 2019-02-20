@@ -84,6 +84,21 @@ int test_verify() {
         printf("v4 = true\n");
     else
         printf("v4 = false\n");
+
+    root = analysisJSONPath("$[?(@.value)]");
+    evaluatorModifyReference(root);
+    node = root->right->left;
+    PredicateCondition table5[] = {
+        {"value", "\"\""},
+        {NULL, NULL}
+    };
+    printJsonPathAST(node);
+    v = evaluateExpression(node, table5);
+    EXPECT_EQ(v, true);
+    if (v)
+        printf("v5 = true\n");
+    else
+        printf("v5 = false\n");
     return 0;
 }
 

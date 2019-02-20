@@ -180,7 +180,7 @@ static inline JSONPathValue stringToValue(const char* str) {
         return v;
     }
     if (isdigit(str[0])) {
-        v.vtype = jvt_string; v.number = atof(str);
+        v.vtype = jvt_number; v.number = atof(str);
         return v;
     }
     return v;
@@ -198,9 +198,10 @@ static inline JSONPathKeyValuePair* createTableFromConditions(PredicateCondition
     return table;
 }
 
-static inline void clearKeyValuePair(PredicateCondition* table) {
+static inline void clearPredicateCondtion(PredicateCondition* table) {
     int i = 0;
     while (table[i].name != NULL) {
+        if (table[i].text) free(table[i].text);
         table[i].text = NULL;
         i++;
     }

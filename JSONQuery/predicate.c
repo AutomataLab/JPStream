@@ -69,7 +69,7 @@ Output* generateFinalOutput(PredicateFilter* pf)
             //clear the last few elements into buffer
             else removeOutputElement(buffer, rmv_num); 
             //set the value of evaluate table to default value
-            clearKeyValuePair(pc);
+            clearPredicateCondtion(pc);
             popPredicateStack(&ps); 
         }
         else if(getPredicateStackSize(&ps)>0)
