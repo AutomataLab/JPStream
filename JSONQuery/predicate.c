@@ -46,7 +46,7 @@ Output* generateFinalOutput(PredicateFilter* pf)
         {
             PredicateStackElement ps_elt = getTopPredicateStack(&ps);
             int pred_state = ps_elt.predicate_state;
-            PredicateCondition* pc = pf->predicate_conditions[pred_state]; 
+            PredicateCondition* pc = pf->predicate_conditions[pred_state];
             ASTNode* node = getContextSubtree(pf->ctx, pred_state);
             //evaluate predicate conditions 
             bool v = evaluateExpression(node, pc); 
@@ -90,7 +90,7 @@ Output* generateFinalOutput(PredicateFilter* pf)
             //update value for predicate condition
             if(node!=NULL&&pc[index].name!=NULL)
             {  
-                pc[index].text = allocate_and_copy(text);
+                pc[index].text = allocate_and_copy(text); 
             }
             else //add candidate output into buffer
             {

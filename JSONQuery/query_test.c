@@ -398,7 +398,7 @@ void Test12()
     //JSONStream* stream = jps_createJSONStream("twitter_store1.txt",1);
     //char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
     //char* path = "$.root[?(@.id)&&(@.user.screen_name)].quoted_status.entities.user_mentions[?(@.indices)&&(@.id_str)].id";
-    char* path = "$.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position";;
+    char* path = "$.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position";   
 
     //loading dfa
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
