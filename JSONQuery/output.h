@@ -3,7 +3,7 @@
 
 #include "utility.h"
 
-#define MAX_OUTPUT 290000
+#define MAX_OUTPUT 800000 //290000
 #define MAX_STRING 500
 
 typedef struct Output{
@@ -48,7 +48,7 @@ static inline void freeOutput(Output* output)
 static inline void addOutputElement(Output* output, char* text)
 {
     int index = (++output->count);
-    strcopy(text, output->element[index]);
+    strcopy(text, output->element[index]); ////printf("text %s\n", text);
 }
 
 static inline char* getOutputElement(Output* output, int index)
@@ -58,7 +58,7 @@ static inline char* getOutputElement(Output* output, int index)
 
 static inline void removeOutputElement(Output* output, int number)
 {
-    output->count-=number;
+    output->count-=number; 
 }
 
 static inline int getOutputSize(Output* output)

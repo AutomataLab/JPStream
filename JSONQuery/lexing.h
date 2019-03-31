@@ -11,6 +11,8 @@
 #define COM 5   //'/'
 #define KY 6    //key field
 #define PRI 7   //primitive
+#define OBJECT 8  //{}
+#define ARRAY 9 //[]
 #define END -1  //ends
 
 #define MAX_SIZE_PRIMITIVE 4000

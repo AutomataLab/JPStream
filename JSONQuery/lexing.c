@@ -17,7 +17,7 @@ Token nextToken(Lexer* lexer)
     char* token_pointer = p; 
     int tempcount;
     Token token;
-
+    char sub1[40000];
     for (; p < end; p++)
     {   
         switch(state)
@@ -108,8 +108,9 @@ Token nextToken(Lexer* lexer)
                        //string is found 
                         tempcount = p-start;
                         templen = tempcount;
-                        char* sub1; 
-                        sub1=substring(start , 1, tempcount);                
+                        //char* sub1; 
+                        //sub1=substring(start , 1, tempcount); 
+                        substring1(sub1, start , 1, tempcount);     
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         start = token_pointer;
@@ -123,11 +124,12 @@ Token nextToken(Lexer* lexer)
                         } 
                         if(*(p+1)==':') //it is a key field
                         {
-                            if(sub1!=NULL)
+                            /*if(sub1!=NULL)
                             {
                                 strcopy(sub1,lexer->content);
                                 free(sub1);
-                            }
+                            }*/
+                            strcopy(sub1,lexer->content);
                             token_len = p - start+1;
                             token_pointer = start + token_len;
                             lexer->current_start = token_pointer; 
@@ -144,7 +146,7 @@ Token nextToken(Lexer* lexer)
                             strcopy(sub1, lexer->content+1);
                             lexer->content[strlen(lexer->content)]='"'; 
                             lexer->content[strlen(lexer->content)+1]='\0';
-                            if(sub1!=NULL) free(sub1);
+                            ///if(sub1!=NULL) free(sub1);
                             lexer->lex_state = 0; 
                             lexer->next_start = p+1; 
                             token.token_type = PRI;
@@ -171,18 +173,23 @@ Token nextToken(Lexer* lexer)
                    	{
                         int tempcount = p-start;
                         templen = tempcount;
-                        char* sub1;
+                        /*char* sub1;
                         if(p[0]=='"'){
                             sub1=substring(start, 1 ,tempcount); 
                         }
                         else if(token_pointer[tempcount-1]==',') sub1=substring(token_pointer, 0, tempcount-1);
-                        else sub1=substring(token_pointer, 0, tempcount);
-
-                        if(sub1!=NULL)  //primitive value
+                        else sub1=substring(token_pointer, 0, tempcount);*/
+                        if(p[0]=='"'){
+                            substring1(sub1, start, 1 ,tempcount); 
+                        }
+                        else if(token_pointer[tempcount-1]==',') substring1(sub1, token_pointer, 0, tempcount-1);
+                        else substring1(sub1, token_pointer, 0, tempcount);
+                        /*if(sub1!=NULL)  //primitive value
                         {
                             strcopy(sub1,lexer->content);
                             free(sub1);
-                        }
+                        }*/
+                        strcopy(sub1,lexer->content);
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;

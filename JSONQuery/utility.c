@@ -39,6 +39,19 @@ char* substring(char *pText, int begin, int end)
     return temp1;
 }
 
+void substring1(char* desc, char *pText, int begin, int end)
+{
+    int i,j;
+    char * temp=pText;
+    temp = ltrim(pText);
+    for (j = 0,i = begin; i < end; i++,j++)
+    {
+        desc[j]=temp[i];
+    }
+    desc[j]='\0';
+    //return temp1;
+}
+
 /******************************************************************************
 Function: char* allocate_and_copy(char *pText);
 Description: allocate new memory spaces and copy the content of original string
@@ -47,7 +60,7 @@ Return: the new string
 ******************************************************************************/
 char* allocate_and_copy(char* pText)
 {
-    char* new = (char*)malloc((strlen(pText)+1)*sizeof(char));
+    char* new = (char*)malloc((strlen(pText)+2)*sizeof(char)); 
     strcopy(pText, new);
     return new;
 }

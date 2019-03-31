@@ -8,6 +8,9 @@
 #include "predicate.h"
 #include "constraint.h"
 #include "unit.h"
+#include "worker_automaton.h"
+#include "file_partition.h"
+#include "parallel_automata_execution.h"
 
 char* loadJSONStream(char* file_name)
 {
@@ -717,14 +720,141 @@ void Test19()
     destroyStreamingAutomaton(&streaming_automaton);
 }
 
+void Test27()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
+    PartitionInfo pInfo = partitionFile("../../dataset/bb.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    //char* path = "$.root.products[*].categoryPath[?(@.name)].id";
+    char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test28()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
+    PartitionInfo pInfo = partitionFile("../../dataset/random.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.root[?((@.index>0&&@.index<2)&&(@.guid||@.name))].friends[?(@.name)].id";
+    //char* path = "$.root[?((@.index||@.guid||@.name))].friends[?(@.name)].id";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test54()
+{
+    //loading and splitting the input stream
+    int num_core = 16;
+    PartitionInfo pInfo = partitionFile("../../dataset/bb.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    //char* path = "$.root.products[*].categoryPath[?(@.name)].id";
+    //char* path = "$..root..id";
+    char* path = "$.root.products[1:5].categoryPath[?(@.name)]";  //?(@.name)
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test59()
+{
+    //loading and splitting the input stream
+    int num_core = 16;
+    PartitionInfo pInfo = partitionFile("bb.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    //char* path = "$.root.products[*].categoryPath[?(@.name)].id";
+    //char* path = "$..root..id";
+    char* path = "$.root.products[1:5].categoryPath[?(@.name)]";  //?(@.name)
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
 
 int main()
 {
-    Test15();
+   /* Test15();
     Test16();
     Test17();
     Test18();
     Test19();
+ 
+    Test27();
+    Test28();
+    Test54();*/
+    Test59();
     /*Test1(); //78
     Test2(); //78
     Test3(); //2
