@@ -129,7 +129,7 @@ static inline void val_pmt(QueryStackElement* qs_elt, SyntaxStack* ss, QueryStac
 }
 
 // the execution of streaming automaton
-void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
+void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constraint_flag)
 {
     JSONQueryDFA* qa = sa->query_automaton;   //query automaton
     SyntaxStack* ss = &sa->syntax_stack;      //syntax stack
@@ -147,7 +147,18 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
 
     Token token = nextToken(&lexer);
     int token_type = token.token_type;
-    
+
+    ConstraintTable* ct = sa->constraint_table;
+    //initialize constraint table
+    if(data_constraint_flag==OPEN)
+    {
+        //remove old constraint table
+        if(ct!=NULL) freeConstraintTable(ct); 
+        //create new constraint table
+        sa->constraint_table = createConstraintTable();
+        sa->constraint_flag = OPEN;
+        ct = sa->constraint_table;
+    }
     //select transition rules based on input token, query state, top elements on syntax stack and query stack
     while(token_type!=END)
     {   
@@ -217,6 +228,11 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
                         addTuple(tl, qs_elt->query_state, "");
                     }
                 }
+                if(data_constraint_flag==OPEN)
+                { 
+                    int query_state = qs_elt->query_state;
+                    addConstraintInfo(ct, query_state, LB, token.content);
+                }
                 ary_s(qa, qs_elt, ss, qs);
                 break;
             case RB:   //right square branket
@@ -256,6 +272,11 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream)
             case COM:   //comma
                 break;
             case KY:    //key field 
+                if(data_constraint_flag==OPEN)
+                { 
+                    int query_state = qs_elt->query_state;
+                    addConstraintInfo(ct, query_state, KY, token.content);
+                }
                 key(qa, qs_elt, token.content, ss, qs);
                 break;
             case PRI:   //primitive

@@ -6,6 +6,7 @@
 #include <sys/file.h>
 #include "streaming_automaton.h"
 #include "predicate.h"
+#include "constraint.h"
 
 char* loadJSONStream(char* file_name)
 {
@@ -23,7 +24,7 @@ char* loadJSONStream(char* file_name)
     return stream;
 }
 
-void Test1()
+/*void Test1()
 {
     struct timeval begin,end;
     double duration;
@@ -498,11 +499,232 @@ void Test14()
 
     //free up dynamic memories
     destroyStreamingAutomaton(&streaming_automaton);
+}*/
+
+void Test15()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/random.json");
+    char* path = "$.root[?((@.index>0&&@.index<2)&&(@.guid||@.name))].friends[?(@.name)].id";  //+@.b
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream, OPEN);
+
+    //print data constraint learning schema
+    if(streaming_automaton.constraint_table!=NULL)
+        printConstraintTable(streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
 }
+
+void Test16()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/wiki.json");
+    char* path = "$.root[*].claims.P150[?(@.id&&@.type)].mainsnak.property";
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream, OPEN);
+
+    //print data constraint learning schema
+    if(streaming_automaton.constraint_table!=NULL)
+        printConstraintTable(streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
+void Test17()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/rowstest.json");
+    char* path = "$.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position";
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream, OPEN);
+
+    //print data constraint learning schema
+    if(streaming_automaton.constraint_table!=NULL)
+        printConstraintTable(streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
+void Test18()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/twitter.json");
+    char* path = "$.root[?(@.text&&(!@.contributors))].id"; 
+
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream, OPEN);
+
+    //print data constraint learning schema
+    if(streaming_automaton.constraint_table!=NULL)
+        printConstraintTable(streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
+void Test19()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading inputs
+    char* stream = loadJSONStream("../../dataset/bb.json");
+    char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
+
+
+    //loading dfa
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+
+    //query execution
+    printf("begin executing input JSONPath query\n");
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, stream, OPEN);
+
+    //print data constraint learning schema
+    if(streaming_automaton.constraint_table!=NULL)
+        printConstraintTable(streaming_automaton.constraint_table);
+
+    /*ConstraintInfo ci;
+    strcopy("total", ci.token_name);
+    ci.type = 6;*/
+    ConstraintInfo ci;
+    strcopy("total", ci.token_name);
+    ci.type = 3;
+    updateStateInfo(streaming_automaton.constraint_table, &ci);
+    printf("number of constraints for total is %d\n", ci.num_state);
+    printf("all states are \n");
+    int i = 0;
+    for(i = 0; i<ci.num_state; i++)
+        printf("state is %d\n", ci.state_set[i]);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //free up dynamic memories
+    destroyStreamingAutomaton(&streaming_automaton);
+}
+
 
 int main()
 {
-    Test1(); //78
+    Test15();
+    Test16();
+    Test17();
+    Test18();
+    Test19();
+    /*Test1(); //78
     Test2(); //78
     Test3(); //2
     Test4(); //43
@@ -516,6 +738,6 @@ int main()
     Test11();
     Test12();
     Test13();
-    Test14();
+    Test14();*/
     return 1;
 }
