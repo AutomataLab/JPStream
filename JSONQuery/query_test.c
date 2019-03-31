@@ -7,6 +7,7 @@
 #include "streaming_automaton.h"
 #include "predicate.h"
 #include "constraint.h"
+#include "unit.h"
 
 char* loadJSONStream(char* file_name)
 {

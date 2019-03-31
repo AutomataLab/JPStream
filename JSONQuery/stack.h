@@ -144,5 +144,13 @@ static inline int syntaxStackSize(SyntaxStack* ss)
     return ss->top_item+1;
 }
 
-
+//combine current syntax stack into destination stack
+static inline void combineSyntaxStack(SyntaxStack* dst_ss, SyntaxStack* src_ss)
+{
+    int i;
+    for(i = 0; i<=src_ss->top_item; i++)
+    {
+        syntaxStackPush(dst_ss, src_ss->symbol[i]);
+    }
+}
 #endif // !__STACK_H__
