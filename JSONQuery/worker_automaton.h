@@ -6,6 +6,10 @@
 #include "tuple_list.h"
 #include "lexing.h"
 #include "stack.h"
+#include "constraint.h"
+
+#define OPEN 1
+#define CLOSE 0
 
 typedef struct QueryStatesInfo{
     // current query state
@@ -30,6 +34,10 @@ typedef struct WorkerAutomaton{
 
     UnitList unit_list;
     TupleList* tuple_list;
+    // whether streaming automaton has data constraint
+    int constraint_flag;
+    // saves data constraint table
+    ConstraintTable* constraint_table;
 }WorkerAutomaton;
 
 // wa -- worker automaton qa -- query automaton
@@ -39,7 +47,7 @@ static inline void initWorkerAutomaton(WorkerAutomaton* wa, JSONQueryDFA* qa)
     initSyntaxStack(&wa->syntax_stack);
 
     //initialize query stack
-    if(wa->id==0)
+    /*if(wa->id==0)
     {
         int query_state[1];
         query_state[0] = 1;
@@ -53,7 +61,7 @@ static inline void initWorkerAutomaton(WorkerAutomaton* wa, JSONQueryDFA* qa)
         for(i = 1; i<=num_query_state; i++)
             query_state[i-1] = i-1;
         wa->query_stacks_element = initQueryStacks(&wa->query_stacks, query_state, num_query_state);
-    } 
+    } */
 
     //initialize information for starting states (query state, counter, matched start position)
     /*wa->query_states_info = (QueryStatesInfo*)malloc(num_query_state*sizeof(QueryStatesInfo));
@@ -77,14 +85,20 @@ static inline void destroyWorkerAutomaton(WorkerAutomaton* wa)
     if(wa->id>0 && wa->tuple_list != NULL)
     {
         freeTupleList(wa->tuple_list);
-    }  
+    }   
 }
 
-static inline WorkerAutomaton* createWorkerAutomaton(JSONQueryDFA* qa, int thread_id)
+static inline WorkerAutomaton* createWorkerAutomaton(JSONQueryDFA* qa, int thread_id, ConstraintTable* ct)
 {
     WorkerAutomaton* wa = (WorkerAutomaton*)malloc(sizeof(WorkerAutomaton));
     wa->id = thread_id;
     initWorkerAutomaton(wa, qa);
+    if(ct==NULL) wa->constraint_flag = CLOSE;
+    else
+    {
+        wa->constraint_flag = OPEN;
+        wa->constraint_table = ct;
+    }
     return wa;
 }
 

@@ -58,7 +58,7 @@ static inline QueryStacksElement initQueryStacks(QueryStacks* qs, int* start_sta
     for(i = 0; i<num_start_states; i++)
     {
         int node_index = (qs->num_node++);
-        qs->node[node_index].query_state = start_states[i];
+        qs->node[node_index].query_state = start_states[i];  //printf("start_states %d\n", start_states[i]);
         qs->node[node_index].count = 0;
         qs->node[node_index].matched_start = INVALID;
         qs->node[node_index].parent_range.start = 0; 
@@ -67,11 +67,27 @@ static inline QueryStacksElement initQueryStacks(QueryStacks* qs, int* start_sta
         qs->node[node_index].root_range.end = -1; 
         qs->node[node_index].first_tuple_index = -1;
         qs->node[node_index].last_tuple_index = -1; 
-    }
+    } //printf("\n");
     QueryStacksElement qs_elt;
     qs_elt.start = 0;
     qs_elt.end = num_start_states - 1;
     return qs_elt;
+}
+
+static inline QueryStacksElement pruneQueryPaths(QueryStacks* qs, int* start_states, int num_start_states)
+{
+    QueryStacks back_qs = *(qs);
+    qs->num_node = 0;
+    int i;
+    for(i = 0; i<num_start_states; i++)
+    {
+        int node_index = (qs->num_node++);
+        qs->node[node_index] = back_qs.node[start_states[i]]; 
+    }
+    QueryStacksElement qs_elt;
+    qs_elt.start = 0;
+    qs_elt.end = num_start_states - 1;
+    return qs_elt; 
 }
 
 static inline QueryStacksElement queryStacksPush(QueryStacks* qs, QueryStacksElement qs_elt, JSONQueryDFA* qa, char* key_string)
@@ -126,7 +142,7 @@ static inline QueryStacksElement queryStacksPush(QueryStacks* qs, QueryStacksEle
                 //parent node is the root node
                 if(p_root_range.end == -1)
                 {
-                    root_pointer[next_state][num_root_pointer[next_state]++] = cur_state;
+                    root_pointer[next_state][num_root_pointer[next_state]++] = i;//cur_state;
                 }
                 else
                 {   
@@ -160,7 +176,7 @@ static inline QueryStacksElement queryStacksPush(QueryStacks* qs, QueryStacksEle
             //parent node is the root node
             if(p_root_range.end == -1)
             {
-                root_pointer[next_state][num_root_pointer[next_state]++] = cur_state;
+                root_pointer[next_state][num_root_pointer[next_state]++] = i;//cur_state;
             }
             else
             {

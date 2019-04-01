@@ -5,8 +5,9 @@
 #include "lexing.h"
 
 #define MAX_KEY_TEXT 100
-#define MAX_CONSTRAINT 200
+#define MAX_CONSTRAINT 1000
 #define MAX_STATES 100
+#define INVALID -1
 
 typedef struct ConstraintInfo{
     char token_name[MAX_KEY_TEXT];
@@ -35,6 +36,7 @@ static inline ConstraintTable* createConstraintTable()
 static inline void updateStateInfo(ConstraintTable* ct, ConstraintInfo* ci)
 {
     int type = ci->type;
+    ci->num_state = INVALID;
     if(type==KY)  //key field
     {
         int i = 0;
@@ -81,7 +83,7 @@ static inline void updateStateInfo(ConstraintTable* ct, ConstraintInfo* ci)
 static inline void addConstraintInfo(ConstraintTable* ct, int state, int type, char* name)
 {
     int index = ct->num_constraint_info;
-    int last = ct->num_constraint_info;
+    int last = ct->num_constraint_info; 
     if(type==KY) //key field
     {
         int i = 0;
@@ -100,7 +102,7 @@ static inline void addConstraintInfo(ConstraintTable* ct, int state, int type, c
         int i = 0;
         while(i<last)
         {
-            if(ct->constraint_info[i].type==3)
+            if(ct->constraint_info[i].type==LB)
             {   
                 index = i;
                 break;
@@ -127,11 +129,11 @@ static inline void addConstraintInfo(ConstraintTable* ct, int state, int type, c
     else{
         ++ct->num_constraint_info;
         ct->constraint_info[index].type = type;
-        if(type==6) strcopy(name, ct->constraint_info[index].token_name);
+        if(type==KY) strcopy(name, ct->constraint_info[index].token_name);
         ct->constraint_info[index].num_state = 0;
         int state_index = (ct->constraint_info[index].num_state++);
         ct->constraint_info[index].state_set[state_index] = state;
-    }
+    } 
 }
 
 static void printConstraintTable(ConstraintTable* ct)

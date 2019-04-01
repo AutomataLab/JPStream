@@ -225,6 +225,10 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
         query_state[i-1] = i-1;
     QueryStackElement qs_elt = initQueryStack(&qs, query_state, num_query_state);*/
     
+    //constraint table
+    int constraint_flag = wa->constraint_flag;
+    ConstraintTable* ct = wa->constraint_table;
+
     //tuple list
     TupleList* tl = wa->tuple_list;           
 
@@ -243,10 +247,10 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
     Token token = nextToken(&lexer);
     int token_type = token.token_type;
 
-    TupleList tl1; initTupleList(&tl1);
-
     //save information for current unmatched symbol
     UnmatchedSymbol us;
+
+    int debug_counter = 0;
 
     //select transition rules based on input token, query state, top elements on syntax stack and query stack
     while(token_type!=END)
@@ -263,13 +267,13 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                     while(start_index<=end_index)
                     {
                         TreeNode c_node = qs.node[start_index];
-                        int matched_type = getMatchedType(qa,&c_node);
+                        int matched_type = getMatchedType(qa,&c_node); //if(wa->id==1&&ul->count_units==0&&(c_node.query_state==4||c_node.query_state==8)) printf("before predicate %d\n", c_node.query_state);
                         if(matched_type==DFA_OUTPUT_CANDIDATE)  
                         { 
                             qs.node[start_index].matched_start = lexer.next_start - lexer.begin_stream - 1; 
                         }
                         else if(matched_type==DFA_PREDICATE)
-                        {
+                        {   //if(wa->id==1&&ul->count_units==0) printf("predicate { %d %d\n", c_node.query_state, debug_counter++);
                             addTupleInfo(&qs, start_index, c_node.query_state, "{", tl);
                         }
                         else if(matched_type==DFA_CONDITION)
@@ -420,6 +424,20 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                 {
                     if(unit.unit_state!=UNIT_MATCHED)
                         unit.unit_state = UNIT_MATCHED;
+                    //prune infeasible paths during runtime
+                    if(wa->id>0&&constraint_flag==OPEN && unit.has_pruned == UNPRUNED)
+                    {
+                        ConstraintInfo ci;
+                        ci.type = LB;
+                        updateStateInfo(ct, &ci);  
+                        if(ci.num_state!=INVALID)
+                        {   if(wa->id==1) printf("check array %d %d\n", ci.num_state, ci.state_set[0]);
+                             qs_elt = pruneQueryPaths(&qs, ci.state_set, ci.num_state);
+                            //initQueryStacks(&qs, ci.state_set, ci.num_state);
+                            //unit.unit_state = UNIT_PATH_PRUNED;
+                        }
+                        unit.unit_state = PRUNED;
+                    }
                     //write an iterator to get all nodes for current states from qs_elt
                     int start_index=qs_elt.start, end_index=qs_elt.end;
                     while(start_index<=end_index)
@@ -568,6 +586,22 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
             case KY:    //key field 
                 if(unit.unit_state!=UNIT_MATCHED)
                     unit.unit_state = UNIT_MATCHED;
+                //prune infeasible paths during runtime
+                if(wa->id>0 && constraint_flag==OPEN && unit.has_pruned==UNPRUNED && qs.top_item == -1)
+                {
+                    ConstraintInfo ci;
+                    ci.type = KY;
+                    strcopy(token.content, ci.token_name);
+                    updateStateInfo(ct, &ci);
+                    if(ci.num_state!=INVALID)
+                    {   if(wa->id==1) printf("check %s %d %d %d %d %d %d\n", ci.token_name, qs.top_item, ul->count_units, qs.num_node, ci.num_state, ci.state_set[0], ci.state_set[1]);
+                        ///if(strcmp(token.content, "studio")!=0) //ci.state_set[0] = 9;
+                        qs_elt = pruneQueryPaths(&qs, ci.state_set, ci.num_state);
+                         ///   initQueryStacks(&qs, ci.state_set, ci.num_state);
+                        //unit.unit_state = UNIT_PATH_PRUNED;
+                    }
+                    unit.has_pruned = PRUNED;
+                }
                 key(qa, &qs_elt, token.content, &ss, &qs);
                 break;
             case PRI:   //primitive
@@ -646,7 +680,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
     //update query stack for worker automaton
     wa->query_stacks = qs;
     wa->query_stacks_element = qs_elt;
-    printf("syntax size %d query size %d %d \n", syntaxStackSize(&ss), qs.top_item, wa->query_stacks.top_item);
+    printf("syntax size %d query size %d %d %d\n", syntaxStackSize(&ss), qs.top_item, wa->query_stacks.top_item, ul->count_units);
     printf("output size %d\n", getTupleListSize(tl));
 }
 

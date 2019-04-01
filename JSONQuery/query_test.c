@@ -736,9 +736,20 @@ void Test27()
     JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
 
-    //execute parallel streaming automata
-    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP);
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("../../dataset/bb.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);
+    printf("end data constraint_learning\n");
+    if(streaming_automaton.constraint_table!=NULL)
+        printConstraintTable(streaming_automaton.constraint_table);
 
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+    free(train_stream);
+    
     //filtering phase
     PredicateFilter pf;
     initPredicateFilter(&pf, tl, ctx);
@@ -766,8 +777,16 @@ void Test28()
     JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
 
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("../../dataset/random.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);
+    printf("end data constraint_learning\n");
+
     //execute parallel streaming automata
-    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP);
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
 
     //filtering phase
     PredicateFilter pf;
@@ -780,10 +799,199 @@ void Test28()
     destoryJSONQueryDFA(dfa);
 }
 
-void Test54()
+void Test35()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
+    PartitionInfo pInfo = partitionFile("twitter_store1.txt", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.root[?(@.id&&@.user.screen_name)].quoted_status.entities.user_mentions[?(@.indices&&@.id_str)].id";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("twitter_store1.txt");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);
+    printf("end data constraint_learning\n");
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+
+//test array indexes
+void Test49()
 {
     //loading and splitting the input stream
     int num_core = 16;
+    PartitionInfo pInfo = partitionFile("../../dataset/wiki.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+   // printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.root[*].claims.P150[2:4].mainsnak.property";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("../../dataset/wiki.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);//OPEN);
+    printf("end data constraint_learning\n");
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test50()
+{
+    //loading and splitting the input stream
+    int num_core = 26;
+    PartitionInfo pInfo = partitionFile("../../dataset/rowstest.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.meta.view.columns[2:6].position";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("../../dataset/rowstest.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);//OPEN);
+    printf("end data constraint_learning\n");
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test51()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
+    PartitionInfo pInfo = partitionFile("../../dataset/random.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.root[*].friends[1:3].id";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("../../dataset/random.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);//OPEN);
+    printf("end data constraint_learning\n");
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+void Test52()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
+    PartitionInfo pInfo = partitionFile("../../dataset/bb.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    //char* path = "$.root.products[*].categoryPath[?(@.name)].id";
+    //char* path = "$..root..id";
+    char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[1:2]";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("../../dataset/bb.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);//OPEN);
+    printf("end data constraint_learning\n");
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+
+void Test54()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
     PartitionInfo pInfo = partitionFile("../../dataset/bb.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
@@ -797,8 +1005,137 @@ void Test54()
     JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
 
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("../../dataset/bb.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);//OPEN);
+    printf("end data constraint_learning\n");
+
     //execute parallel streaming automata
-    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP);
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test56()
+{
+    //loading and splitting the input stream
+    int num_core = 26;
+    PartitionInfo pInfo = partitionFile("../../dataset/rowstest.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.data[1:3]";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("../../dataset/rowstest.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);//OPEN);
+    printf("end data constraint_learning\n");
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test57()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
+    PartitionInfo pInfo = partitionFile("bb.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    //char* path = "$.root.products[*].categoryPath[?(@.name)].id";
+    //char* path = "$..root..id";
+    char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[1:2]";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+    
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("bb.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);
+    printf("end data constraint_learning\n");
+
+    struct timeval begin,end;
+    double duration;
+    gettimeofday(&begin,NULL);
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the total query execution time is %lf\n", duration/1000000);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test58()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
+    PartitionInfo pInfo = partitionFile("bb.json", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    //char* path = "$.root.products[*].categoryPath[?(@.name)].id";
+    //char* path = "$..root..id";
+    char* path = "$.root.products[1:5].categoryPath[1:2]";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+     //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("bb.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);
+    printf("end data constraint_learning\n");
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
 
     //filtering phase
     PredicateFilter pf;
@@ -814,7 +1151,7 @@ void Test54()
 void Test59()
 {
     //loading and splitting the input stream
-    int num_core = 16;
+    int num_core = 64;
     PartitionInfo pInfo = partitionFile("bb.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
@@ -828,8 +1165,17 @@ void Test59()
     JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
     if (dfa == NULL) return;
 
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("bb.json");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, CLOSE);
+    printf("end data constraint_learning\n");
+    ///printf("num constraint info %d\n", streaming_automaton.constraint_table->num_constraint_info);
+
     //execute parallel streaming automata
-    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP);
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
 
     //filtering phase
     PredicateFilter pf;
@@ -842,6 +1188,42 @@ void Test59()
     destoryJSONQueryDFA(dfa);
 }
 
+void Test62()
+{
+    //loading and splitting the input stream
+    int num_core = 64;
+    PartitionInfo pInfo = partitionFile("twitter_store1.txt", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+    //printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.root[*].quoted_status.entities.user_mentions[0:1].indices[0:1]";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    //data constraint learning
+    printf("begin data constraint learning\n");
+    char* train_stream = loadJSONStream("twitter_store1.txt");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    executeAutomaton(&streaming_automaton, train_stream, OPEN);
+    printf("end data constraint_learning\n");
+
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
 
 int main()
 {
@@ -849,12 +1231,25 @@ int main()
     Test16();
     Test17();
     Test18();
-    Test19();
- 
-    Test27();
-    Test28();
-    Test54();*/
-    Test59();
+    Test19();*/
+
+//    Test19(); 
+/*    Test27();
+    Test28();*/
+
+   /* Test49();
+    Test50(); 
+    Test51();
+    Test52();
+    Test54();
+    Test56();*/
+
+    Test35();
+    Test57();
+    Test58();
+    Test62();
+
+    //Test59();
     /*Test1(); //78
     Test2(); //78
     Test3(); //2

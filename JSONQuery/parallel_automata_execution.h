@@ -11,6 +11,7 @@
 #include "utility.h"
 #include "file_partition.h"
 #include "worker_automaton.h"
+#include "constraint.h"
 
 #ifndef __USE_GNU
 #define __USE_GNU 1
@@ -162,7 +163,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
             //get current node in qs
             int node_index = qs_elt.start;
             TreeNode c_node = qs.node[node_index];
-            int query_state = c_node.query_state;
+            int query_state = c_node.query_state;  //////if(i==1&&j==1) printf("special state is %d\n", query_state);
             Unit unit = ul.units[j];
             //handle unmatched tokens
             int count_unmatched_symbols = unit.count_unmatched_symbols;
@@ -176,7 +177,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                 if(us.token_type==RCB)
                 {
                     //////printf("}\n");
-                    //////if(i==25) printf("} unit %d\n", j);
+                    if(i==1) printf("} unit %d state %d\n", j, query_state);
                     //get candidate objects across different chunks 
                     if(syntaxStackSize(&ss) > 0)
                     {
@@ -208,12 +209,13 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                     {
                         //after popping out '{', the next element on top of syntax stack is a key field
                         if(syntaxStackSecondTop(&ss)==KY)
-                        {
+                        {   if(i==1) printf("before changing state %d\n", qs.node[qs_elt.start].query_state);
                             val_obj_e(&qs_elt, &ss, &qs);
                         }
                         //after popping out '{', the next element on top of syntax stack is '['
                         else if(syntaxStackSecondTop(&ss)==LB)
                         {
+                            if(i==1) printf("before changing state %d\n", qs.node[qs_elt.start].query_state);
                             elt_obj_e(&ss);
                             //increase array counter
                             qs.node[node_index].count++;  ///////////////if(i==2) printf("******increase counter %d state %d\n", qs.node[node_index].count, qs.node[node_index].query_state);
@@ -225,10 +227,11 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                             }
                         }
                     }
+                    if(i==1) printf("after changing state is %d\n", qs.node[qs_elt.start].query_state);
                 }
                 else if(us.token_type==RB) 
                 {
-                    //if(i==25) printf("] %d %d\n", j, c_node.query_state));
+                    //if(i==1) printf("] %d %d\n", j, c_node.query_state);
                     //get candidate arrays across different chunks  -- todo list
                     if(syntaxStackSize(&ss) > 0)
                     {
@@ -287,7 +290,18 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                 }
             }
             //collect correct 2-tuple lists for current unit   -- todo list
-            int tuple_index = unit.root_node[qs.node[qs_elt.start].query_state].first_tuple_index;
+            int l = 0, tuple_index = -1;
+            for(l = 0; l< unit.num_root; l++)
+            {
+                if(unit.root_node[l].query_state == qs.node[qs_elt.start].query_state){
+                    tuple_index = unit.root_node[l].first_tuple_index;
+                    break;
+                }
+            }
+          /*  if(i==1) printf(" unit root i %d j %d %d %d %d\n", i, j, unit.num_root, unit.root_node[0].query_state, unit.root_node[1].query_state);
+            if(l<unit.num_root) printf("%d %d %d\n", i, j, unit.root_node[l].query_state);
+            else printf("error %d %d real %d in fact \n", i, j, qs.node[qs_elt.start].query_state);*/
+           // int tuple_index = unit.root_node[qs.node[qs_elt.start].query_state].first_tuple_index;
             ///int last_tuple_index = unit.root_node[qs.node[qs_elt.start].query_state].last_tuple_index;
             //sum = 0;
             //check array indexes
@@ -315,7 +329,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                 int lower = pair.lower; 
                 int upper = pair.upper; 
                 int counter = qs.node[qs_elt.start].count; 
-        //////        printf("text %s unit %d %d top_s %d counter %d %d state %d low %d high %d\n", tuple.text, i, j, syntaxStackTop(&ss), qs.node[qs_elt.start].count, getTupleListSize(tuple_list), query_state, lower, upper);
+//////        if(i==1&&j>=1)        printf("text %s unit %d %d top_s %d counter %d %d state %d low %d high %d\n", tuple.text, i, j, syntaxStackTop(&ss), qs.node[qs_elt.start].count, getTupleListSize(tuple_list), query_state, lower, upper);
                 
                 //check array indexes
                 if(!(lower==0&&upper==0))
@@ -325,7 +339,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                         if(qs.node[qs_elt.start].count>=upper) qs.node[qs_elt.start].query_state = 0; 
                         continue;
                     }
-                    else if(!(counter>=lower && counter<upper)) { 
+                    else if(!(counter>=lower && counter<upper)) { //printf("should be 0\n");
                         qs.node[qs_elt.start].query_state = 0;
          ///////               printf("skip %s counter %d lower %d upper %d %d\n", tuple.text, counter, lower, upper, getTupleListSize(tuple_list)); 
                         continue;
@@ -336,7 +350,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                         if(matched_type==DFA_OUTPUT_CANDIDATE) qs.node[qs_elt.start].count++;
                     }
                 }    
-                
+                ///printf("add\n"); 
                 if(tuple.start_position==-1)
                     addTuple(tuple_list, tuple.state, tuple.text);
                 else
@@ -385,7 +399,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
 }
 
 //par_info -- partitioned input stream, qa -- query automaton
-TupleList* executeParallelAutomata(PartitionInfo par_info, JSONQueryDFA* qa, int num_cores, int warmup_cpu) //JSONQueryDFA* qa,
+TupleList* executeParallelAutomata(PartitionInfo par_info, JSONQueryDFA* qa, int num_cores, int warmup_cpu, ConstraintTable* ct) 
 {
     ThreadInfo ti[MAX_THREAD]; 
     int i;
@@ -395,7 +409,7 @@ TupleList* executeParallelAutomata(PartitionInfo par_info, JSONQueryDFA* qa, int
         ti[i].thread_id = i;
         ti[i].input_stream = par_info.stream[i];
         ti[i].cpu_warmup = warmup_cpu;
-        ti[i].worker_automaton = createWorkerAutomaton(qa, i);
+        ti[i].worker_automaton = createWorkerAutomaton(qa, i, ct);
         int rc=pthread_create(&ti[i].thread, NULL, main_thread, &ti[i]);  
     	if (rc)
         {

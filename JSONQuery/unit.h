@@ -9,6 +9,8 @@
 #define MAX_UNMATCHED_SYMBOL 100 //maximum unmatched symbols
 #define UNIT_UNMATCHED 1 //unit starts with unmatched symbol
 #define UNIT_MATCHED 2   //finish handling unmatched symbol
+#define PRUNED 1
+#define UNPRUNED 0
 #define MAX_UNIT 100 //maximum number of units
 
 typedef struct UnmatchedSymbol{
@@ -31,6 +33,8 @@ typedef struct Unit
     int num_root;
     //the state of current unit
     int unit_state; 
+    //whether infeasible cases are pruned at the beginning of the unit
+    int has_pruned;
 }Unit;
 
 typedef struct UnitList{
@@ -42,6 +46,7 @@ static inline void initUnit(Unit* unit)
 {
     unit->count_start_states = -1;
     unit->count_unmatched_symbols = -1;
+    unit->has_pruned = UNPRUNED;
 }
 
 static inline void freeUnit(Unit* unit)

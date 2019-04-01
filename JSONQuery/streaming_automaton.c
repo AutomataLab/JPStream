@@ -24,7 +24,7 @@ static int getMatchedType(JSONQueryDFA* qa, QueryStackElement* qs_elt)
         //check array indexes
         if(!((lower==0&&upper==0)||(counter>=lower && counter<upper)))  
         {
-            match = 0;
+            match = 0; 
         }
     }
     return match;
@@ -71,8 +71,8 @@ static inline void ary_s(JSONQueryDFA* qa, QueryStackElement* qs_elt, SyntaxStac
     int upper = pair.upper; 
     int counter = qs_elt->count;
     //check array indexes 
-    if(!((lower==0&&upper==0)||(counter>=lower && counter<upper)))  
-        next_qs_elt.query_state = 0;
+    if(!((lower==0&&upper==0)||(counter>=lower && counter<upper)))
+        next_qs_elt.query_state = 0; 
     else next_qs_elt.query_state = dfaNextStateByStr(qa, qs_elt->query_state, DFA_ARRAY);
     next_qs_elt.count = 0;
     next_qs_elt.matched_start = INVALID;
@@ -183,6 +183,14 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
                 }
                 break;
             case RCB:   //right curly branket
+                //it is a matched output
+                if(qs_elt->matched_start!=INVALID && getMatchedType(qa, qs_elt)==DFA_OUTPUT_CANDIDATE)
+                {
+                    int position = lexer.next_start - lexer.begin_stream;
+                    char* output_text = substring(lexer.begin_stream, qs_elt->matched_start, position);
+                    qs_elt->matched_start = INVALID;
+                    addTuple(tl, qs_elt->query_state, output_text);
+                }
                 //syntax stack only has one '{'
                 if(syntaxStackSize(ss) == 1)   
                 {
@@ -208,13 +216,13 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
                     }
                 } 
                 //it is a matched output
-                if(qs_elt->matched_start!=INVALID && getMatchedType(qa, qs_elt)==DFA_OUTPUT_CANDIDATE)  
+                /*if(qs_elt->matched_start!=INVALID && getMatchedType(qa, qs_elt)==DFA_OUTPUT_CANDIDATE)  
                 { 
                     int position = lexer.next_start - lexer.begin_stream;
                     char* output_text = substring(lexer.begin_stream, qs_elt->matched_start, position); 
                     qs_elt->matched_start = INVALID;
                     addTuple(tl, qs_elt->query_state, output_text); 
-                } 
+                }*/ 
                 break;
             case LB:   //left square branket 
                 {
@@ -232,6 +240,13 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
                 { 
                     int query_state = qs_elt->query_state;
                     addConstraintInfo(ct, query_state, LB, token.content);
+                    JSONQueryIndexPair pair = getDFAArrayIndex(qa, query_state);
+                    int lower = pair.lower;
+                    int upper = pair.upper;
+                    int counter = qs_elt->count;
+                    //check array indexes
+                    if(!((lower==0&&upper==0)||(counter>=lower && counter<upper)))
+                        addConstraintInfo(ct, 0, LB, "");
                 }
                 ary_s(qa, qs_elt, ss, qs);
                 break;
@@ -276,6 +291,13 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
                 { 
                     int query_state = qs_elt->query_state;
                     addConstraintInfo(ct, query_state, KY, token.content);
+                    JSONQueryIndexPair pair = getDFAArrayIndex(qa, query_state);
+                    int lower = pair.lower;
+                    int upper = pair.upper;
+                    int counter = qs_elt->count;
+                    //check array indexes
+                    if(!((lower==0&&upper==0)||(counter>=lower && counter<upper)))
+                        addConstraintInfo(ct, 0, KY, token.content);
                 }
                 key(qa, qs_elt, token.content, ss, qs);
                 break;
