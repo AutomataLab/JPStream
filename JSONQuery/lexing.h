@@ -19,6 +19,7 @@
 
 /* structure for tokens */
 typedef struct Lexer{
+    char* current_pointer;
     char* current_start;     //starting position of the current symbol
     char* next_start;        //starting position of the next symbol
     char* begin_stream;       //starting position of input json
@@ -30,6 +31,7 @@ typedef struct Lexer{
 
 static inline void initLexer(Lexer* lexer, char* json_stream)
 {
+    lexer->current_pointer = json_stream;
     lexer->current_start = json_stream; 
     lexer->next_start = lexer->current_start;
     lexer->begin_stream = json_stream;

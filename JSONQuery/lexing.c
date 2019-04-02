@@ -7,7 +7,7 @@
 
 Token nextToken(Lexer* lexer)
 {
-    char* start = lexer->current_start;
+    char* start = lexer->current_pointer; //lexer->current_start;
     char* p = lexer->next_start;
     char* head = lexer->begin_stream;
     char* end = lexer->end_stream;
@@ -29,6 +29,7 @@ Token nextToken(Lexer* lexer)
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
+                        lexer->current_pointer = lexer->current_start;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1; 
                         token.token_type = LCB; 
@@ -37,6 +38,7 @@ Token nextToken(Lexer* lexer)
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
+                        lexer->current_pointer = lexer->current_start;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;
                         token.token_type = RCB;
@@ -45,6 +47,7 @@ Token nextToken(Lexer* lexer)
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
+                        lexer->current_pointer = lexer->current_start;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;
                         token.token_type = LB;
@@ -53,6 +56,7 @@ Token nextToken(Lexer* lexer)
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
+                        lexer->current_pointer = lexer->current_start;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;
                         token.token_type = RB;
@@ -61,6 +65,7 @@ Token nextToken(Lexer* lexer)
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_start = token_pointer;
+                        lexer->current_pointer = lexer->current_start;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;  
                         token.token_type = COM;
@@ -132,7 +137,9 @@ Token nextToken(Lexer* lexer)
                             strcopy(sub1,lexer->content);
                             token_len = p - start+1;
                             token_pointer = start + token_len;
-                            lexer->current_start = token_pointer; 
+                            
+                            lexer->current_start = lexer->current_pointer+1; //start - templen;//token_pointer; 
+                            lexer->current_pointer = token_pointer;
                             p++;
                             lexer->lex_state = 0;
                             lexer->next_start = p+1; 
@@ -147,6 +154,7 @@ Token nextToken(Lexer* lexer)
                             lexer->content[strlen(lexer->content)]='"'; 
                             lexer->content[strlen(lexer->content)+1]='\0';
                             ///if(sub1!=NULL) free(sub1);
+                            lexer->current_start = lexer->current_pointer+1; //start - templen;
                             lexer->lex_state = 0; 
                             lexer->next_start = p+1; 
                             token.token_type = PRI;
@@ -192,7 +200,8 @@ Token nextToken(Lexer* lexer)
                         strcopy(sub1,lexer->content);
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
-                        lexer->current_start = token_pointer;
+                        lexer->current_pointer = token_pointer;
+                        lexer->current_start = lexer->current_pointer+1; //start; //token_pointer;
                         p--;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;

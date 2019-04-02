@@ -48,7 +48,7 @@ static inline void freeOutput(Output* output)
 static inline void addOutputElement(Output* output, char* text)
 {
     int index = (++output->count);
-    strcopy(text, output->element[index]); ////printf("text %s\n", text);
+    strcopy(text, output->element[index]); ///printf("text %s %d\n", text, index);
 }
 
 static inline char* getOutputElement(Output* output, int index)

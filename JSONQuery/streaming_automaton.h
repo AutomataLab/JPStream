@@ -45,10 +45,6 @@ static inline void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* 
 
 static inline void destroyStreamingAutomaton(StreamingAutomaton* sa)
 {
-    if(sa->query_automaton != NULL)
-    {
-        destoryJSONQueryDFA(sa->query_automaton);
-    }
     if(sa->tuple_list != NULL)
     {
         freeTupleList(sa->tuple_list);

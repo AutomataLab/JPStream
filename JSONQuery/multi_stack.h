@@ -76,6 +76,13 @@ static inline QueryStacksElement initQueryStacks(QueryStacks* qs, int* start_sta
 
 static inline QueryStacksElement pruneQueryPaths(QueryStacks* qs, int* start_states, int num_start_states)
 {
+    if(num_start_states<=0)
+    {
+        QueryStacksElement qs_elt;
+        qs_elt.start = 0;
+        qs_elt.end = qs->num_node - 1;
+        return qs_elt;
+    }
     QueryStacks back_qs = *(qs);
     qs->num_node = 0;
     int i;
@@ -419,7 +426,7 @@ static inline void combineQueryStacks(QueryStacks* dst_qs, QueryStacksElement* d
         int root_index = -1;
         QueryStacksElement root_qs_elt = src_qs->item[0];         
         int root_start = root_qs_elt.start;
-        int root_end = root_qs_elt.end; 
+        int root_end = root_qs_elt.end; /// printf("%d root start %d edn %d %d %d\n", root_index, root_start, root_end, src_qs->node[0].query_state, query_state);
         while(root_start<=root_end)
         {
             if(src_qs->node[root_start].query_state == query_state)
@@ -429,13 +436,13 @@ static inline void combineQueryStacks(QueryStacks* dst_qs, QueryStacksElement* d
                 break;
             } 
             root_start++;
-        }
+        } ///printf("root index %d\n", root_index);
         if(root_index!=-1)
-        {
+        {  /// printf("root index %d\n", root_index);
             //use root info to find the correct paths in src_qs
             for(i = 1; i<=top_src; i++)
             {
-                dst_qs->item[++dst_qs->top_item] = (*dst_qs_elt);
+                dst_qs->item[++dst_qs->top_item] = (*dst_qs_elt);  ///printf("%d\n", dst_qs->top_item);
                 QueryStacksElement src_qs_elt = src_qs->item[i];
                 int start = src_qs_elt.start;
                 int end = src_qs_elt.end;

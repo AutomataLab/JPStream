@@ -35,6 +35,10 @@ typedef struct Unit
     int unit_state; 
     //whether infeasible cases are pruned at the beginning of the unit
     int has_pruned;
+    //start position of unit chunk
+    char* start;
+    //end position of unit chunk
+    char* end;
 }Unit;
 
 typedef struct UnitList{
@@ -46,7 +50,10 @@ static inline void initUnit(Unit* unit)
 {
     unit->count_start_states = -1;
     unit->count_unmatched_symbols = -1;
+    unit->num_root = -1;
     unit->has_pruned = UNPRUNED;
+    unit->start = NULL;
+    unit->end = NULL;
 }
 
 static inline void freeUnit(Unit* unit)
@@ -62,6 +69,18 @@ static inline void initUnitList(UnitList* ul)
 static inline int getSizeUnitList(UnitList* ul)
 {
     return ul->count_units+1;
+}
+
+//add the starting position for a unit
+static inline void addStartPosition(Unit* unit, char* start)
+{
+    unit->start = start;
+}
+
+//add ending position for a unit
+static inline void addEndPosition(Unit* unit, char* end)
+{
+    unit->end = end;
 }
 
 //add query state information into unit

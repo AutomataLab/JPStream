@@ -139,6 +139,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
 {
     int i,j,k;
     //get some information for thread 0
+    WorkerAutomaton* seq_wa = thread_info[0].worker_automaton;
     SyntaxStack ss = thread_info[0].worker_automaton->syntax_stack;
     QueryStacks qs = thread_info[0].worker_automaton->query_stacks;   
     QueryStacksElement qs_elt = thread_info[0].worker_automaton->query_stacks_element;
@@ -152,14 +153,17 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
 
    /////////// printf("syntax size %d query size %d query_state %d\n", syntaxStackSize(&ss), qs.top_item, qs.node[qs_elt.start].query_state);
     int sum = getTupleListSize(tuple_list); int sum0 = sum;
+    printf("sum 0 is %d\n", sum);
     for(int i = 1; i<num_thread; i++)
     {
         WorkerAutomaton* wa = thread_info[i].worker_automaton;
         UnitList ul = wa->unit_list; 
         TupleList* tl = wa->tuple_list;  
+        //whether stacks for the current chunk needs to be merged after processing
+        int merge_needed = 1; 
         //////////printf("thread %d count units %d\n", i, ul.count_units);  
         for(int j = 0; j<=ul.count_units; j++)
-        {
+        { ///  if(i==30) {printf("j %d root num %d\n", j, ul.units[j].num_root); sleep(3);}
             //get current node in qs
             int node_index = qs_elt.start;
             TreeNode c_node = qs.node[node_index];
@@ -195,6 +199,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                                 substring1(object_text+left_len, thread_info[i].input_stream, 0, us.index+1);
                                 addTupleInfo(&qs, node_index, c_node.query_state, object_text, tuple_list);
                                 qs.node[node_index].matched_start = INVALID;
+                                
                                 ///if(wa->id==10) printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!thread %d %d %s\n", i, c_node.matched_start, object_text);
                                 sum++;
                             }
@@ -209,25 +214,27 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                     {
                         //after popping out '{', the next element on top of syntax stack is a key field
                         if(syntaxStackSecondTop(&ss)==KY)
-                        {   if(i==1) printf("before changing state %d\n", qs.node[qs_elt.start].query_state);
+                        {   if(i==30) printf("before changing state key %d %d syn size %d query size %d\n", qs.node[qs_elt.start].query_state, qs.top_item, syntaxStackSize(&ss), qs.top_item);
                             val_obj_e(&qs_elt, &ss, &qs);
                         }
                         //after popping out '{', the next element on top of syntax stack is '['
                         else if(syntaxStackSecondTop(&ss)==LB)
                         {
-                            if(i==1) printf("before changing state %d\n", qs.node[qs_elt.start].query_state);
+                            if(i==30) printf("before changing state array %d %d syn size %d query size %d\n", qs.node[qs_elt.start].query_state, qs.top_item, syntaxStackSize(&ss), qs.top_item);
                             elt_obj_e(&ss);
                             //increase array counter
-                            qs.node[node_index].count++;  ///////////////if(i==2) printf("******increase counter %d state %d\n", qs.node[node_index].count, qs.node[node_index].query_state);
+                          //  qs.node[node_index].count++;
+                            qs.node[qs_elt.start].count++;  ///////////////if(i==2) 
+                            //////printf("******increase counter %d state %d\n", qs.node[node_index].count, qs.node[node_index].query_state);
                             int matched_type = getMatchedType(qa,&c_node);
                             if(matched_type==DFA_PREDICATE)
                             {
-                                sum++;
+                                sum++; printf("add } %d %d\n", i, j);
                                 addTupleInfo(&qs, node_index, c_node.query_state, "}", tuple_list);
                             }
                         }
                     }
-                    if(i==1) printf("after changing state is %d\n", qs.node[qs_elt.start].query_state);
+                    if(i==30) printf("after changing state is %d %d syn size %d query size %d\n", qs.node[qs_elt.start].query_state, qs.top_item, syntaxStackSize(&ss), qs.top_item);
                 }
                 else if(us.token_type==RB) 
                 {
@@ -252,7 +259,8 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                                 substring1(object_text+left_len, thread_info[i].input_stream, 0, us.index+1);
                                 addTupleInfo(&qs, node_index, c_node.query_state, object_text, tuple_list);
                                 qs.node[node_index].matched_start = INVALID;
-                      ///          printf("unit %d !!!!!!!!!!!!!!!!!!!!!!!!!!!thread %d %d %s len %d\n", j, i, c_node.matched_start, object_text, strlen); sleep(1);
+                               /// qs.node[node_index].count++;
+                     /////           printf("unit %d !!!!!!!!!!!!!!!!!!!!!!!!!!!thread %d %d %s len %d state %d count %d\n", j, i, c_node.matched_start, object_text, strlen, c_node.query_state, c_node.count); sleep(1);
                                 sum++;
                             }
                         }
@@ -267,15 +275,19 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                         //after popping out '[', the next element on top of syntax stack is a key field
                         if(syntaxStackSecondTop(&ss)==KY)  
                         {   
+                            if(i==31) printf("[before changing state key %d %d syn size %d query size %d\n", qs.node[qs_elt.start].query_state, qs.top_item, syntaxStackSize(&ss), qs.top_item);
                             val_ary_e(&qs_elt, &ss, &qs); 
                         }
                         //after popping out '[', the next element on top of syntax stack is '['
                         else if(syntaxStackSecondTop(&ss)==LB)  
                         {  
+                            if(i==31) printf("[before changing state key %d %d syn size %d query size %d\n", qs.node[qs_elt.start].query_state, qs.top_item, syntaxStackSize(&ss), qs.top_item);
                             elt_ary_e(&qs_elt, &ss, &qs); 
                             //increase array counter
-                            qs.node[node_index].count++;
+                           /// qs.node[node_index].count++;
+                            qs.node[qs_elt.start].count++;  /// printf("new count %d\n", qs.node[node_index].count);
                         }
+                        if(i==31) printf("after changing state is %d %d syn size %d query size %d\n", qs.node[qs_elt.start].query_state, qs.top_item, syntaxStackSize(&ss), qs.top_item);
                     }
                 }
                 else if(us.token_type==OBJECT)
@@ -289,6 +301,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                     val_ary_e(&qs_elt, &ss, &qs); 
                 }
             }
+          ///  if(unit.num_root==-1) {printf("%d %d zero_num_root %d\n", i, j, ul.count_units); sleep(3);}
             //collect correct 2-tuple lists for current unit   -- todo list
             int l = 0, tuple_index = -1;
             for(l = 0; l< unit.num_root; l++)
@@ -297,6 +310,43 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                     tuple_index = unit.root_node[l].first_tuple_index;
                     break;
                 }
+            }
+              //if(i==25) printf("real state %d %d top qs %d start %d end %d %d\n", qs.node[qs_elt.start].query_state, j, qs.top_item, unit.start-thread_info[i].input_stream, unit.end-thread_info[i].input_stream);
+            
+         //////   if(i==30&&j==1) printf("** %d state is %d real state %d num root %d unit num %d\n", j, unit.root_node[l].query_state, qs.node[qs_elt.start].query_state, unit.num_root, ul.count_units);
+            //verification and reprocessing 
+            //char* streaming = substring(thread_info[i].input_stream, 200, 200000);
+            //executeWorkerAutomaton(wa, streaming);
+            if((l==unit.num_root) && (unit.num_root>0) && (unit.unit_state!=UNIT_UNMATCHED))
+            { printf("num root %d reprocessing %d %d real state %d %d values %d %d %d qs size %d unit root %d verified state %d %d start %d end %d start check %d\n", unit.num_root, i, j, qs.node[qs_elt.start].query_state, unit.num_root, unit.root_node[0].query_state, unit.root_node[1].query_state, unit.end-unit.start, qs.top_item, unit.num_root, unit.root_node[0].query_state, unit.root_node[1].query_state, unit.start-thread_info[i].input_stream, unit.end-thread_info[i].input_stream, (unit.start==NULL));
+                //reprocess the current unit
+                int length = unit.end-unit.start+1;
+                int start_index = unit.start-thread_info[i].input_stream;
+                char* streaming = NULL;
+                if(unit.end>unit.start) streaming = substring(thread_info[i].input_stream, start_index, start_index+length-1);
+                //if(length<2000)
+             ///  if(i==63) 
+//////////printf("syntax size %d reprocessing %d %d length %d real state %d start %d end %d %s topqs %d\n", syntaxStackSize(&ss), i, j, unit.end-unit.start, qs.node[qs_elt.start].query_state, start_index, start_index+length-1, streaming, qs.top_item);
+                /*else if(!(i==15&&j==2)){
+                    printf("%d %d first half %s second half %s\n", i, j, substring(streaming, 0, 1000), substring(streaming, strlen(streaming)-1000, strlen(streaming)));
+                }*/
+            //   else printf("start %d end %d\n", start_index, start_index+length-1);
+                if(unit.end>unit.start && streaming!=NULL)
+                {
+                    seq_wa->syntax_stack = ss;
+                    seq_wa->query_stacks = qs;
+                    seq_wa->query_stacks_element = qs_elt;
+                    seq_wa->need_reprocess = REPROCESS;
+                    executeWorkerAutomaton(seq_wa, streaming); ///printf("new state1 is %d %d %d %d %d\n", seq_wa->query_stacks.node[qs_elt.start].query_state, qs.top_item, qs_elt.start, seq_wa->query_stacks_element.start, 1);
+                    free(streaming);
+                    ss = seq_wa->syntax_stack;
+                    qs = seq_wa->query_stacks;
+                    qs_elt = seq_wa->query_stacks_element;   
+                    if(j==ul.count_units) merge_needed = 0;
+                    printf("new state is %d %d %d %d %d\n", seq_wa->query_stacks.node[qs_elt.start].query_state, qs.top_item, qs_elt.start, seq_wa->query_stacks_element.start, 1);
+                    continue;
+                }
+               // printf("state %d %d\m", seq->query_stacks[ 
             }
           /*  if(i==1) printf(" unit root i %d j %d %d %d %d\n", i, j, unit.num_root, unit.root_node[0].query_state, unit.root_node[1].query_state);
             if(l<unit.num_root) printf("%d %d %d\n", i, j, unit.root_node[l].query_state);
@@ -329,7 +379,9 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                 int lower = pair.lower; 
                 int upper = pair.upper; 
                 int counter = qs.node[qs_elt.start].count; 
-//////        if(i==1&&j>=1)        printf("text %s unit %d %d top_s %d counter %d %d state %d low %d high %d\n", tuple.text, i, j, syntaxStackTop(&ss), qs.node[qs_elt.start].count, getTupleListSize(tuple_list), query_state, lower, upper);
+             /////   printf("tuple text %s\n",tuple.text);
+//////        if(i==1&&j>=1)        
+         ///    printf("text %s unit %d %d top_s %d counter %d %d state %d low %d high %d\n", tuple.text, i, j, syntaxStackTop(&ss), qs.node[qs_elt.start].count, getTupleListSize(tuple_list), query_state, lower, upper);
                 
                 //check array indexes
                 if(!(lower==0&&upper==0))
@@ -340,8 +392,8 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                         continue;
                     }
                     else if(!(counter>=lower && counter<upper)) { //printf("should be 0\n");
-                        qs.node[qs_elt.start].query_state = 0;
-         ///////               printf("skip %s counter %d lower %d upper %d %d\n", tuple.text, counter, lower, upper, getTupleListSize(tuple_list)); 
+                        if(qs.node[qs_elt.start].count>=upper) qs.node[qs_elt.start].query_state = 0;
+             ///           printf("skip %s counter %d lower %d upper %d %d\n", tuple.text, counter, lower, upper, getTupleListSize(tuple_list)); 
                         continue;
                     }
                     else
@@ -355,13 +407,15 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                     addTuple(tuple_list, tuple.state, tuple.text);
                 else
                 {   /////printf("!!!!!! start %d end %d\n", tuple.start_position, tuple.end_position);
-                    substring1(tuple.text, thread_info[i].input_stream, tuple.start_position, tuple.end_position);
+                    substring1(tuple.text, thread_info[i].input_stream, tuple.start_position, tuple.end_position); /////printf("changed tuple text %s\n", tuple.text);
                     addTuple(tuple_list, tuple.state, tuple.text); //////printf("!!!!!! start %d end %d %s\n", tuple.start_position, tuple.end_position, tuple.text);
                 }
      /////           if(wa->id==2) printf("text tuple %s\n", tuple.text);
                 //printf("%d\n", first_tuple_index);
                 sum++;
             }
+          ///  if(i==29&&j==1) printf("** %d state is %d unit %d real state %d\n", j, unit.root_node[l].query_state, ul.count_units, qs.node[qs_elt.start].query_state);
+          //  qs.node[qs_elt.start].query_state = unit.root_node[l].query_state;
            ////// printf("query state %d first output %d last output %d output %d\n", qs.node[qs_elt.start].query_state, tuple_index, last_tuple_index, sum);
             /*if(i==1&&1==2)
             {
@@ -383,10 +437,20 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                 }
             }*/
      //////       printf("syntax size %d query size %d\n", syntaxStackSize(&ss), qs.top_item);
+            if(i==30) printf("%d state is %d root %d\n", j, qs.node[qs_elt.start].query_state, unit.root_node[0].query_state);
         }
+      // if(i==30) printf("final ** state is %d root %d\n", qs.node[qs_elt.start].query_state, unit.root_node[0].query_state);
         //merge stack  
-        combineSyntaxStack(&ss, &wa->syntax_stack);
-        combineQueryStacks(&qs, &qs_elt, &wa->query_stacks, &wa->query_stacks_element);  //merge stack and update qs_elt  -- todo list
+        if(merge_needed==1)
+        {
+            combineSyntaxStack(&ss, &wa->syntax_stack); ///printf("before thread %d seg %d finish merging syntax size %d query size %d wa %d wa nodes %d start is %d current state is %d %d %d %d\n", i, j, syntaxStackSize(&ss), qs.top_item, wa->query_stacks.top_item, wa->query_stacks.num_node, wa->query_stacks.node[0].query_state, qs.node[qs_elt.start].query_state, wa->query_stacks.node[1].query_state, wa->query_stacks.node[2].query_state, wa->query_stacks.node[1].root_range.start,wa->query_stacks.node[1].root_range.end);
+            combineQueryStacks(&qs, &qs_elt, &wa->query_stacks, &wa->query_stacks_element);  //merge stack and update qs_elt 
+            
+        //    printf("thread %d seg %d finish merging syntax size %d query size %d wa %d wa nodes %d start is %d current state is %d %d %d %d\n", i, j, syntaxStackSize(&ss), qs.top_item, wa->query_stacks.top_item, wa->query_stacks.num_node, wa->query_stacks.node[0].query_state, qs.node[qs_elt.start].query_state, wa->query_stacks.node[1].query_state, wa->query_stacks.node[2].query_state, wa->query_stacks.node[1].root_range.start,wa->query_stacks.node[1].root_range.end);  if(i==30) sleep(10);
+            
+            
+        }
+        ///printf("after %dth thread syntax size %d query size %d state %d\n", i, syntaxStackSize(&ss), qs.top_item, qs.node[qs_elt.start]);
     }
     printf("syntax size %d query size %d\n", syntaxStackSize(&ss), qs.top_item);
     printf("output size %d %d\n", sum, getTupleListSize(tuple_list));

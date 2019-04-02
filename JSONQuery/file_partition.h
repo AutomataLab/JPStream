@@ -124,7 +124,7 @@ void printChunk(char** stream, int num_core)
     printf("begin printing results %d %d\n", num_core, stream[num_core]==NULL);
     for(int i = 0; i<num_core; i++)
     {
-        if(i==24||i==25) printf("%dth chunk is %s\n", i, stream[i]);
+        ///if(i==4) printf("%dth chunk is %s\n", i, stream[i]);  //i==63||
         //else 
         //printf("\n%dth chunk is start: %s end: %s\n", i, substring(stream[i],0,100), substring(stream[i], strlen(stream[i])-100, strlen(stream[i])));
     }
