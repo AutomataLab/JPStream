@@ -192,9 +192,9 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                                 int right_len = us.index+1;
                                 int strlen = left_len+right_len;
                                 char* object_text = (char*)malloc((strlen+1)*sizeof(char));
-                                substring1(object_text, thread_info[i-1].input_stream, c_node.matched_start, c_node.matched_start+left_len);
+                                substring_in_place(object_text, thread_info[i-1].input_stream, c_node.matched_start, c_node.matched_start+left_len);
                                 //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!thread %d %d %s %d %d %s\n", i, c_node.matched_start, object_text, c_node.matched_start+left_len, us.index, substring(thread_info[i].input_stream, 0, us.index+1));
-                                substring1(object_text+left_len, thread_info[i].input_stream, 0, us.index+1);
+                                substring_in_place(object_text+left_len, thread_info[i].input_stream, 0, us.index+1);
                                 addTupleInfo(&qs, node_index, c_node.query_state, object_text, tuple_list);
                                 qs.node[node_index].matched_start = INVALID;
                                 
@@ -251,9 +251,9 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                                 int right_len = us.index;
                                 int strlen = left_len+right_len;
                                 char* object_text = (char*)malloc((strlen+1)*sizeof(char));
-                                substring1(object_text, thread_info[i-1].input_stream, c_node.matched_start, c_node.matched_start+left_len);
+                                substring_in_place(object_text, thread_info[i-1].input_stream, c_node.matched_start, c_node.matched_start+left_len);
                      //////           printf("unit %d !!!!!!!!!!!!!!!!!!!!!!!!!!!thread %d %d %s %d %d %s\n", j, i, c_node.matched_start, object_text, c_node.matched_start+left_len, us.index, substring(thread_info[i].input_stream, 0, us.index+1));
-                                substring1(object_text+left_len, thread_info[i].input_stream, 0, us.index+1);
+                                substring_in_place(object_text+left_len, thread_info[i].input_stream, 0, us.index+1);
                                 addTupleInfo(&qs, node_index, c_node.query_state, object_text, tuple_list);
                                 qs.node[node_index].matched_start = INVALID;
                                /// qs.node[node_index].count++;
@@ -413,7 +413,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                     addTuple(tuple_list, tuple.state, tuple.text);
                 else
                 {   /////printf("!!!!!! start %d end %d\n", tuple.start_position, tuple.end_position);
-                    substring1(tuple.text, thread_info[i].input_stream, tuple.start_position, tuple.end_position); /////printf("changed tuple text %s\n", tuple.text);
+                    substring_in_place(tuple.text, thread_info[i].input_stream, tuple.start_position, tuple.end_position); /////printf("changed tuple text %s\n", tuple.text);
                     addTuple(tuple_list, tuple.state, tuple.text); //////printf("!!!!!! start %d end %d %s\n", tuple.start_position, tuple.end_position, tuple.text);
                 }
      /////           if(wa->id==2) printf("text tuple %s\n", tuple.text);
