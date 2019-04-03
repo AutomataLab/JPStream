@@ -14,7 +14,7 @@ typedef struct PartitionInfo
     int num_chunk;
 }PartitionInfo;
 
-//return partitioned chunks
+//partitioned intput stream into severeal chunks
 PartitionInfo partitionFile(char* file_name, int num_core)
 { 
     PartitionInfo pInfo;
@@ -72,15 +72,12 @@ PartitionInfo partitionFile(char* file_name, int num_core)
             add = add+1;
             ch = fgetc(fp);
         }
-        stream[i][chunk_size+add] = '\0';
-        //printf("%dth %s %d len %d\n", i, stream[i], file_size, strlen(stream[i])); 
+        stream[i][chunk_size+add] = '\0'; 
         sum_size += (chunk_size+add);
         if((sum_size+chunk_size)>=file_size) {i++; break;}
     }
     pInfo.num_chunk = i;
-    ///if(i<num_core-1) return i+1;
     long remain_size = file_size-sum_size;
-    //printf("sum size %d chunk_size %d file_size %d remain_size %d thread %d\n", sum_size, chunk_size, file_size, i);
     if(remain_size>0)
     {
         stream[i] = (char*)malloc((remain_size)*sizeof(char));
@@ -99,11 +96,9 @@ PartitionInfo partitionFile(char* file_name, int num_core)
             stream[i][remain_size] = '\0';
         }
         pInfo.num_chunk = i+1;
-        // printf("last chunk %d %s\n", i, stream[i]);
     }
     pInfo.num_chunk = i+1;
     pInfo.stream = stream;
-    //printf("chunk number %d %d\n", pInfo.num_chunk, stream[3]==NULL);
     printf("file partitioner: finish splitting the input stream\n");
     return pInfo;
 }
@@ -121,16 +116,12 @@ void freeInputChunks(PartitionInfo pInfo)
 
 void printChunk(char** stream, int num_core)
 {
-    printf("begin printing results %d %d\n", num_core, stream[num_core]==NULL);
+    printf("start printing paritioned chunks, total number of chunks is %d\n", num_core);
     for(int i = 0; i<num_core; i++)
     {
         ///if(i==4) printf("%dth chunk is %s\n", i, stream[i]);  //i==63||
         //else 
         //printf("\n%dth chunk is start: %s end: %s\n", i, substring(stream[i],0,100), substring(stream[i], strlen(stream[i])-100, strlen(stream[i])));
-    }
-    for(int i = 0; 1==2&&i<num_core; i++)
-    {
-        printf("\n%dth chunk is start: %s\n", i, stream[i]);
-    }
+    }    
 }
 #endif // !__FILE_PARTITION_H__

@@ -80,6 +80,7 @@ static inline void updateStateInfo(ConstraintTable* ct, ConstraintInfo* ci)
     }
 }
 
+//add the correspondence between the current state and the next symbol
 static inline void addConstraintInfo(ConstraintTable* ct, int state, int type, char* name)
 {
     int index = ct->num_constraint_info;

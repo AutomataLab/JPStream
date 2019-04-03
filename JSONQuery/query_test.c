@@ -153,7 +153,7 @@ void Test1cl_incomplete()
     PartitionInfo pInfo = partitionFile("../../dataset/bb.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+    //////printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
@@ -982,7 +982,7 @@ void Test6clr()
     PartitionInfo pInfo = partitionFile("../../dataset/rowstest.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+   /// printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position";
@@ -1034,7 +1034,7 @@ void Test6cl_incomplete()
     PartitionInfo pInfo = partitionFile("../../dataset/rowstest.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+   /// printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.meta.view.columns[?(@.id&&@.name&&@.cachedContents)].position";

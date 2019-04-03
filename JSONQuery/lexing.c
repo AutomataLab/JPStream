@@ -5,9 +5,11 @@
 #include "utility.h"
 #include "lexing.h"
 
+#define MAX_PRIMITIVE 40000
+
 Token nextToken(Lexer* lexer)
 {
-    char* start = lexer->current_pointer; //lexer->current_start;
+    char* start = lexer->current_pointer; 
     char* p = lexer->next_start;
     char* head = lexer->begin_stream;
     char* end = lexer->end_stream;
@@ -17,7 +19,7 @@ Token nextToken(Lexer* lexer)
     char* token_pointer = p; 
     int tempcount;
     Token token;
-    char sub1[40000];
+    char sub1[MAX_PRIMITIVE];
     for (; p < end; p++)
     {   
         switch(state)

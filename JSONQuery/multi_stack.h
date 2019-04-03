@@ -142,16 +142,15 @@ static inline QueryStacksElement queryStacksPush(QueryStacks* qs, QueryStacksEle
             if(qs->node[j].query_state == next_state)
             {
                 //add parent pointer
-                parent_pointer[next_state][num_parent_pointer[next_state]++] = i;//cur_state;
-                ///printf("parent %d %d\n", num_parent_pointer[next_state], parent_pointer[next_state][num_parent_pointer[next_state]]);
+                parent_pointer[next_state][num_parent_pointer[next_state]++] = i; 
                 //add root pointer from its parent
                 Range p_root_range = qs->node[i].root_range;
                 //parent node is the root node
                 if(p_root_range.end == -1)
                 {
-                    root_pointer[next_state][num_root_pointer[next_state]++] = i;//cur_state;
+                    root_pointer[next_state][num_root_pointer[next_state]++] = i;
                 }
-                else
+                else //inherent the roots information from parent
                 {   
                     for(k = p_root_range.start; k<=p_root_range.end; k++)
                     {
@@ -176,16 +175,15 @@ static inline QueryStacksElement queryStacksPush(QueryStacks* qs, QueryStacksEle
             num_parent_pointer[next_state] = 0;
             num_root_pointer[next_state] = 0;
             //add parent pointer
-            parent_pointer[next_state][num_parent_pointer[next_state]++] = i;
-            //printf("parent %d %d %d %d %d\n", num_parent_pointer[next_state], parent_pointer[next_state][num_parent_pointer[next_state]-1], i, cur_state, next_state);
+            parent_pointer[next_state][num_parent_pointer[next_state]++] = i; 
             //add root pointer from its parent
             Range p_root_range = qs->node[i].root_range;
             //parent node is the root node
             if(p_root_range.end == -1)
             {
-                root_pointer[next_state][num_root_pointer[next_state]++] = i;//cur_state;
+                root_pointer[next_state][num_root_pointer[next_state]++] = i;
             }
-            else
+            else //inherent the roots information from parent
             {
                 for(k = p_root_range.start; k<=p_root_range.end; k++)
                 {
@@ -259,24 +257,9 @@ static inline void printQueryStacks(QueryStacks* qs, QueryStacksElement qs_elt)
         printf("%dth root index is %d; ", i, root_index);
     }
     printf("\ncurrent state information start_node_index %d end_node_index %d\n", qs_elt.start, qs_elt.end);
-    
-    /*printf("\nprint output information\n");
-    for(i = 0; i<qs->num_root_pointers; i++)
-    {
-        int root_index = qs->root_pointers[i];
-        if(qs->node[root_index].first_tuple_index>=0)
-        {
-            printf("%dth root index is %d; ", i, root_index);
-            int current = qs->node[root_index].first_tuple_index;
-            while(current<=qs->node[root_index].last_tuple_index)
-            {
-                printf("output is %s\n",getTuple(tl, current_index); 
-                current++;
-            }
-        }
-    }*/ 
 }
 
+//just used for debugging
 static inline void printTupleInfo(QueryStacks* qs, QueryStacksElement qs_elt, TupleList* tl)
 {
     printf("\nprint output information\n");
@@ -381,6 +364,7 @@ static inline void addVirtualTupleInfo(QueryStacks* qs, int node_index, int quer
      {
          int root_index = qs->root_pointers[root_s];
          TreeNode root = qs->node[root_index];
+         //only saves pointers for large object or array outputs, contents can be acquired during merging phase
          addVirtualTuple(tl, query_state, matched_start, matched_end);
          if(root.first_tuple_index>=0){
              int tuple_index = getTupleListSize(tl)-1;
@@ -413,36 +397,35 @@ static inline void addVirtualTupleInfo(QueryStacks* qs, int node_index, int quer
      }
 }
 
+// combine one stack with multiple paths into another stack with a single path, can only be used during merging phase
 static inline void combineQueryStacks(QueryStacks* dst_qs, QueryStacksElement* dst_qs_elt, QueryStacks* src_qs, QueryStacksElement* src_qs_elt)
 {
-    int i;
+    int i = 0;
     src_qs->item[++src_qs->top_item] = (*src_qs_elt);
     int top_src = src_qs->top_item;
-    int query_state = dst_qs->node[dst_qs_elt->start].query_state;
-   ///// printf("top src is %d\n", top_src);
+    int query_state = dst_qs->node[dst_qs_elt->start].query_state; 
     if(top_src>=0)  //merge src_qs into dst_qs
     {
-        //deal with the root level in src_qs
+        //start from the root level in src_qs
         int root_index = -1;
         QueryStacksElement root_qs_elt = src_qs->item[0];         
         int root_start = root_qs_elt.start;
-        int root_end = root_qs_elt.end; /// printf("%d root start %d edn %d %d %d\n", root_index, root_start, root_end, src_qs->node[0].query_state, query_state);
+        int root_end = root_qs_elt.end; 
         while(root_start<=root_end)
         {
             if(src_qs->node[root_start].query_state == query_state)
             {
-                root_index = root_start;
-                //combine some root information if needed later  --todo list
+                root_index = root_start; 
                 break;
             } 
             root_start++;
-        } ///printf("root index %d\n", root_index);
+        } 
         if(root_index!=-1)
-        {  /// printf("root index %d\n", root_index);
-            //use root info to find the correct paths in src_qs
+        { 
+            //use root information to find the correct paths in src_qs
             for(i = 1; i<=top_src; i++)
             {
-                dst_qs->item[++dst_qs->top_item] = (*dst_qs_elt);  ///printf("%d\n", dst_qs->top_item);
+                dst_qs->item[++dst_qs->top_item] = (*dst_qs_elt);  
                 QueryStacksElement src_qs_elt = src_qs->item[i];
                 int start = src_qs_elt.start;
                 int end = src_qs_elt.end;

@@ -48,8 +48,7 @@ void substring1(char* desc, char *pText, int begin, int end)
     {
         desc[j]=temp[i];
     }
-    desc[j]='\0';
-    //return temp1;
+    desc[j]='\0'; 
 }
 
 /******************************************************************************

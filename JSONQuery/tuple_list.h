@@ -7,7 +7,9 @@
 #define MAX_TEXT 500
 
 typedef struct Tuple{
+    //starting index for string text
     int start_position;
+    //ending index for string text
     int end_position;
     int state;
     char text[MAX_TEXT];
@@ -47,7 +49,7 @@ static inline void addTuple(TupleList* tl, int state, char* text)
 }
 
 static inline void addVirtualTuple(TupleList* tl, int state, int start_position, int end_position)
-{//printf("<<<<<<<<start %d end %d\n", start_position, end_position);
+{
     int index = (++tl->count);
     tl->element[index].state = state;
     tl->element[index].start_position = start_position; 

@@ -14,6 +14,7 @@
 #define MAX_UNIT 100 //maximum number of units
 
 typedef struct UnmatchedSymbol{
+    //type of unmatched symbol
     int token_type;
     //begin index of the unmatched symbol from input chunk
     int index;  

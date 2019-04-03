@@ -241,9 +241,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
     initUnit(&unit);
 
     //save information for current unmatched symbol
-    UnmatchedSymbol us;
-
-    int debug_counter = 0;
+    UnmatchedSymbol us; 
 
     //select transition rules based on input token, query state, top elements on syntax stack and query stack
     while(token_type!=END)
@@ -310,13 +308,11 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                     {
                         if(unit.unit_state==UNIT_MATCHED)
                         {
-                            //printf("} %d\n", ul->count_units);
                             //create a new unit
-                            addRoots(&unit, qs.node, qs.num_node); /////////if(qs.num_node==4) printf("<<>>>>} unmatched %d\n",ul->count_units+1);
-                            addEndPosition(&unit, lexer.current_start-1); //////if(wa->id==31) printf(" ^^^^^%c %c %c\n", *(lexer.current_start), *(lexer.current_start-1), *(lexer.current_start-2));
+                            addRoots(&unit, qs.node, qs.num_node); 
+                            addEndPosition(&unit, lexer.current_start-1); 
                             addUnit(ul, unit);
                             initUnit(&unit);
-                            ///addStartPosition(&unit, lexer.next_start);
                             //automata resetting
                             initSyntaxStack(&ss);
                             initSyntaxStack(&shadow_ss);
@@ -325,7 +321,6 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                         us.token_type = RCB;
                         us.index = lexer.next_start - lexer.begin_stream - 1;
                         addUnmatchedSymbol(&unit, us);   
-                        //printf("1} %d\n", ul->count_units);
                     }
                     //syntax stack only has one '{'
                     else if(syntaxStackSize(&ss) == 1)
@@ -342,11 +337,10 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                             if(unit.unit_state==UNIT_MATCHED)
                             {
                                 //create a new unit
-                                addRoots(&unit, qs.node, qs.num_node); ///if(qs.num_node==4) printf("<<>>>>} unmatched %d\n",ul->count_units+1);
+                                addRoots(&unit, qs.node, qs.num_node); 
                                 addEndPosition(&unit, lexer.current_start-1);
                                 addUnit(ul, unit);
                                 initUnit(&unit);
-                              //////  addStartPosition(&unit, lexer.next_start);
                                 //automata resetting
                                 initSyntaxStack(&ss);
                                 initSyntaxStack(&shadow_ss);
@@ -366,14 +360,14 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                                 TreeNode c_node = qs.node[start_index];
                                 //increase array counter
                                 qs.node[start_index].count++;
-                                int matched_type = getMatchedType(qa,&c_node); ///if(wa->id==37&&c_node.query_state==6) printf("matched type %d %d counter %d rootend %d\n", matched_type, c_node.query_state, qs.node[start_index].count, c_node.root_range.end);
+                                int matched_type = getMatchedType(qa,&c_node); 
                                 if(matched_type==DFA_PREDICATE)
                                 {
                                     addTupleInfo(&qs, start_index, c_node.query_state, "}", tl);
                                 }
                                 else if(matched_type==DFA_INCOMPLETE_INDEX)
                                 {
-                                    addTupleInfo(&qs, start_index, c_node.query_state, "}", tl);  //////if(wa->id==2) printf("**********special }\n");
+                                    addTupleInfo(&qs, start_index, c_node.query_state, "}", tl);  
                                 }
                                 start_index++;
                             }
@@ -423,13 +417,8 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                         ci.type = LB;
                         updateStateInfo(ct, &ci);  
                         if(ci.num_state>0)
-                        { //////  if(wa->id==1) printf("check array %d %d\n", ci.num_state, ci.state_set[0]);
-                             qs_elt = pruneQueryPaths(&qs, ci.state_set, ci.num_state);
-                             /////if(wa->id==25) {printf("%d %d <<<<<>>>>state %d %d %d\n", qs_elt.start, qs_elt.end,ci.state_set[0], ci.state_set[1], ci.num_state); sleep(3);}
-                         ///    addRoots(&unit, qs.node, qs.num_node);
-                      ///       if(wa->id==30) {printf("fsdasfd >>>>>>>> num_node %d unit count %d\n", unit.num_root, ul->count_units); sleep(3);}
-                            //initQueryStacks(&qs, ci.state_set, ci.num_state);
-                            //unit.unit_state = UNIT_PATH_PRUNED;
+                        { 
+                            qs_elt = pruneQueryPaths(&qs, ci.state_set, ci.num_state);
                         }
                         unit.unit_state = PRUNED;
                     }
@@ -446,10 +435,6 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                         else if(matched_type==DFA_CONDITION)
                         {   
                             addTupleInfo(&qs, start_index, c_node.query_state, "", tl);
-                        }
-                        else if(matched_type==DFA_INCOMPLETE_INDEX)
-                        {
-                            //addTupleInfo(&qs, start_index, c_node.query_state, "[", tl);
                         }
                         start_index++;
                     }
@@ -471,18 +456,12 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                             if(matched_type==DFA_OUTPUT_CANDIDATE||(wa->id>0 && matched_type==DFA_UNSELECTED_CANDIDATE))
                             {   
                                 int matched_end = lexer.next_start - lexer.begin_stream;
-                                //char* output_text = substring(lexer.begin_stream, c_node.matched_start, position);
-                                //char output_text[40000];
-                                //substring1(output_text, lexer.begin_stream, c_node.matched_start, position);
-                                //printf("<<<<<<<<start %d end %d\n", c_node.matched_start, matched_end);
                                 if(wa->id==0){
                                     char* output_text = substring(lexer.begin_stream, c_node.matched_start, matched_end);
                                     addTupleInfo(&qs, start_index, c_node.query_state, output_text, tl); 
                                 }
                                 else addVirtualTupleInfo(&qs, start_index, c_node.query_state, c_node.matched_start, matched_end, tl);
                                 qs.node[start_index].matched_start = INVALID; 
-                                //addTupleInfo(&qs, start_index, c_node.query_state, output_text, tl);
-                                //addVirtualTuple(tl, c_node.query_state, c_node.matched_start, position);
                             }
                             else if(matched_type==DFA_INCOMPLETE_INDEX)
                             {
@@ -507,12 +486,10 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                             if(unit.unit_state==UNIT_MATCHED)
                             {
                                 //create a new unit
-                                addRoots(&unit, qs.node, qs.num_node); ///////////if(qs.num_node==4) printf("<<>>>>} unmatched %d\n",ul->count_units+1);
-                      ///          if(wa->id==30) {printf("ini fsdasfd >>>>>>>> num_node %d unit count %d\n", unit.num_root, ul->count_units); sleep(3);}
+                                addRoots(&unit, qs.node, qs.num_node);
                                 addEndPosition(&unit, lexer.current_start-1);
                                 addUnit(ul, unit);
                                 initUnit(&unit);
-                             /////   addStartPosition(&unit, lexer.next_start);
                                 //automata resetting
                                 initSyntaxStack(&ss);
                                 initSyntaxStack(&shadow_ss);
@@ -566,12 +543,10 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                     if(unit.unit_state==UNIT_MATCHED)
                     {
                         //create a new unit
-                        addRoots(&unit, qs.node, qs.num_node); ///////////if(qs.num_node==4) printf("<<>>>>} unmatched %d\n",ul->count_units+1);
-                  ///      if(wa->id==30) {printf("ini fsdasfd >>>>>>>> num_node %d unit count %d\n", unit.num_root, ul->count_units); sleep(3);}
+                        addRoots(&unit, qs.node, qs.num_node); 
                         addEndPosition(&unit, lexer.current_start-1);
                         addUnit(ul, unit);
                         initUnit(&unit);
-                  ///      addStartPosition(&unit, lexer.next_start);
                         //automata resetting
                         initSyntaxStack(&ss);
                         initSyntaxStack(&shadow_ss);
@@ -579,7 +554,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                     }
                     us.token_type = RB;
                     us.index = lexer.next_start - lexer.begin_stream - 1;
-                    addUnmatchedSymbol(&unit, us); //////if(wa->id==25) printf("&&&&&&&&& %s\n", substring(lexer.begin_stream, 0, us.index));
+                    addUnmatchedSymbol(&unit, us); 
                 }
                 break;
             case COM:   //comma
@@ -588,7 +563,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                 if(unit.unit_state!=UNIT_MATCHED)
                 {
                     unit.unit_state = UNIT_MATCHED;
-                    addStartPosition(&unit, lexer.current_start-1);//-strlen(token.content)-1);
+                    addStartPosition(&unit, lexer.current_start-1);
                 }
                 //prune infeasible paths during runtime
                 if(wa->id>0 && constraint_flag==OPEN && unit.has_pruned==UNPRUNED && qs.top_item == -1)
@@ -598,13 +573,8 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                     strcopy(token.content, ci.token_name);
                     updateStateInfo(ct, &ci);
                     if(ci.num_state>0)
-                    {   if(wa->id==1) printf("check %s %d %d %d %d %d %d\n", ci.token_name, qs.top_item, ul->count_units, qs.num_node, ci.num_state, ci.state_set[0], ci.state_set[1]);
-                        ///if(strcmp(token.content, "studio")!=0) //ci.state_set[0] = 9;
+                    {   
                         qs_elt = pruneQueryPaths(&qs, ci.state_set, ci.num_state);
-                   ///     addRoots(&unit, qs.node, qs.num_node);
-                   ///     if(wa->id==30) {printf("fsdasfd >>>>>>>> num_node %d unit count %d\n", unit.num_root, ul->count_units); sleep(3);}
-                         ///   initQueryStacks(&qs, ci.state_set, ci.num_state);
-                        //unit.unit_state = UNIT_PATH_PRUNED;
                     }
                     unit.has_pruned = PRUNED;
                 }
@@ -643,12 +613,10 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                          if(unit.unit_state==UNIT_MATCHED)
                          {
                              //create a new unit
-                             addRoots(&unit, qs.node, qs.num_node); ///////////////if(qs.num_node==4) printf("<<>>>>} unmatched %d\n",ul->count_units+1);
-                         ///    if(wa->id==30) {printf("ini fsdasfd >>>>>>>> num_node %d unit count %d\n", unit.num_root, ul->count_units); sleep(3);}
-                             addEndPosition(&unit, lexer.current_start-1);//-strlen(token.content));
+                             addRoots(&unit, qs.node, qs.num_node); 
+                             addEndPosition(&unit, lexer.current_start-1);
                              addUnit(ul, unit);
                              initUnit(&unit);
-                             //////addStartPosition(&unit, lexer.next_start);
                              //automata resetting
                              initSyntaxStack(&ss);
                              initSyntaxStack(&shadow_ss);
@@ -681,9 +649,6 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
         token = nextToken(&lexer);
         token_type = token.token_type; 
     }
-  //  {printf("num node %d unit %d\n", qs.num_node, unit.num_root); sleep(3);}
-  //  if(unit.num_root==-1)
-  //  if(wa->id==4) {printf("state unit !!! %d %d start %d end %d %d", unit.unit_state, qs.num_node, qs.item[0].start, qs.item[0].end, qs.top_item); sleep(3);}
     if(qs.num_node>0)
     {
         TreeNode roots[MAX_STATE];
@@ -693,20 +658,12 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
         int i = top_qs_elt.start;
         while(i<=top_qs_elt.end)
         {
-            roots[num_roots++] = qs.node[i]; /////if(wa->id==25) {printf("<<<<<>>>>state %d\n", qs.node[i].query_state); sleep(3);}
+            roots[num_roots++] = qs.node[i]; 
             i++;
         }
-       if(num_roots!=unit.num_root)
-        {
-            ///printf("<<>>>>>num roots %d unit num roots %d %d num nodes %d\n", num_roots, unit.num_root, unit.unit_state, qs.num_node); sleep(3);
-        }
         addRoots(&unit, roots, num_roots);
-        
     }
     else unit.num_root = 0;
-//  addRoots(&unit, qs.node, qs.num_node);
-     /////////////if(qs.num_node==4) printf("<<>>>>e} unmatched %d start %d end %d %d\n",ul->count_units+1, qs.item[0].start, qs.item[0].end, wa->id);
-   /// if(wa->id==30) {printf("final fsdasfd >>>>>>>> num_node %d unit count %d\n", unit.num_root, ul->count_units); sleep(3);}
     addEndPosition(&unit, lexer.end_stream);
     addUnit(ul, unit);
     destroyLexer(&lexer);
@@ -715,7 +672,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
     //update query stack for worker automaton
     wa->query_stacks = qs;
     wa->query_stacks_element = qs_elt;
-    printf("syntax size %d query size %d %d %d %d\n", syntaxStackSize(&ss), qs.top_item, wa->query_stacks.top_item, ul->count_units, qs.node[qs_elt.start].query_state);
-    printf("output size %d\n", getTupleListSize(tl));
+    //printf("syntax size %d query size %d %d %d %d\n", syntaxStackSize(&ss), qs.top_item, wa->query_stacks.top_item, ul->count_units, qs.node[qs_elt.start].query_state);
+    //printf("output size %d\n", getTupleListSize(tl));
 }
 
