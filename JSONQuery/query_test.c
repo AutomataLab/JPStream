@@ -2531,7 +2531,7 @@ void Test16cl()
     PartitionInfo pInfo = partitionFile("../../dataset/rowstest.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+    //printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.data[1:3]";
@@ -2568,7 +2568,7 @@ void Test16()
     PartitionInfo pInfo = partitionFile("../../dataset/rowstest.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+    //printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.data[1:3]";
@@ -2741,7 +2741,7 @@ void Test17()
     PartitionInfo pInfo = partitionFile("../../dataset/twitter.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+    //printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.root[?(@.text&&(!@.contributors))].id";
@@ -2945,7 +2945,7 @@ void Test17_large()
     PartitionInfo pInfo = partitionFile("twitter_store1.txt", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+    //printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.root[?(@.text&&(!@.contributors))].id";
@@ -2975,7 +2975,7 @@ void Test18()
     PartitionInfo pInfo = partitionFile("../../dataset/twitter.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+    //printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.root[*].quoted_status.entities.user_mentions[0:1].indices[0:1]";
@@ -3153,7 +3153,7 @@ void Test18_large()
     PartitionInfo pInfo = partitionFile("twitter_store1.txt", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+    //printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.root[*].quoted_status.entities.user_mentions[0:1].indices[0:1]";
@@ -3184,7 +3184,7 @@ void Test18_large_xeon()
     PartitionInfo pInfo = partitionFile("twitter_store1.txt", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-    printChunk(stream, num_chunk);
+    //printChunk(stream, num_chunk);
 
     //loading dfa
     char* path = "$.root[*].quoted_status.entities.user_mentions[0:1].indices[0:1]";
@@ -3197,6 +3197,85 @@ void Test18_large_xeon()
     //execute parallel streaming automata
     TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, NULL);
 
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    freeTupleList(tl);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test18cl_large_sequential()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading and splitting the input stream
+    int num_core = 1;
+    PartitionInfo pInfo = partitionFile("twitter_store1.txt", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+   /// printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.root[*].quoted_status.entities.user_mentions[0:1].indices[0:1]";
+    //char* path = "$.data[1:3]";
+    //char* path = "$.root[?(@.text&&(!@.contributors))].id";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+     //data constraint learning
+    printf("start serial streaming automaton\n");
+    char* train_stream = loadJSONStream("twitter_store1.txt");
+    StreamingAutomaton streaming_automaton;
+    initStreamingAutomaton(&streaming_automaton, dfa);
+    gettimeofday(&begin,NULL);
+    executeAutomaton(&streaming_automaton, train_stream, CLOSE);
+    printf("results are generated\n");
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the execution time for streaming automaton is %lf\n", duration/1000000); 
+
+    TupleList* tl = streaming_automaton.tuple_list;
+    //filtering phase
+    PredicateFilter pf;
+    initPredicateFilter(&pf, tl, ctx);
+    Output* final = generateFinalOutput(&pf);
+    printf("size of final output is %d\n", getOutputSize(final));
+    destroyPredicateFilter(&pf);
+    freeOutput(final);
+    destoryJSONQueryDFA(dfa);
+}
+
+void Test18cl_large_onecore()
+{
+    struct timeval begin,end;
+    double duration;
+    //loading and splitting the input stream
+    int num_core = 1;
+    PartitionInfo pInfo = partitionFile("twitter_store1.txt", num_core);
+    int num_chunk = pInfo.num_chunk;
+    char** stream = pInfo.stream;
+   /// printChunk(stream, num_chunk);
+
+    //loading dfa
+    char* path = "$.root[*].quoted_status.entities.user_mentions[0:1].indices[0:1]";
+    //char* path = "$.data[1:3]";
+    //char* path = "$.root[?(@.text&&(!@.contributors))].id";
+    JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
+    JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
+    if (dfa == NULL) return;
+
+    gettimeofday(&begin,NULL);
+    //execute parallel streaming automata
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, NULL);
+    gettimeofday(&end,NULL);
+    duration=1000000*(end.tv_sec-begin.tv_sec)+end.tv_usec-begin.tv_usec;
+    printf("the execution time for streaming automaton is %lf\n", duration/1000000); 
+ 
     //filtering phase
     PredicateFilter pf;
     initPredicateFilter(&pf, tl, ctx);
@@ -3940,7 +4019,7 @@ int main()
    Test17cl();
    Test18cl();
    //group 3: small file, with incomplete constraint learning
-   /*Test1cl_incomplete();
+  /* Test1cl_incomplete();
    Test4cl_incomplete();
    Test6cl_incomplete();
    Test7cl_incomplete();
@@ -3949,9 +4028,9 @@ int main()
    Test13cl_incomplete();
    Test14cl_incomplete();
    Test17cl_incomplete();
-   Test18cl_incomplete();*/
+   Test18cl_incomplete();
    //group 4: small file, with constraint learning and reprocessing
-   /*Test1clr();
+   Test1clr();
    Test4clr();
    Test6clr();
    Test7clr();
@@ -3963,21 +4042,21 @@ int main()
    Test18clr();*/
    
    //group 5: large file, no constraint learning
-   Test1_large();
-   Test3_large();
+ /*  Test1_large();
+   Test3_large();*/
 //   Test14_large();
-   Test15_large();
+   /*Test15_large();
    Test5_large();
-   Test17_large();
+   Test17_large();*/
 //   Test18_large();
    //group 6: large file, with constraint learning (100% accuracy)
-   Test1cl_large();
-   Test3cl_large();
+  /* Test1cl_large();
+   Test3cl_large();*/
 //   Test14cl_large();
-   Test15cl_large();
+  /* Test15cl_large();
    Test5cl_large();
-   Test17cl_large();
- //  Test18cl_large();
+   Test17cl_large();*/
+//   Test18cl_large();
    //group 7: large file, with incomplete constraint learning
    /*Test1cl_incomplete_large();
    Test14cl_incomplete_large();
@@ -3985,21 +4064,23 @@ int main()
    Test18cl_incomplete_large();*/
    //group 8: large file, with constraint learning and reprocessing
    //Test1clr_large();
-   //Test14clr_large();
-   //Test17clr_large();
-   //Test18clr_large();
+ ///  Test14clr_large();
+  /* Test17clr_large();
+   Test18clr_large();*/
 
    //group 9: performance testing (xeon)
- /*  Test18cl_large_xeon();
+   /*Test18cl_large_xeon();
    Test14cl_large_xeon();
    Test14_large_xeon();
    Test18_large_xeon();*/
 
    //group 10: performance testing (xeon-phi)
-   /*Test18cl_large();
-   Test14cl_large();
-   Test14_large();
-   Test18_large();*/
+  // Test18cl_large_onecore();
+ //  Test18cl_large_sequential();
+ //  Test18cl_large();
+//   Test14cl_large();
+   //Test14_large();
+  // Test18_large();
 
 
 

@@ -85,6 +85,73 @@ static inline void freeWorkerAutomaton(WorkerAutomaton* wa)
     }
 }
 
+/* 
+   below are the implementation of 10 state transition rules based on based on input token, query state, top elements on syntax stack and query stack
+   some of these functions are called outside "worker_automaton.h" (like combine() in "parallel_automata_execution.h")
+*/
+static inline void obj_s(SyntaxStack* ss)
+{
+    syntaxStackPush(ss, LCB);
+}
+
+static inline void obj_e(SyntaxStack* ss)
+{
+    syntaxStackPop(ss);
+}
+
+static inline void val_obj_e(QueryStacksElement* qs_elt, SyntaxStack* ss, QueryStacks* qs)
+{
+    *qs_elt = queryStacksPop(qs);
+    syntaxStackPop(ss);
+    syntaxStackPop(ss);
+}
+
+static inline void elt_obj_e(SyntaxStack* ss)
+{
+    syntaxStackPop(ss);
+}
+
+static inline void ary_s(JSONQueryDFA* qa, QueryStacksElement* qs_elt, SyntaxStack* ss, QueryStacks* qs)  
+{
+    syntaxStackPush(ss, LB);
+    //push current state into query stack and move onto the next state
+    *qs_elt = queryStacksPush(qs, *qs_elt, qa, DFA_ARRAY);
+}
+
+static inline void ary_e(QueryStacksElement* qs_elt, SyntaxStack* ss, QueryStacks* qs)
+{
+    *qs_elt = queryStacksPop(qs);
+    syntaxStackPop(ss);
+}
+
+static inline void val_ary_e(QueryStacksElement* qs_elt, SyntaxStack* ss, QueryStacks* qs)
+{
+    queryStacksPop(qs);
+    *qs_elt = queryStacksPop(qs); 
+    syntaxStackPop(ss); 
+    syntaxStackPop(ss); 
+}
+
+static inline void elt_ary_e(QueryStacksElement* qs_elt, SyntaxStack* ss, QueryStacks* qs)
+{
+    *qs_elt = queryStacksPop(qs);
+    syntaxStackPop(ss); 
+}
+
+static inline void key(JSONQueryDFA* qa, QueryStacksElement* qs_elt, char* key_string, SyntaxStack* ss, QueryStacks* qs)  
+{
+    syntaxStackPush(ss, KY);
+    //push current state into query stack and move onto the next state
+    *qs_elt = queryStacksPush(qs, *qs_elt, qa, key_string);
+}
+
+static inline void val_pmt(QueryStacksElement* qs_elt, SyntaxStack* ss, QueryStacks* qs)
+{
+    *qs_elt = queryStacksPop(qs);
+    syntaxStackPop(ss);
+}
+
+//run worker automaton
 void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream);
 
 #endif // !__WORKER_AUTOMATON_H__

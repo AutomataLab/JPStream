@@ -35,7 +35,7 @@ static int getMatchedType(JSONQueryDFA* qa, QueryStackElement* qs_elt)
 
    in the following 10 functions:
    ss -- syntax stack qs -- query stack;
-   si -- current state infomation  qa -- query automaton
+   qs_elt -- current state infomation  qa -- query automaton
 */
 static inline void obj_s(SyntaxStack* ss)
 {
@@ -334,7 +334,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
     sa->count = qs_elt->count;
     sa->matched_start = qs_elt->matched_start;
     printf("syntax size %d query state %d %d\n", syntaxStackSize(ss), sa->query_state, qs->top_item);
-    printf("output size %d\n", getTupleListSize(tl));
+    printf("size of 2-tuple list before filtering %d\n", getTupleListSize(tl));
 }
 
 
