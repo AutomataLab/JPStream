@@ -1,1 +1,0 @@
-gcc -O3 -o jpstreamr3 *.c -lpthread -mcmodel=medium
