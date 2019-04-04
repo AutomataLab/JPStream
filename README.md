@@ -6,7 +6,7 @@ JPStream is a compilation system that compiles a given set of JSONPath queries i
 ## Getting Started
 ### Build
 
-There are some requirements for building this system: cmake 3.12+ and gcc 4.8.5. 
+There are some requirements for building this system: cmake `3.12+` and `gcc 4.8.5`. 
 
 ```
 mkdir build
