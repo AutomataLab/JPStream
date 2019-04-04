@@ -35,31 +35,24 @@ cd build/bin
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
-...
     char* stream = loadJSONStream("../../dataset/wiki.json");
-...
 ```
 To load input stream with partitioning:
 ```c
-...
     int num_core = 16;
     PartitionInfo pInfo = partitionFile("../../dataset/bb.json", num_core);
     int num_chunk = pInfo.num_chunk;
     char** stream = pInfo.stream;
-...
 ```
 ### Generating Deterministic Finite Automaton (DFA) for JSONPath query
 ```c
-...
     char* path = "$.root.products[?(@.sku&&@.productId)].categoryPath[?(@.name)].id";
     JSONQueryDFAContext* ctx = (JSONQueryDFAContext*)malloc(sizeof(JSONQueryDFAContext));
     JSONQueryDFA* dfa = buildJSONQueryDFA(path, ctx);
-...
 ```
 ### Getting Executables and Run
 For serial streaming automaton,
 ```c
-...
     //create streaming automaton
     StreamingAutomaton streaming_automaton;
     initStreamingAutomaton(&streaming_automaton, dfa);
@@ -69,11 +62,9 @@ For serial streaming automaton,
     
     //run streaming automaton and generate data constraints
     executeAutomaton(&streaming_automaton, stream, OPEN);
-...
 ```
 For parallel streaming automata,
 ```c
-...
     //run parallel automaton without data constraint learning
     TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, NULL);
     
@@ -82,15 +73,12 @@ For parallel streaming automata,
     
     //run parallel automaton without warming up CPU
     TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, NOWARMUP, null);
-...
 ```
 ### Filtering Results for JSONPath with Predicates
 ```c
-...
     PredicateFilter pf;
     initPredicateFilter(&pf, tl, ctx);
     Output* final = generateFinalOutput(&pf);
-...
 ```
 
 ## Publications
