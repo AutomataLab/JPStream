@@ -32,6 +32,28 @@ typedef struct ThreadInfo{
     WorkerAutomaton* worker_automaton;
 }ThreadInfo;
 
+//data structure for parallel automata
+typedef struct ParallelAutomata{
+    JSONQueryDFA* query_automaton;
+    SyntaxStack syntax_stack;
+    QueryStacks query_stacks; 
+    TupleList* tuple_list;
+}ParallelAutomata;
+
+static inline void initParallelAutomata(ParallelAutomata* pa, JSONQueryDFA* qa)
+{
+    pa->query_automaton = qa;
+    pa->tuple_list = NULL;
+}
+
+static inline void destroyParallelAutomata(ParallelAutomata* pa)
+{
+    if(pa->tuple_list != NULL)
+    {
+        freeTupleList(pa->tuple_list);
+    }
+}
+
 //main function for each thread
 void *main_thread(void *arg)
 {
@@ -320,14 +342,18 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
             combineQueryStacks(&qs, &qs_elt, &wa->query_stacks, &wa->query_stacks_element);  //merge query stacks
         }
     }
+    seq_wa->syntax_stack = ss;
+    seq_wa->query_stacks = qs;
     printf("syntax stack size %d query stack size %d\n", syntaxStackSize(&ss), qs.top_item+1);
     printf("size of 2-tuple list before filtering %d\n", getTupleListSize(tuple_list));
     return tuple_list;
 }
 
 //par_info -- partitioned input stream, qa -- query automaton
-TupleList* executeParallelAutomata(PartitionInfo par_info, JSONQueryDFA* qa, int num_cores, int warmup_cpu, ConstraintTable* ct) 
+void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int warmup_cpu, ConstraintTable* ct)  
 {
+    int num_cores = par_info.num_chunk;
+    JSONQueryDFA* qa = pa->query_automaton;
     ThreadInfo ti[MAX_THREAD]; 
     int i;
     for(i = 0; i<num_cores; i++)
@@ -349,12 +375,13 @@ TupleList* executeParallelAutomata(PartitionInfo par_info, JSONQueryDFA* qa, int
     printf("worker automata: finish parallel query processing\n");
     TupleList* tl = combine(ti, num_cores);
     printf("combiner: finish merging 2-tuple lists\n");
-    
+    pa->syntax_stack = ti[0].worker_automaton->syntax_stack;
+    pa->query_stacks = ti[0].worker_automaton->query_stacks;
+    pa->tuple_list = tl;
     for (i = 0; i <num_cores; i++)
     {
         freeWorkerAutomaton(ti[i].worker_automaton); 
     } 
-    return tl;
 }
 
 #endif // !__PARALLEL_AUTOMATA_EXECUTION_H__
