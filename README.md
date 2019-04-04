@@ -7,16 +7,6 @@
 ### Build
 
 There are some requirements for building this system: cmake `3.12+` and `gcc 4.8.5`. 
-
-```
-mkdir build
-cd build
-cmake ..
-make
-```
-
-If you would like a release build:
-
 ```
 mkdir build
 cd build
