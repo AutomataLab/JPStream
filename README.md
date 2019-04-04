@@ -79,6 +79,9 @@ For parallel streaming automata,
     
     //run parallel automaton with data constraint learning
     TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+    
+    //run parallel automaton without warming up CPU
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, NOWARMUP, null);
 ...
 ```
 ### Filtering Results for JSONPath with Predicates
