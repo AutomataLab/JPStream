@@ -62,17 +62,27 @@ For serial streaming automaton,
     
     //run streaming automaton and generate data constraints
     executeAutomaton(&sa, stream, OPEN);
+    
+    //get results generated from streaming automaton
+    TupleList* tl = sa.tuple_list;
 ```
 For parallel streaming automata,
 ```c
-    //run parallel automaton without data constraint learning
-    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, NULL);
+    //create parallel streaming automata 
+    ParallelAutomata pa;
+    initParallelAutomata(&pa, dfa);
     
-    //run parallel automaton with data constraint learning
-    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, sa.constraint_table);
+    //run parallel automata without data constraint learning
+    executeParallelAutomata(&pa, pInfo, WARMUP, NULL);
     
-    //run parallel automaton without warming up CPU
-    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, NOWARMUP, null);
+    //run parallel automata with data constraint learning
+    executeParallelAutomata(&pa, pInfo, WARMUP, sa.constraint_table);
+    
+    //run parallel automata without warming up CPU
+    executeParallelAutomata(&pa, pInfo, NOWARMUP, NULL);
+    
+    //get results generated from parallel automata
+    TupleList* tl = pa.tuple_list;
 ```
 ### Filtering Results for JSONPath with Predicates
 ```c
