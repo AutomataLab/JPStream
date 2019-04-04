@@ -54,14 +54,14 @@ To load input stream with partitioning:
 For serial streaming automaton,
 ```c
     //create streaming automaton
-    StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, dfa);
+    StreamingAutomaton sa;
+    initStreamingAutomaton(&sa, dfa);
 
     //run streaming automaton without generating data constraints
-    executeAutomaton(&streaming_automaton, stream, CLOSE);
+    executeAutomaton(&sa, stream, CLOSE);
     
     //run streaming automaton and generate data constraints
-    executeAutomaton(&streaming_automaton, stream, OPEN);
+    executeAutomaton(&sa, stream, OPEN);
 ```
 For parallel streaming automata,
 ```c
@@ -69,7 +69,7 @@ For parallel streaming automata,
     TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, NULL);
     
     //run parallel automaton with data constraint learning
-    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, streaming_automaton.constraint_table);
+    TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, WARMUP, sa.constraint_table);
     
     //run parallel automaton without warming up CPU
     TupleList* tl = executeParallelAutomata(pInfo, dfa, num_chunk, NOWARMUP, null);
