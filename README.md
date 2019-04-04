@@ -4,9 +4,9 @@ JPStream is a compilation system that compiles a given set of JSONPath queries i
 
 
 ## Getting Started
-### Install and Build
+### Build
 
-To build the project, we need CMake for makefile generator.
+There are some requirements for building this system: cmake 3.12+ and gcc 4.8.5. 
 
 ```
 mkdir build
@@ -24,6 +24,12 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 ### Demo
+
+There are several running cases in "query_test.c" under the folder demo/. New cases can be added there. To run it, after building the system, execute the following commands: 
+```
+cd build/bin
+./query_test
+```
 
 ## Example Usage
 
