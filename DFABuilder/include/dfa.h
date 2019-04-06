@@ -12,41 +12,42 @@ extern "C"
 {
 #endif
 
-typedef struct JQ_index_pair {
+typedef struct JSONQueryIndexPair {
     int32_t lower, upper;
-} JQ_index_pair;
+} JSONQueryIndexPair;
 
-typedef struct JQ_DFA {
+typedef struct JSONQueryDFA {
     uint32_t states_num, inputs_num;
     int32_t* table; // states_num x inputs_num
     int32_t* stop_state; // states_num
     int32_t* accept_type; // states_num : 1 is output & 2 is predicate
-    JQ_index_pair* array_index; // states_num
+    JSONQueryIndexPair* array_index; // states_num
     char** names; // inputs_num
-} JQ_DFA;
+} JSONQueryDFA;
 
-#define JQ_DFA_ARRAY ((const char*)0)
+#define DFA_ARRAY ((const char*)0)
 
-#define JQ_DFA_OUTPUT_TYPE (1)
-#define JQ_DFA_PREDICATE_TYPE (2)
+#define DFA_OUTPUT_CANDIDATE (1)
+#define DFA_CONDITION (2)
+#define DFA_PREDICATE (3)
 
-static inline void jqd_Ctor(JQ_DFA* dfa, uint32_t states_num, uint32_t inputs_num) {
+static inline void initJSONQueryDFA(JSONQueryDFA* dfa, uint32_t states_num, uint32_t inputs_num) {
     dfa->states_num = states_num;
     dfa->inputs_num = inputs_num;
     dfa->table = (int32_t*) calloc(sizeof(int32_t), states_num * inputs_num);
     dfa->stop_state = (int32_t*) calloc(sizeof(int32_t), states_num);
     dfa->accept_type = (int32_t*) calloc(sizeof(int32_t), states_num);
-    dfa->array_index = (JQ_index_pair*) calloc(sizeof(JQ_index_pair), states_num);
+    dfa->array_index = (JSONQueryIndexPair*) calloc(sizeof(JSONQueryIndexPair), states_num);
     dfa->names = (char**) calloc(sizeof(char*), inputs_num);
 }   
 
-static inline JQ_DFA* jqd_Create(uint32_t states_num, uint32_t inputs_num) {
-    JQ_DFA* dfa = (JQ_DFA*) malloc(sizeof(JQ_DFA));
-    jqd_Ctor(dfa, states_num, inputs_num);
+static inline JSONQueryDFA* createJSONQueryDFA(uint32_t states_num, uint32_t inputs_num) {
+    JSONQueryDFA* dfa = (JSONQueryDFA*) malloc(sizeof(JSONQueryDFA));
+    initJSONQueryDFA(dfa, states_num, inputs_num);
     return dfa;
 }
 
-static inline void jqd_Dtor(JQ_DFA* dfa) {
+static inline void destoryJSONQueryDFA(JSONQueryDFA* dfa) {
     if (dfa->table) free(dfa->table);
     if (dfa->stop_state) free(dfa->stop_state);
     if (dfa->array_index) free(dfa->array_index);
@@ -57,49 +58,49 @@ static inline void jqd_Dtor(JQ_DFA* dfa) {
     }
 }
 
-static inline void jqd_Free(JQ_DFA** dfa) {
+static inline void freeJSONQueryDFA(JSONQueryDFA** dfa) {
     if (dfa && *dfa) {
-        jqd_Dtor(*dfa);
+        destoryJSONQueryDFA(*dfa);
         free(*dfa);
         *dfa = NULL;
     }
 }
 
-static inline int32_t jqd_nextState(JQ_DFA* dfa, uint32_t state, uint32_t input) {
+static inline int32_t dfaNextState(JSONQueryDFA* dfa, uint32_t state, uint32_t input) {
     return dfa->table[state * dfa->inputs_num + input];
 }
 
-static inline int32_t jqd_getStopState(JQ_DFA* dfa, uint32_t state) {
+static inline int32_t getDFAStopState(JSONQueryDFA* dfa, uint32_t state) {
     return dfa->stop_state[state];
 }
 
-static inline int32_t jqd_getAcceptType(JQ_DFA* dfa, uint32_t state) {
+static inline int32_t getDFAAcceptType(JSONQueryDFA* dfa, uint32_t state) {
     return dfa->accept_type[state];
 }
 
-static inline const char* jqd_getName(JQ_DFA* dfa, uint32_t input) {
+static inline const char* getDFAInputType(JSONQueryDFA* dfa, uint32_t input) {
     return dfa->names[input];
 }
 
-static inline JQ_index_pair jqd_getArrayIndex(JQ_DFA* dfa, uint32_t array_id) {
+static inline JSONQueryIndexPair getDFAArrayIndex(JSONQueryDFA* dfa, uint32_t array_id) {
     return dfa->array_index[array_id];
 }
 
-static inline uint32_t jqd_getStatesNum(JQ_DFA* dfa) {
+static inline uint32_t getDFAStatesNumber(JSONQueryDFA* dfa) {
     return dfa->states_num;
 }
 
-static inline uint32_t jqd_getInputsNum(JQ_DFA* dfa) {
+static inline uint32_t getDFAInputsNumber(JSONQueryDFA* dfa) {
     return dfa->inputs_num;
 }
 
-static inline int32_t jqd_nextStateByStr(JQ_DFA* dfa, uint32_t state, const char* input) {
+static inline int32_t dfaNextStateByStr(JSONQueryDFA* dfa, uint32_t state, const char* input) {
     int cinput; bool found = false;
     if (input == NULL) cinput = 2;
     else {
-        for (cinput = 3; cinput < jqd_getInputsNum(dfa); ++cinput) {
+        for (cinput = 3; cinput < getDFAInputsNumber(dfa); ++cinput) {
             if (dfa->table[state * dfa->inputs_num + cinput] != 0 &&
-                strcmp(jqd_getName(dfa, cinput), input) == 0) {
+                strcmp(getDFAInputType(dfa, cinput), input) == 0) {
                 found = true; break;
             }
         }
@@ -108,14 +109,14 @@ static inline int32_t jqd_nextStateByStr(JQ_DFA* dfa, uint32_t state, const char
     return dfa->table[state * dfa->inputs_num + cinput];
 }
 
-static inline void jqd_print(JQ_DFA* dfa) {
+static inline void printDFA(JSONQueryDFA* dfa) {
     
-    uint32_t inputs = jqd_getInputsNum(dfa);
-    uint32_t states = jqd_getStatesNum(dfa);
+    uint32_t inputs = getDFAInputsNumber(dfa);
+    uint32_t states = getDFAStatesNumber(dfa);
 
     printf("\t%-8.7s%-8.7s", "other", "array");
     for (int i = 3; i < inputs; ++i) {
-        printf("%-8.7s", jqd_getName(dfa, i));
+        printf("%-8.7s", getDFAInputType(dfa, i));
     }
     printf("\n");
 
@@ -126,15 +127,17 @@ static inline void jqd_print(JQ_DFA* dfa) {
     for (int i = 1; i< states; ++i) {
         printf("s%d",i);
         int l;
-        if ((l = jqd_getStopState(dfa, i)) != 0) {
+        if ((l = getDFAStopState(dfa, i)) != 0) {
             printf("#%d",l);
         }
-        if (jqd_getAcceptType(dfa, i) == JQ_DFA_OUTPUT_TYPE) 
+        if (getDFAAcceptType(dfa, i) == DFA_OUTPUT_CANDIDATE) 
             printf("!");
-        if (jqd_getAcceptType(dfa, i) == JQ_DFA_PREDICATE_TYPE) 
+        if (getDFAAcceptType(dfa, i) == DFA_CONDITION) 
             printf("*");
+        if (getDFAAcceptType(dfa, i) == DFA_PREDICATE) 
+            printf("[");
         for (int j = 1; j< inputs; ++j) {
-            int next = jqd_nextState(dfa, i, j);
+            int next = dfaNextState(dfa, i, j);
             if (next != 0)
                 printf("\ts%d", next);
             else
@@ -148,7 +151,7 @@ static inline void jqd_print(JQ_DFA* dfa) {
     }
     printf("\n");
     for (int i = 1; i< states; ++i) {
-        JQ_index_pair pair = jqd_getArrayIndex(dfa, i);
+        JSONQueryIndexPair pair = getDFAArrayIndex(dfa, i);
         if (pair.lower || pair.upper) {
             if (pair.upper == pair.lower + 1)
                 printf("\t[%d]", pair.lower);

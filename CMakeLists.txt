@@ -19,4 +19,5 @@ add_subdirectory(JSONPathParser)
 add_subdirectory(JSONQuery)
 
 add_subdirectory(test)
+add_subdirectory(demo)
 

@@ -1,8 +1,0 @@
-File_Name=twitter_store1.txt
-JSONPath=$.root[*].quoted_status.*.media[url].sizes.large.w
-number-of-threads(no less than 1 and no more than 100)=16
-pversion(0--JPStreamR, 1--JPStreamR+)=1
-profiling_percentage(data constraint, no less than 1 and no more than 100)=2
-warm_up_cpu(0--no, 1--yes)=0
-print_debug_info(0--no, 1--yes)=0
-
