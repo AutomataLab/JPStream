@@ -67,7 +67,7 @@ Implementations are provided in JSONQuery/ directory:
 - `Output* generateFinalOutput(PredicateFilter* pf)`: Run predicate filter component and generate final output list. 
 
 
-## Example Usage
+## Examples
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
