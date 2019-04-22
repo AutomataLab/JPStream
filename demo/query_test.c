@@ -146,7 +146,7 @@ void Test4()
     initParallelAutomata(&pa, dfa);
 
     //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, WARMUP, NULL);
+    executeParallelAutomata(&pa, pInfo, NULL);
     TupleList* tl = pa.tuple_list;
 
     //predicate filtering
@@ -182,7 +182,7 @@ void Test5()
     initParallelAutomata(&pa, dfa);
 
     //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, WARMUP, NULL);
+    executeParallelAutomata(&pa, pInfo, NULL);
     TupleList* tl = pa.tuple_list;
 
     //predicate filtering
@@ -218,7 +218,7 @@ void Test6()
     initParallelAutomata(&pa, dfa);
 
     //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, WARMUP, NULL);
+    executeParallelAutomata(&pa, pInfo, NULL);
     TupleList* tl = pa.tuple_list;
 
     //predicate filtering
@@ -254,7 +254,7 @@ void Test7()
     initParallelAutomata(&pa, dfa);
 
     //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, WARMUP, NULL);
+    executeParallelAutomata(&pa, pInfo, NULL);
     TupleList* tl = pa.tuple_list;
 
     //predicate filtering
@@ -299,7 +299,7 @@ void Test8()
     initParallelAutomata(&pa, dfa);
 
     //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, WARMUP, streaming_automaton.constraint_table);
+    executeParallelAutomata(&pa, pInfo, streaming_automaton.constraint_table);
     TupleList* tl = pa.tuple_list;
     destroyStreamingAutomaton(&streaming_automaton);
 
@@ -333,7 +333,7 @@ void Test9()
 
     //data constraint learning
     printf("begin data constraint learning\n"); 
-    char* train_stream = loadJSONStream("../../dataset/bb.json");
+    char* train_stream = loadJSONStream("../../dataset/bb.json"); 
     StreamingAutomaton streaming_automaton;
     initStreamingAutomaton(&streaming_automaton, dfa);
     executeAutomaton(&streaming_automaton, train_stream, OPEN);
@@ -344,7 +344,7 @@ void Test9()
     initParallelAutomata(&pa, dfa);
 
     //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, WARMUP, streaming_automaton.constraint_table);
+    executeParallelAutomata(&pa, pInfo, streaming_automaton.constraint_table);
     TupleList* tl = pa.tuple_list;
     destroyStreamingAutomaton(&streaming_automaton);
 
@@ -389,7 +389,7 @@ void Test10()
     initParallelAutomata(&pa, dfa);
 
     //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, WARMUP, streaming_automaton.constraint_table);
+    executeParallelAutomata(&pa, pInfo, streaming_automaton.constraint_table);
     TupleList* tl = pa.tuple_list;
     destroyStreamingAutomaton(&streaming_automaton);
 

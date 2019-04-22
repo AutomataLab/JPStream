@@ -18,8 +18,6 @@
 #endif
 #include <pthread.h>
 
-#define NOWARMUP 0
-#define WARMUP 1
 #define MAX_THREAD 100
 
 //data structure for each thread
@@ -28,7 +26,6 @@ typedef struct ThreadInfo{
     int thread_id;
     char* input_stream;
     double execution_time;
-    int cpu_warmup;  
     WorkerAutomaton* worker_automaton;
 }ThreadInfo;
 
@@ -61,22 +58,6 @@ void *main_thread(void *arg)
     double exe_timestamp;
     ThreadInfo* ti = (ThreadInfo*)arg;
     int t_id = ti->thread_id;
-
-    //CPU warmup
-    if(ti->cpu_warmup == WARMUP){
-	gettimeofday(&start_timestamp,NULL);
-        cpu_set_t mask;
-        CPU_ZERO(&mask);
-        CPU_SET(t_id, &mask);
-        if(pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask)<0)
-            printf("CPU failed\n");
-        while(1)
-        {
-            gettimeofday(&end_timestamp,NULL);
-            exe_timestamp=1000000*(end_timestamp.tv_sec-start_timestamp.tv_sec)+end_timestamp.tv_usec-start_timestamp.tv_usec;
-            if(exe_timestamp>2000000) break;
-        }
-    }
 
     printf("thread %d starts.\n", t_id);
     gettimeofday(&start_timestamp,NULL);
@@ -350,7 +331,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
 }
 
 //par_info -- partitioned input stream, qa -- query automaton
-void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int warmup_cpu, ConstraintTable* ct)  
+void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, ConstraintTable* ct)  
 {
     int num_cores = par_info.num_chunk;
     JSONQueryDFA* qa = pa->query_automaton;
@@ -361,7 +342,6 @@ void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int w
         //initialize each thread
         ti[i].thread_id = i;
         ti[i].input_stream = par_info.stream[i];
-        ti[i].cpu_warmup = warmup_cpu;
         ti[i].worker_automaton = createWorkerAutomaton(qa, i, ct);
         int rc=pthread_create(&ti[i].thread, NULL, main_thread, &ti[i]);  
     	if (rc)
