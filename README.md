@@ -4,6 +4,49 @@
 
 
 ## Getting Started
+### JSONPath
+JSONPath is the basic query language of JSON data. It always refer to substructures of JSON data in the same way as XPath queries are used in combination with an XML document. The root object is always referred as `$`, since it is always anonymous. For more details, please refer [JSONPath](https://goessner.net/articles/JsonPath/index.html#e2). 
+
+#### Supported Operators
+
+#### Operators Not Supported
+
+#### Path Examples
+
+Given a simplified goggle route data
+
+```javascript
+{
+    "routes": [ {
+        "steps": [
+            {
+                "loc": {
+                    "lat": 32,
+                    "lng": -107
+                }
+            },
+            {
+                "loc": {
+                    "lat": 35,
+                    "lng": -106
+                }
+            }
+        ] }
+    ]
+}
+```
+| JsonPath | Result |
+| :------- | :----- |
+| $.routes[*].steps[*] | All steps of each route     |
+| $.routes[*].steps[*].* | All things in steps of each route     |
+| $..loc| All locations                         |
+| $.routes[*]..loc |  Location in each route  |
+| $.routes[*].steps[2].loc |  The location of the third step in each route  |
+| $.routes[0:2] |  The first two routes  |
+| $.routes[*].steps[?(@.loc)] |  Fliter all steps of each route with location |
+| $.routes[*].steps[?(@.loc.lat==32)] |  Fliter all steps of each route with location at 32 degrees latitude |
+
+
 ### Build
 
 There are some requirements for building this system: cmake `3.12+` and `gcc 4.8.5`. 
