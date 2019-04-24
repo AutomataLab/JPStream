@@ -99,9 +99,10 @@ For parallel execution:
 For parallel execution with data constraint learning (more efficient): 
 ```c
     PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
-    //collecting data constraints is optional, but can often make the parallel execution more efficient
+    //collecting data constraints is optional, but can often make parallel execution more efficient
     char* train_stream = loadInputStream("../../dataset/bb.json");
     ConstraintTable* ct = collectDataConstraints(path_processor, train_stream);
+    //parallel exeuction
     char* input_stream = loadInputStream("../../dataset/bb.json");
     int num_core = 64;
     Output* output = parallelRunOpt(path_processor, input_stream, num_core, ct);
