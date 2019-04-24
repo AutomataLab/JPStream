@@ -23,7 +23,7 @@ JSONPath is the basic query language of JSON data. It always refer to substructu
 #### Operators Not Supported
 | Operator                  |   Description     |
 | :-----------------------: |:-----------------:|
-| `[index1, index2, index3]`             | multiple array indexes      |
+| `[index1, index2, ...]`             | multiple array indexes      |
 | `[-start:-end]`             | last few array elements      |
 | `$..[*]`                       | get all arrays      |
 | `()`                       | script expression, using underlying script engine   |
