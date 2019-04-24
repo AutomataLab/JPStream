@@ -37,14 +37,14 @@ Given a simplified goggle route data
 ```
 | JsonPath | Result |
 | :------- | :----- |
-| $.routes[*].steps[*] | All steps of each route     |
-| $.routes[*].steps[*].* | All things in steps of each route     |
-| $..loc| All locations                         |
-| $.routes[*]..loc |  Location in each route  |
-| $.routes[*].steps[2].loc |  The location of the third step in each route  |
-| $.routes[0:2] |  The first two routes  |
-| $.routes[*].steps[?(@.loc)] |  Fliter all steps of each route with location |
-| $.routes[*].steps[?(@.loc.lat==32)] |  Fliter all steps of each route with location at 32 degrees latitude |
+| `$.routes[*].steps[*]` | All steps of each route     |
+| `$.routes[*].steps[*].*` | All things in steps of each route     |
+| `$..loc`| All locations                         |
+| `$.routes[*]..loc` |  Location in each route  |
+| `$.routes[*].steps[2].loc` |  The location of the third step in each route  |
+| `$.routes[0:2]` |  The first two routes  |
+| `$.routes[*].steps[?(@.loc)]` |  Fliter all steps of each route with location |
+| `$.routes[*].steps[?(@.loc.lat==32)]` |  Fliter all steps of each route with location at 32 degrees latitude |
 
 
 ### Build
