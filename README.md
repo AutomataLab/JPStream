@@ -74,14 +74,12 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
-### Demo
-#### Execution
 There are several running cases in "query_test.c" under the folder demo/. New cases can be added there. To run it, after building the system, execute the following commands: 
 ```
 cd build/bin
 ./query_test
 ```
-#### Example Usage
+### Demo
 For serial execution:
 ```c
     char* input_stream = loadInputStream("../../dataset/bb.json");
@@ -139,7 +137,7 @@ For parallel execution with data constraint learning (more efficient):
 - `void destroyPredicateFilter(PredicateFilter* pf)`: Free dynamic memory spaces allocated by predicate filtering component. 
 - `Output* generateFinalOutput(PredicateFilter* pf)`: Run predicate filter component and generate final output list. 
 
-## Use of Internal API
+## Usage of Internal API
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
