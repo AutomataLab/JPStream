@@ -4,6 +4,66 @@
 
 
 ## Getting Started
+### JSONPath
+JSONPath is the basic query language of JSON data. It always refer to substructures of JSON data in the same way as XPath queries are used in combination with an XML document. The root object is always referred as `$`, since it is always anonymous. For more details, please refer [Stefan Goessner JsonPath implementation](https://goessner.net/articles/JsonPath/index.html#e2). 
+
+#### Supported Operators
+| Operator                  |   Description     |
+| :-----------------------: |:-----------------:|
+| `$`                       | root object              |
+| `@`                       | current object filtered by predicate      |
+| `.`                       | child object      |
+| `[]`                       | child array      |
+| `*`                       | wildcard, all objects or array members          |
+| `..`                      | decendant elements |
+| `[index]`             | array index      |
+| `[start:end]`             | array slice operator      |
+| `[?(<expression>)]`       | filter expression for evaluation |
+
+#### Operators Not Supported
+| Operator                  |   Description     |
+| :-----------------------: |:-----------------:|
+| `[index1, index2, ...]`             | multiple array indexes      |
+| `[-start:-end]`             | last few array elements      |
+| `$..[*]`                       | get all arrays      |
+| `()`                       | script expression, using underlying script engine   |
+
+#### Path Examples
+
+Given a simplified goggle route data
+
+```javascript
+{
+    "routes": [ {
+        "steps": [
+            {
+                "loc": {
+                    "lat": 32,
+                    "lng": -107
+                }
+            },
+            {
+                "loc": {
+                    "lat": 35,
+                    "lng": -106
+                }
+            }
+        ] }
+    ]
+}
+```
+| JsonPath | Result |
+| :------- | :----- |
+| `$.routes[*].steps[*]` | all steps of each route     |
+| `$.routes[*].steps[*].*` | all things in steps of each route     |
+| `$..loc`| all locations                         |
+| `$.routes[*]..loc` |  location in each route  |
+| `$.routes[*].steps[2].loc` |  location of the third step in each route  |
+| `$.routes[0:2]` |  first two routes  |
+| `$.routes[*].steps[?(@.loc)]` |  filter all steps of each route with location |
+| `$.routes[*].steps[?(@.loc.lat==32)]` |  filter all steps of each route with location at 32 degrees latitude |
+| `$..*` |  everything in JSON structure |
+
 ### Build
 
 There are some requirements for building this system: cmake `3.12+` and `gcc 4.8.5`. 
@@ -14,11 +74,37 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 ### Demo
-
+#### Execution
 There are several running cases in "query_test.c" under the folder demo/. New cases can be added there. To run it, after building the system, execute the following commands: 
 ```
 cd build/bin
 ./query_test
+```
+#### Example Usage
+For serial execution:
+```c
+    char* input_stream = loadInputStream("../../dataset/bb.json");
+    PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
+    Output* output = serialRun(path_processor, input_stream);
+```
+For parallel execution:
+```c
+    char* input_stream = loadInputStream("../../dataset/bb.json");
+    PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
+    int num_core = 16;
+    Output* output = parallelRun(path_processor, input_stream, num_core);
+```
+
+For parallel execution with data constraint learning (more efficient): 
+```c
+    PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
+    //collecting data constraints is optional, but can often make parallel execution more efficient
+    char* train_stream = loadInputStream("../../dataset/bb.json");
+    ConstraintTable* ct = collectDataConstraints(path_processor, train_stream);
+    //parallel exeuction
+    char* input_stream = loadInputStream("../../dataset/bb.json");
+    int num_core = 16;
+    Output* output = parallelRunOpt(path_processor, input_stream, num_core, ct);
 ```
 
 ## Code Structure
@@ -49,8 +135,9 @@ Implementations are provided in JSONQuery/ directory:
 - **worker_automaton.h**: worker automaton used for each thread during parallel execution. 
 - **unit.h**: data units in worker automaton. 
 - **predicate.h**: predicate filter. 
+- **path_processor.h**: interfaces for path processors (high level API). 
 
-## API
+## Internal API
 ### JSONPath Parser
 - `ASTNode* analysisJSONPath(const char* data)`: parse the json path string into an AST format
 - `void printJsonPathAST(JSONPathNode* root)`: print the tree structure
@@ -62,8 +149,6 @@ Implementations are provided in JSONQuery/ directory:
 - `JSONPathNode* getContextSubtree(JSONQueryDFAContext* ctx, int stop_state)`: get the subtree that a stop state is connected
 -  `int getContextSizeOfMapping(JSONQueryDFAContext* ctx, int stop_state)`: get the size of mapping 
 - `int getContextValueOfMapping(JSONQueryDFAContext* ctx, int stop_state, int idx)`: get the content of one mapping. Idx is the number from range (0 ~ size-1) that you get from the previous API.
-
-
 
 ### Serial Streaming Automaton
 - `void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* qa)`: Initialize streaming automaton based on query automaton. 
@@ -84,7 +169,7 @@ Implementations are provided in JSONQuery/ directory:
 - `Output* generateFinalOutput(PredicateFilter* pf)`: Run predicate filter component and generate final output list. 
 
 
-## Examples
+## Use of Internal API
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
