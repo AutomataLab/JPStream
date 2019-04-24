@@ -29,9 +29,7 @@ JSONPath is the basic query language of JSON data. It always refer to substructu
 | `()`                       | script expression, using underlying script engine   |
 
 #### Path Examples
-
 Given a simplified goggle route data
-
 ```javascript
 {
     "routes": [ {
@@ -40,6 +38,10 @@ Given a simplified goggle route data
                 "loc": {
                     "lat": 32,
                     "lng": -107
+                },
+                "dis": {
+                    "text": "92 ft",
+                    "value": 28
                 }
             },
             {
@@ -58,9 +60,9 @@ Given a simplified goggle route data
 | `$.routes[*].steps[*].*` | all things in steps of each route     |
 | `$..loc`| all locations                         |
 | `$.routes[*]..loc` |  location in each route  |
-| `$.routes[*].steps[2].loc` |  location of the third step in each route  |
+| `$.routes[*].steps[2].dis` |  distance of the third step in each route  |
 | `$.routes[0:2]` |  first two routes  |
-| `$.routes[*].steps[?(@.loc)]` |  filter all steps of each route with location |
+| `$.routes[*].steps[?(@.loc&&@.dis)]` |  filter all steps of each route with location and distance |
 | `$.routes[*].steps[?(@.loc.lat==32)]` |  filter all steps of each route with location at 32 degrees latitude |
 | `$..*` |  everything in JSON structure |
 
