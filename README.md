@@ -5,11 +5,28 @@
 
 ## Getting Started
 ### JSONPath
-JSONPath is the basic query language of JSON data. It always refer to substructures of JSON data in the same way as XPath queries are used in combination with an XML document. The root object is always referred as `$`, since it is always anonymous. For more details, please refer [JSONPath](https://goessner.net/articles/JsonPath/index.html#e2). 
+JSONPath is the basic query language of JSON data. It always refer to substructures of JSON data in the same way as XPath queries are used in combination with an XML document. The root object is always referred as `$`, since it is always anonymous. For more details, please refer [Stefan Goessner JsonPath implementation](https://goessner.net/articles/JsonPath/index.html#e2). 
 
 #### Supported Operators
+| Operator                  |   Description     |
+| :-----------------------: |:-----------------:|
+| `$`                       | root object              |
+| `@`                       | current object filtered by predicate      |
+| `.`                       | child object      |
+| `[]`                       | child array      |
+| `*`                       | wildcard, all objects or array members          |
+| `..`                      | decendant elements |
+| `[index]`             | array index      |
+| `[start:end]`             | array slice operator      |
+| `[?(<expression>)]`       | filter expression for evaluation |
 
 #### Operators Not Supported
+| Operator                  |   Description     |
+| :-----------------------: |:-----------------:|
+| `[index1, index2, index3]`             | multiple array indexes      |
+| `[-start:-end]`             | last few array elements      |
+| `$..[*]`                       | get all arrays      |
+| `()`                       | script expression, using underlying script engine   |
 
 #### Path Examples
 
@@ -37,14 +54,15 @@ Given a simplified goggle route data
 ```
 | JsonPath | Result |
 | :------- | :----- |
-| `$.routes[*].steps[*]` | All steps of each route     |
-| `$.routes[*].steps[*].*` | All things in steps of each route     |
-| `$..loc`| All locations                         |
-| `$.routes[*]..loc` |  Location in each route  |
-| `$.routes[*].steps[2].loc` |  The location of the third step in each route  |
-| `$.routes[0:2]` |  The first two routes  |
-| `$.routes[*].steps[?(@.loc)]` |  Fliter all steps of each route with location |
-| `$.routes[*].steps[?(@.loc.lat==32)]` |  Fliter all steps of each route with location at 32 degrees latitude |
+| `$.routes[*].steps[*]` | all steps of each route     |
+| `$.routes[*].steps[*].*` | all things in steps of each route     |
+| `$..loc`| all locations                         |
+| `$.routes[*]..loc` |  location in each route  |
+| `$.routes[*].steps[2].loc` |  location of the third step in each route  |
+| `$.routes[0:2]` |  first two routes  |
+| `$.routes[*].steps[?(@.loc)]` |  filter all steps of each route with location |
+| `$.routes[*].steps[?(@.loc.lat==32)]` |  filter all steps of each route with location at 32 degrees latitude |
+| `$..*` |  everything in JSON structure |
 
 
 ### Build
