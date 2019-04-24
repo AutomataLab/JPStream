@@ -31,7 +31,6 @@ JSONPath is the basic query language of JSON data. It always refer to substructu
 #### Path Examples
 
 Given a simplified goggle route data
-
 ```javascript
 {
     "routes": [ {
@@ -73,14 +72,13 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
-### Demo
-#### Execution
+
 There are several running cases in "query_test.c" under the folder demo/. New cases can be added there. To run it, after building the system, execute the following commands: 
 ```
 cd build/bin
 ./query_test
 ```
-#### Example Usage
+### Demo
 For serial execution:
 ```c
     char* input_stream = loadInputStream("../../dataset/bb.json");
@@ -169,7 +167,7 @@ Implementations are provided in JSONQuery/ directory:
 - `Output* generateFinalOutput(PredicateFilter* pf)`: Run predicate filter component and generate final output list. 
 
 
-## Use of Internal API
+## Usage of Internal API
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
