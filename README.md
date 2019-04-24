@@ -132,7 +132,7 @@ For parallel execution with data constraint learning (more efficient):
 ### Parallel Streaming Automata
 - `void initParallelAutomata(ParallelAutomata* pa, JSONQueryDFA* qa)`: Initialize parallel streaming automata based on query automaton. 
 - `void destroyParallelAutomata(ParallelAutomata* pa)`: Free dynamic memory spaces allocated by parallel streaming automata. 
-- `void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int warmup_cpu, ConstraintTable* ct)`: Execute parallel streaming automata based on partitioned chunks. Each CPU can be warmed up by setting `warmup_cpu` as `WARMUP` (otherwise it should be `NOWARMUP`). Data constraint table can be used for runtime optimization. 
+- `void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, ConstraintTable* ct)`: Execute parallel streaming automata based on partitioned chunks. Data constraint table can be used for runtime optimization. 
 
 ### Predicate Filtering
 - `void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx)`: Initialize predicate filter based on 2-tuple list and query automaton. 
@@ -143,7 +143,7 @@ For parallel execution with data constraint learning (more efficient):
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
-    char* stream = loadJSONStream("../../dataset/wiki.json");
+    char* stream = loadInputStream("../../dataset/wiki.json");
 ```
 To load input stream with partitioning:
 ```c
@@ -181,13 +181,10 @@ For parallel streaming automata,
     initParallelAutomata(&pa, dfa);
     
     //run parallel automata without data constraint learning
-    executeParallelAutomata(&pa, pInfo, WARMUP, NULL);
+    executeParallelAutomata(&pa, pInfo, NULL);
     
     //run parallel automata with data constraint learning
-    executeParallelAutomata(&pa, pInfo, WARMUP, sa.constraint_table);
-    
-    //run parallel automata without warming up CPU
-    executeParallelAutomata(&pa, pInfo, NOWARMUP, NULL);
+    executeParallelAutomata(&pa, pInfo, sa.constraint_table);
     
     //get results generated from parallel automata
     TupleList* tl = pa.tuple_list;
