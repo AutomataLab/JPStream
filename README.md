@@ -75,14 +75,70 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 ### Demo
-
+#### Execution
 There are several running cases in "query_test.c" under the folder demo/. New cases can be added there. To run it, after building the system, execute the following commands: 
 ```
 cd build/bin
 ./query_test
 ```
+#### Example Usage
+For serial execution:
+```c
+    char* input_stream = loadInputStream("../../dataset/bb.json");
+    PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
+    Output* output = serialRun(path_processor, input_stream);
+```
+For parallel execution:
+```c
+    char* input_stream = loadInputStream("../../dataset/bb.json");
+    PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
+    int num_core = 64;
+    Output* output = parallelRun(path_processor, input_stream, num_core);
+```
 
-## Example Usage
+For parallel execution with data constraint learning (more efficient): 
+```c
+    PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
+    //collecting data constraints is optional, but can often make the parallel execution more efficient
+    char* train_stream = loadInputStream("../../dataset/bb.json");
+    ConstraintTable* ct = collectDataConstraints(path_processor, train_stream);
+    char* input_stream = loadInputStream("../../dataset/bb.json");
+    int num_core = 64;
+    Output* output = parallelRunOpt(path_processor, input_stream, num_core, ct);
+```
+
+## Internal API
+### JSONPath Parser
+- `ASTNode* analysisJSONPath(const char* data)`: parse the json path string into an AST format
+- `void printJsonPathAST(JSONPathNode* root)`: print the tree structure
+
+### DFA Builder
+- `JSONQueryDFA* buildJSONQueryDFA(const char* json_path, JSONQueryDFAContext* context)`: Create a JSON Query DFA from a JSON Path string
+- `JSONQueryDFA* buildJSONQueryDFAFromAST(JSONPathNode* json_path, JSONQueryDFAContext* context)`: Create a JSON Query DFA from a JSON Path AST 
+
+- `JSONPathNode* getContextSubtree(JSONQueryDFAContext* ctx, int stop_state)`: get the subtree that a stop state is connected
+-  `int getContextSizeOfMapping(JSONQueryDFAContext* ctx, int stop_state)`: get the size of mapping 
+- `int getContextValueOfMapping(JSONQueryDFAContext* ctx, int stop_state, int idx)`: get the content of one mapping. Idx is the number from range (0 ~ size-1) that you get from the previous API.
+
+### Serial Streaming Automaton
+- `void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* qa)`: Initialize streaming automaton based on query automaton. 
+- `void destroyStreamingAutomaton(StreamingAutomaton* sa)`: Free dynamic memory spaces allocated by streaming automaton. 
+- `void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constraint_flag)`: Execute streaming automaton based on input stream. To generate data constraint table, `data_constraint_flag` should be `OPEN` (otherwise it should be `CLOSE`). 
+
+### File Partitioning
+- `PartitionInfo partitionFile(char* file_name, int num_core)`: Load and partition input stream into several chunks.
+
+### Parallel Streaming Automata
+- `void initParallelAutomata(ParallelAutomata* pa, JSONQueryDFA* qa)`: Initialize parallel streaming automata based on query automaton. 
+- `void destroyParallelAutomata(ParallelAutomata* pa)`: Free dynamic memory spaces allocated by parallel streaming automata. 
+- `void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int warmup_cpu, ConstraintTable* ct)`: Execute parallel streaming automata based on partitioned chunks. Each CPU can be warmed up by setting `warmup_cpu` as `WARMUP` (otherwise it should be `NOWARMUP`). Data constraint table can be used for runtime optimization. 
+
+### Predicate Filtering
+- `void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx)`: Initialize predicate filter based on 2-tuple list and query automaton. 
+- `void destroyPredicateFilter(PredicateFilter* pf)`: Free dynamic memory spaces allocated by predicate filtering component. 
+- `Output* generateFinalOutput(PredicateFilter* pf)`: Run predicate filter component and generate final output list. 
+
+## Use of Internal API
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
