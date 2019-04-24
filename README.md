@@ -174,7 +174,7 @@ Implementations are provided in JSONQuery/ directory:
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
-    char* stream = loadJSONStream("../../dataset/wiki.json");
+    char* stream = loadInputStream("../../dataset/wiki.json");
 ```
 To load input stream with partitioning:
 ```c
