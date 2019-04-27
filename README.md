@@ -5,7 +5,7 @@
 
 ## Getting Started
 ### JSONPath
-JSONPath is the basic query language of JSON data. It refers to substructures of JSON data in the same way as XPath queries used in XML document. For more details, please refer [Stefan Goessner JsonPath implementation](https://goessner.net/articles/JsonPath/index.html#e2). 
+JSONPath is the basic query language of JSON data. It refers to substructures of JSON data in a similar way as XPath queries are used for XML data. For the details of JSONPath syntax, please refer to [Stefan Goessner's article](https://goessner.net/articles/JsonPath/index.html#e2). 
 
 #### Supported Operators
 | Operator                  |   Description     |
@@ -29,7 +29,7 @@ JSONPath is the basic query language of JSON data. It refers to substructures of
 | `()`                       | script expression, using underlying script engine   |
 
 #### Path Examples
-Given a simplified goggle route data
+Consider a piece of simplified Google route data
 ```javascript
 {
     "routes": [ {
