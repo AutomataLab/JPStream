@@ -29,7 +29,7 @@ JSONPath is the basic query language of JSON data. It refers to substructures of
 | `()`                       | script expression, using underlying script engine   |
 
 #### Path Examples
-Given a simplified goggle route data
+Consider a piece of simplified Google route data
 ```javascript
 {
     "routes": [ {
