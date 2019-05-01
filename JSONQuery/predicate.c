@@ -2,8 +2,8 @@
 #include "utility.h"
 
 Output* generateFinalOutput(PredicateFilter* pf)
-{
-    Output* output = createOutput();  //final results
+{ 
+    Output* output = pf->output;//createOutput();  //final results
     //get 2-tuple list
     TupleList* tl = pf->tuple_list;
     int start_index = 0;
@@ -23,14 +23,15 @@ Output* generateFinalOutput(PredicateFilter* pf)
        return output; 
     }
 
-    Output* buffer = createOutput();   //temporary buffer
-    PredicateStack ps;
-    initPredicateStack(&ps);
-
+    if(pf->buffer==NULL) pf->buffer = createOutput();
+    Output* buffer = pf->buffer;   //temporary buffer pf->buffer; //
+    PredicateStack ps = pf->pstack;
+    ///initPredicateStack(&ps);
+//////printf("1 %d\n", getPredicateStackSize(&ps));
     //iterate through each element in tuple list
     for(int i = start_index; i < end_index; i++)
     {
-        Tuple tuple = getTuple(tl, i);
+        Tuple tuple = getTuple(tl, i); ///printf("text %s\n", tuple.text);
         int state = tuple.state;  //query state
         char* text = tuple.text;  //text content
         //starting position of an object
@@ -98,7 +99,8 @@ Output* generateFinalOutput(PredicateFilter* pf)
             }
         }
     }
-
-    freeOutput(buffer);
+    pf->pstack = ps;
+    ///printf("stack size %d\n", getPredicateStackSize(&pf->pstack));
+    ///printf("buffer size %d %s\n", getOutputSize(&buffer), getOutputElement(&buffer, 0));
     return output;
 }

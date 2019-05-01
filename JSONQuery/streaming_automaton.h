@@ -9,6 +9,8 @@
 
 #define OPEN 1
 #define CLOSE 0
+#define INPROGRESS 0
+#define FINISH 1
 
 typedef struct StreamingAutomaton{
     JSONQueryDFA* query_automaton;
@@ -25,6 +27,7 @@ typedef struct StreamingAutomaton{
     int constraint_flag;
     // saves data constraint table
     ConstraintTable* constraint_table;
+    int finish_flag;
 }StreamingAutomaton;
 
 // sa -- streaming automaton qa -- query automaton
@@ -45,14 +48,15 @@ static inline void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* 
 
 static inline void destroyStreamingAutomaton(StreamingAutomaton* sa)
 {
-    if(sa->tuple_list != NULL)
-    {
-        freeTupleList(sa->tuple_list);
+    if(sa->tuple_list != NULL && sa->finish_flag == INPROGRESS)
+    {   
+        freeTupleList(sa->tuple_list); 
+        sa->tuple_list = NULL;
     } 
-    if(sa->constraint_table != NULL)
+    if(sa->finish_flag == INPROGRESS)
     {
-        freeConstraintTable(sa->constraint_table);
-    } 
+        sa->tuple_list = createTupleList();
+    }
 }
 
 // data_constraint_flag: whether sa needs to generate data constraints
