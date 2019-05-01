@@ -217,6 +217,7 @@ static inline Output* serialRun(PathProcessor* path_processor, char* input_strea
     return output;
 }
 
+// when input size might exceed the memory limit
 static inline Output* serialPartialRun(PathProcessor* path_processor, char* input_stream, StreamingContext* ci)
 {
     JSONQueryDFAContext* ctx = path_processor->query_context;
@@ -291,6 +292,7 @@ static inline Output* parallelRun(PathProcessor* path_processor, char* input_str
     return output; 
 }
 
+// when input size might exceed the memory limit
 static inline Output* parallelPartialRun(PathProcessor* path_processor, char* input_stream, int num_core, StreamingContext* ci)
 {   
     PartitionInfo pInfo = partitionInputStream(input_stream, num_core);
@@ -351,6 +353,7 @@ static inline Output* parallelRunOpt(PathProcessor* path_processor, char* input_
     return output;
 }
 
+// when input size might exceed the memory limit
 static inline Output* parallelPartialRunOpt(PathProcessor* path_processor, char* input_stream, int num_core, ConstraintTable* ct, StreamingContext* ci)
 {   
     PartitionInfo pInfo = partitionInputStream(input_stream, num_core); 
