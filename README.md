@@ -130,7 +130,7 @@ For parallel execution with data constraint learning (more efficient):
 
 ### File Loading and Partitioning
 - `char* loadInputStream(char* file_name)`: Load input stream into memory.
-- `char* loadBoundedInputStream(char* file_name, int* start_pos)`: Load the next available input chunk with bounded memory footprint, `start_pos` records the starting position of the next available chunk, the default value is 0.
+- `char* loadBoundedInputStream(char* file_name, int* start_pos)`: Load the next available input chunk with bounded memory footprint, `start_pos` records the starting position of the next available chunk, the initial value is 0.
 - `PartitionInfo partitionInputStream(char* input_stream, int num_core)`: Split the loaded input stream into several chunks.
 - `PartitionInfo partitionFile(char* file_name, int num_core)`: Load and partition input stream into several chunks.
 
