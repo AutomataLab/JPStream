@@ -99,9 +99,11 @@ For parallel execution:
 For parallel execution with data constraint learning (more efficient): 
 ```c
     PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
+    
     //collecting data constraints is optional, but can often make parallel execution more efficient
     char* train_file_path = "../../dataset/bb.json";
     ConstraintTable* ct = collectDataConstraints(path_processor, train_file_path);
+    
     //parallel exeuction
     char* input_file_path = "../../dataset/bb.json";
     int num_core = 64;
@@ -128,7 +130,7 @@ For parallel execution with data constraint learning (more efficient):
 
 ### File Loading and Partitioning
 - `char* loadInputStream(char* file_name)`: Load input stream into memory.
-- `char* loadBoundedInputStream(char* file_name, int* start_pos)`: Load the next available input chunk with bounded memory footprint, `start_pos` gives the starting position of the next available chunk, the default value is 0.
+- `char* loadBoundedInputStream(char* file_name, int* start_pos)`: Load the next available input chunk with bounded memory footprint, `start_pos` records the starting position of the next available chunk, the default value is 0.
 - `PartitionInfo partitionInputStream(char* input_stream, int num_core)`: Split the loaded input stream into several chunks.
 - `PartitionInfo partitionFile(char* file_name, int num_core)`: Load and partition input stream into several chunks.
 
@@ -148,6 +150,7 @@ To load input stream without partitioning:
 ```c
     //load input stream
     char* stream = loadInputStream("../../dataset/wiki.json");
+    
     //load input stream with bounded memory
     int start_pos = 0;
     char* stream = loadInputStream("../../dataset/wiki.json", &start_pos);
