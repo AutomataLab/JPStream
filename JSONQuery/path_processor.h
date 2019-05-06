@@ -193,30 +193,6 @@ static inline void destroyStreamingContext(StreamingContext* ci)
     destroyPredicateFilter(&(ci->pf));
 }
 
-
-static inline Output* serialRun(PathProcessor* path_processor, char* input_stream)
-{
-    JSONQueryDFAContext* ctx = path_processor->query_context;
-    JSONQueryDFA* dfa = path_processor->query_automaton;
-
-    //create streaming automaton
-    StreamingAutomaton streaming_automaton;
-    initStreamingAutomaton(&streaming_automaton, dfa);
-
-    //run streaming automaton
-    executeAutomaton(&streaming_automaton, input_stream, CLOSE);
-
-    //predicate filtering
-    PredicateFilter pf;
-    initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
-    Output* output = generateFinalOutput(&pf);
-    
-    //free up dynamic memories
-    destroyPredicateFilter(&pf);
-    destroyStreamingAutomaton(&streaming_automaton);
-    return output;
-}
-
 // when input size might exceed the memory limit
 static inline Output* serialPartialRun(PathProcessor* path_processor, char* input_stream, StreamingContext* ci)
 {
@@ -248,8 +224,28 @@ static inline Output* serialPartialRun(PathProcessor* path_processor, char* inpu
     return output;
 }
 
-static inline ConstraintTable* collectDataConstraints(PathProcessor* path_processor, char* input_stream)
+static inline Output* serialRun(PathProcessor* path_processor, char* file_name)
 {
+    StreamingContext ci; 
+    initStreamingContext(&ci);
+    char* input_stream = NULL;
+    Output* output = NULL;
+    int start_pos = 0;  //pointer to the starting position of the next available input chunk
+    while(1)
+    {
+        input_stream = loadBoundedInputStream(file_name, &start_pos);
+        if(input_stream == NULL) break;
+        output = serialPartialRun(path_processor, input_stream, &ci);
+        free(input_stream);
+    }
+    destroyStreamingContext(&ci);
+    return output;
+}
+
+static inline ConstraintTable* collectDataConstraints(PathProcessor* path_processor, char* file_name)
+{
+    char* input_stream = loadInputStream(file_name);
+
     JSONQueryDFAContext* ctx = path_processor->query_context;
     JSONQueryDFA* dfa = path_processor->query_automaton;
 
@@ -262,34 +258,8 @@ static inline ConstraintTable* collectDataConstraints(PathProcessor* path_proces
 
     //free up dynamic memories
     destroyStreamingAutomaton(&streaming_automaton);
+    free(input_stream);
     return streaming_automaton.constraint_table;
-}
-
-static inline Output* parallelRun(PathProcessor* path_processor, char* input_stream, int num_core)
-{
-    PartitionInfo pInfo = partitionInputStream(input_stream, num_core);
-
-    JSONQueryDFAContext* ctx = path_processor->query_context;
-    JSONQueryDFA* dfa = path_processor->query_automaton;
-    
-    //create parallel streaming automata 
-    ParallelAutomata pa;
-    initParallelAutomata(&pa, dfa);
-
-    //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, NULL);
-    TupleList* tl = pa.tuple_list;
-
-    //predicate filtering
-    PredicateFilter pf;
-    initPredicateFilter(&pf, tl, ctx);
-    Output* output = generateFinalOutput(&pf);
-   
-    //free up dynamic memories
-    freeInputChunks(pInfo);
-    destroyPredicateFilter(&pf);
-    destroyParallelAutomata(&pa);
-    return output; 
 }
 
 // when input size might exceed the memory limit
@@ -326,30 +296,21 @@ static inline Output* parallelPartialRun(PathProcessor* path_processor, char* in
     return output;
 }
 
-static inline Output* parallelRunOpt(PathProcessor* path_processor, char* input_stream, int num_core, ConstraintTable* ct)
+static inline Output* parallelRun(PathProcessor* path_processor, char* file_name, int num_core)
 {
-    PartitionInfo pInfo = partitionInputStream(input_stream, num_core);
-
-    JSONQueryDFAContext* ctx = path_processor->query_context;
-    JSONQueryDFA* dfa = path_processor->query_automaton;
-
-    //create parallel streaming automata
-    ParallelAutomata pa;
-    initParallelAutomata(&pa, dfa);
-
-    //execute parallel streaming automata
-    executeParallelAutomata(&pa, pInfo, ct);
-    TupleList* tl = pa.tuple_list;
-
-    //predicate filtering
-    PredicateFilter pf;
-    initPredicateFilter(&pf, tl, ctx);
-    Output* output = generateFinalOutput(&pf);
-
-    //free up dynamic memories
-    freeInputChunks(pInfo);
-    destroyPredicateFilter(&pf);
-    destroyParallelAutomata(&pa);
+    StreamingContext ci; 
+    initStreamingContext(&ci);
+    char* input_stream = NULL;
+    Output* output = NULL;
+    int start_pos = 0; //pointer to the starting position of the next available input chunk
+    while(1)
+    {
+        input_stream = loadBoundedInputStream(file_name, &start_pos);
+        if(input_stream == NULL) break;
+        output = parallelPartialRun(path_processor, input_stream, num_core, &ci);
+        free(input_stream);
+    }
+    destroyStreamingContext(&ci);
     return output;
 }
 
@@ -386,4 +347,23 @@ static inline Output* parallelPartialRunOpt(PathProcessor* path_processor, char*
     ci->context_flag = CONTEXT;
     return output;
 }
+
+static inline Output* parallelRunOpt(PathProcessor* path_processor, char* file_name, int num_core, ConstraintTable* ct)
+{
+    StreamingContext ci; 
+    initStreamingContext(&ci);
+    char* input_stream = NULL;
+    Output* output = NULL;
+    int start_pos = 0; //pointer to the starting position of the next available input chunk
+    while(1)
+    {
+        input_stream = loadBoundedInputStream(file_name, &start_pos);
+        if(input_stream == NULL) break;
+        output = parallelPartialRunOpt(path_processor, input_stream, num_core, ct, &ci);
+        free(input_stream);
+    }
+    destroyStreamingContext(&ci);
+    return output;
+}
+
 #endif // !__PATH_PROCESSOR_H__
