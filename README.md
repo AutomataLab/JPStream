@@ -84,28 +84,28 @@ cd build/bin
 ### Demo
 For serial execution:
 ```c
-    char* input_stream = loadInputStream("../../dataset/bb.json");
+    char* file_path = "../../dataset/bb.json";
     PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
-    Output* output = serialRun(path_processor, input_stream);
+    Output* output = serialRun(path_processor, file_path);
 ```
 For parallel execution:
 ```c
-    char* input_stream = loadInputStream("../../dataset/bb.json");
+    char* file_path = "../../dataset/bb.json";
     PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
     int num_core = 64;
-    Output* output = parallelRun(path_processor, input_stream, num_core);
+    Output* output = parallelRun(path_processor, file_path, num_core);
 ```
 
 For parallel execution with data constraint learning (more efficient): 
 ```c
     PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
     //collecting data constraints is optional, but can often make parallel execution more efficient
-    char* train_stream = loadInputStream("../../dataset/bb.json");
-    ConstraintTable* ct = collectDataConstraints(path_processor, train_stream);
+    char* train_file_path = "../../dataset/bb.json";
+    ConstraintTable* ct = collectDataConstraints(path_processor, train_file_path);
     //parallel exeuction
-    char* input_stream = loadInputStream("../../dataset/bb.json");
+    char* input_file_path = "../../dataset/bb.json";
     int num_core = 64;
-    Output* output = parallelRunOpt(path_processor, input_stream, num_core, ct);
+    Output* output = parallelRunOpt(path_processor, input_file_path, num_core, ct);
 ```
 
 ## Internal API
@@ -126,7 +126,10 @@ For parallel execution with data constraint learning (more efficient):
 - `void destroyStreamingAutomaton(StreamingAutomaton* sa)`: Free dynamic memory spaces allocated by streaming automaton. 
 - `void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constraint_flag)`: Execute streaming automaton based on input stream. To generate data constraint table, `data_constraint_flag` should be `OPEN` (otherwise it should be `CLOSE`). 
 
-### File Partitioning
+### File Loading and Partitioning
+- `char* loadInputStream(char* file_name)`: Load input stream into memory.
+- `char* loadBoundedInputStream(char* file_name, int* start_pos)`: Load the next available input chunk with bounded memory footprint, `start_pos` gives the starting position of the next available chunk, the default value is 0.
+- `PartitionInfo partitionInputStream(char* input_stream, int num_core)`: Split the loaded input stream into several chunks.
 - `PartitionInfo partitionFile(char* file_name, int num_core)`: Load and partition input stream into several chunks.
 
 ### Parallel Streaming Automata
@@ -143,7 +146,11 @@ For parallel execution with data constraint learning (more efficient):
 ### Loading Input Stream
 To load input stream without partitioning:
 ```c
+    //load input stream
     char* stream = loadInputStream("../../dataset/wiki.json");
+    //load input stream with bounded memory
+    int start_pos = 0;
+    char* stream = loadInputStream("../../dataset/wiki.json", &start_pos);
 ```
 To load input stream with partitioning:
 ```c
