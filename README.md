@@ -92,7 +92,7 @@ For parallel execution:
 ```c
     char* file_path = "../../dataset/bb.json";
     PathProcessor* path_processor = createPathProcessor("$.root.products[*].categoryPath[1:3]");
-    int num_core = 64;
+    int num_core = 16;
     Output* output = parallelRun(path_processor, file_path, num_core);
 ```
 
@@ -106,7 +106,7 @@ For parallel execution with data constraint learning (more efficient):
     
     //parallel exeuction
     char* input_file_path = "../../dataset/bb.json";
-    int num_core = 64;
+    int num_core = 16;
     Output* output = parallelRunOpt(path_processor, input_file_path, num_core, ct);
 ```
 
