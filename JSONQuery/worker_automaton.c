@@ -127,7 +127,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
     int query_state[MAX_STATE];
     QueryStacksElement qs_elt;
     int num_query_state;
-    if(wa->need_reprocess==REPROCESS)
+    if(wa->need_reprocess==REPROCESS || (wa->id==0&&wa->initial_flag==INITIAL))
     {
         ss = wa->syntax_stack;
         qs = wa->query_stacks;
@@ -139,6 +139,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
         query_state[0] = 1;
         num_query_state = 1;
         qs_elt = initQueryStacks(&qs, query_state, 1); 
+        wa->initial_flag = INITIAL; 
     }
     else
     {

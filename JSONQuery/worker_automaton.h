@@ -12,6 +12,8 @@
 #define CLOSE 0
 #define REPROCESS 1
 #define NOREPROCESS 0
+#define INITIAL 1
+#define NOINITIAL 0
 
 typedef struct QueryStatesInfo{
     // current query state
@@ -42,6 +44,7 @@ typedef struct WorkerAutomaton{
     ConstraintTable* constraint_table;
     // whether the input stream needs to be reprocessed
     int need_reprocess;
+    int initial_flag;
 }WorkerAutomaton;
 
 // wa -- worker automaton qa -- query automaton
@@ -52,6 +55,7 @@ static inline void initWorkerAutomaton(WorkerAutomaton* wa, JSONQueryDFA* qa)
     initUnitList(&wa->unit_list);
     wa->tuple_list = createTupleList();
     wa->need_reprocess = NOREPROCESS;
+    wa->initial_flag = NOINITIAL;
 }
 
 static inline void destroyWorkerAutomaton(WorkerAutomaton* wa)

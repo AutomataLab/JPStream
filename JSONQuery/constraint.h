@@ -157,7 +157,8 @@ static void printConstraintTable(ConstraintTable* ct)
 
 static inline void freeConstraintTable(ConstraintTable* ct)
 {
-    free(ct);
+    if(ct!=NULL)
+        free(ct);
 }
 
 

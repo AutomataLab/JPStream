@@ -215,14 +215,6 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
                         }
                     }
                 } 
-                //it is a matched output
-                /*if(qs_elt->matched_start!=INVALID && getMatchedType(qa, qs_elt)==DFA_OUTPUT_CANDIDATE)  
-                { 
-                    int position = lexer.next_start - lexer.begin_stream;
-                    char* output_text = substring(lexer.begin_stream, qs_elt->matched_start, position); 
-                    qs_elt->matched_start = INVALID;
-                    addTuple(tl, qs_elt->query_state, output_text); 
-                }*/ 
                 break;
             case LB:   //left square branket 
                 {
@@ -333,8 +325,8 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
     sa->query_state = qs_elt->query_state;
     sa->count = qs_elt->count;
     sa->matched_start = qs_elt->matched_start;
-    printf("syntax size %d query state %d %d\n", syntaxStackSize(ss), sa->query_state, qs->top_item);
-    printf("size of 2-tuple list before filtering %d\n", getTupleListSize(tl));
+    ///printf("syntax size %d query state %d %d\n", syntaxStackSize(ss), sa->query_state, qs->top_item);
+    ///printf("size of 2-tuple list before filtering %d\n", getTupleListSize(tl));
 }
 
 

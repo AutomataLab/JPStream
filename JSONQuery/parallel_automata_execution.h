@@ -18,9 +18,9 @@
 #endif
 #include <pthread.h>
 
-#define NOWARMUP 0
-#define WARMUP 1
 #define MAX_THREAD 100
+#define INPROGRESS 0
+#define FINISH 1
 
 //data structure for each thread
 typedef struct ThreadInfo{
@@ -28,7 +28,6 @@ typedef struct ThreadInfo{
     int thread_id;
     char* input_stream;
     double execution_time;
-    int cpu_warmup;  
     WorkerAutomaton* worker_automaton;
 }ThreadInfo;
 
@@ -38,19 +37,34 @@ typedef struct ParallelAutomata{
     SyntaxStack syntax_stack;
     QueryStacks query_stacks; 
     TupleList* tuple_list;
+    WorkerAutomaton* major_automaton;
+    int finish_flag;
 }ParallelAutomata;
 
 static inline void initParallelAutomata(ParallelAutomata* pa, JSONQueryDFA* qa)
 {
     pa->query_automaton = qa;
     pa->tuple_list = NULL;
+    pa->major_automaton = NULL;
 }
 
 static inline void destroyParallelAutomata(ParallelAutomata* pa)
 {
-    if(pa->tuple_list != NULL)
-    {
-        freeTupleList(pa->tuple_list);
+    if(pa->tuple_list != NULL&&pa->finish_flag==INPROGRESS)
+    {   
+        freeTupleList(pa->tuple_list); 
+        pa->tuple_list = NULL;
+    }
+    if(pa->major_automaton != NULL)
+    {  
+        if(pa->finish_flag==INPROGRESS)
+        {
+            pa->major_automaton->tuple_list = createTupleList();
+        }
+        else if(pa->finish_flag==FINISH)
+        {   
+            destroyWorkerAutomaton(pa->major_automaton);  
+        }
     }
 }
 
@@ -61,22 +75,6 @@ void *main_thread(void *arg)
     double exe_timestamp;
     ThreadInfo* ti = (ThreadInfo*)arg;
     int t_id = ti->thread_id;
-
-    //CPU warmup
-    if(ti->cpu_warmup == WARMUP){
-	gettimeofday(&start_timestamp,NULL);
-        cpu_set_t mask;
-        CPU_ZERO(&mask);
-        CPU_SET(t_id, &mask);
-        if(pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask)<0)
-            printf("CPU failed\n");
-        while(1)
-        {
-            gettimeofday(&end_timestamp,NULL);
-            exe_timestamp=1000000*(end_timestamp.tv_sec-start_timestamp.tv_sec)+end_timestamp.tv_usec-start_timestamp.tv_usec;
-            if(exe_timestamp>2000000) break;
-        }
-    }
 
     printf("thread %d starts.\n", t_id);
     gettimeofday(&start_timestamp,NULL);
@@ -344,13 +342,14 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
     }
     seq_wa->syntax_stack = ss;
     seq_wa->query_stacks = qs;
-    printf("syntax stack size %d query stack size %d\n", syntaxStackSize(&ss), qs.top_item+1);
-    printf("size of 2-tuple list before filtering %d\n", getTupleListSize(tuple_list));
+    seq_wa->query_stacks_element = qs_elt;
+    //printf("syntax stack size %d query stack size %d\n", syntaxStackSize(&ss), qs.top_item+1);
+    //printf("size of 2-tuple list before filtering %d\n", getTupleListSize(tuple_list));
     return tuple_list;
 }
 
 //par_info -- partitioned input stream, qa -- query automaton
-void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int warmup_cpu, ConstraintTable* ct)  
+void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, ConstraintTable* ct)  
 {
     int num_cores = par_info.num_chunk;
     JSONQueryDFA* qa = pa->query_automaton;
@@ -361,8 +360,9 @@ void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int w
         //initialize each thread
         ti[i].thread_id = i;
         ti[i].input_stream = par_info.stream[i];
-        ti[i].cpu_warmup = warmup_cpu;
-        ti[i].worker_automaton = createWorkerAutomaton(qa, i, ct);
+        if((i==0)&&(pa->major_automaton!=NULL))  ti[i].worker_automaton = pa->major_automaton;  
+        else 
+            ti[i].worker_automaton = createWorkerAutomaton(qa, i, ct);
         int rc=pthread_create(&ti[i].thread, NULL, main_thread, &ti[i]);  
     	if (rc)
         {
@@ -378,10 +378,11 @@ void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int w
     pa->syntax_stack = ti[0].worker_automaton->syntax_stack;
     pa->query_stacks = ti[0].worker_automaton->query_stacks;
     pa->tuple_list = tl;
-    for (i = 0; i <num_cores; i++)
+    pa->major_automaton = ti[0].worker_automaton;
+    for (i = 1; i <num_cores; i++)
     {
         freeWorkerAutomaton(ti[i].worker_automaton); 
-    } 
+    }
 }
 
 #endif // !__PARALLEL_AUTOMATA_EXECUTION_H__

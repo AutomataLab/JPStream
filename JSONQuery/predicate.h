@@ -8,6 +8,8 @@
 
 #define MAX_PREDICATE_STATE 100
 #define MAX_STACK_ELEMENT 100
+#define FINISH 1
+#define INPROGRESS 0
 
 typedef struct PredicateStackElement{
     int predicate_state;  
@@ -26,6 +28,13 @@ typedef struct PredicateFilter{
     JSONQueryDFAContext* ctx;
     //condition list for each predicate state
     PredicateCondition* predicate_conditions[MAX_PREDICATE_STATE];
+    PredicateStack pstack;
+    //save output buffer
+    Output* buffer;
+    //save final results
+    Output* output;
+    //whether predicate filtering is done
+    int finish_flag;
 }PredicateFilter;
 
 static inline void initPredicateStack(PredicateStack* ps)
@@ -79,6 +88,10 @@ static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQ
         }
         pc[con_size].name=NULL;
     }
+    pf->buffer = NULL;
+    pf->output = createOutput();
+    initPredicateStack(&pf->pstack);
+    pf->finish_flag = INPROGRESS;
 }
 
 static inline void destroyPredicateFilter(PredicateFilter* pf)
@@ -90,6 +103,7 @@ static inline void destroyPredicateFilter(PredicateFilter* pf)
             free(pf->predicate_conditions[i]);
         }
     } 
+    if(pf->buffer!=NULL) free(pf->buffer);
 }
 
 Output* generateFinalOutput(PredicateFilter* pf);
