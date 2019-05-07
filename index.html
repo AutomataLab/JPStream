@@ -775,186 +775,336 @@
   <div class="container">
     <ul class="docs-nav" id="menu-left">
       <li><a href="#introduction"><strong>Introduction</strong></a></li>
+      <li><a href="#publication"><strong>Publication</strong></a></li>
       <li><a href="#getting-started"><strong>Getting Started</strong></a></li>
+      <li><a href="#jsonpath">JSONPath</a></li>
       <li><a href="#build">Build</a></li>
       <li><a href="#demo">Demo</a></li>
       <li><a href="#code-structure"><strong>Code Structure</strong></a></li>
       <li><a href="#jsonpath-parser">JSONPath Parser</a></li>
       <li><a href="#dfa-builder">DFA Builder</a></li>
       <li><a href="#jsonpath-query-execution">JSONPath Query Execution</a></li>
-      <li><a href="#api"><strong>API</strong></a></li>
+      <li><a href="#internal-api"><strong>Internal API</strong></a></li>
       <li><a href="#jsonpath-parser-1">JSONPath Parser</a></li>
       <li><a href="#dfa-builder-1">DFA Builders</a></li>
       <li><a href="#serial-streaming-automaton">Serial Streaming Automaton</a></li>
-      <li><a href="#file-partitioning">File Partitioning</a></li>
+      <li><a href="#file-loading-and-partitioning">File Loading and Partitioning</a></li>
       <li><a href="#parallel-streaming-automata">Parallel Streaming Automata</a></li>
       <li><a href="#predicate-filtering">Predicate Filtering</a></li>
-      <li><a href="#examples"><strong>Examples</strong></a></li>
-      <li><a href="#publications"><strong>Publications</strong></a></li>
+      <li><a href="#usage-of-internal-api"><strong>Usage of Internal API</strong></a></li>
     </ul>
     <div class="docs-content">
       <div class="mume markdown-preview   ">
-        <h2 class="mume-header" id="introduction">Introduction</h2>
+        <!-- <h1 class="mume-header" id="jpstream">JPStream</h1> -->
 
-        <p><strong>JPStream</strong> is a JSONPath query compilation system. It compiles a given a set of JSONPath
-          queries into automata-based parallel executables with bounded memory footprints. First, it adopts a stream
-          processing design that combines parsing and querying in one pass without generating any in-memory parse tree.
-          This is achieved by jointly compiling the path expressions and JSON syntax into a single automaton with two
-          stacks. Furthermore, it supports parallel processing of single large JSON file, enabled by a set of
-          parallelization techniques customized to the stream processing automata. For more details about JPStream,
-          please refer to our paper [1].</p>
-        <h2 class="mume-header" id="getting-started">Getting Started</h2>
+<h2 class="mume-header" id="introduction">Introduction</h2>
 
-        <h3 class="mume-header" id="build">Build</h3>
+<p><strong>JPStream</strong> is a JSONPath query compilation system. It compiles a given a set of JSONPath queries into automata-based parallel executables with bounded memory footprints. First, it adopts a stream processing design that combines parsing and querying in one pass without generating any in-memory parse tree. This is achieved by jointly compiling the path expressions and JSON syntax into a single automaton with two stacks. Furthermore, it supports parallel processing of single large JSON file, enabled by a set of parallelization techniques customized to the stream processing automata. For more details about JPStream, please refer to our paper [1].</p>
+<h2 class="mume-header" id="publication">Publication</h2>
 
-        <p>There are some requirements for building this system: cmake <code>3.12+</code> and <code>gcc 4.8.5</code>.
-        </p>
-        <pre data-role="codeBlock" data-info="" class="language-"><code>mkdir build
+<p>[1] Lin Jiang, Xiaofan Sun, Umar Farooq, and Zhijia Zhao. Stream Processing of Contemporary Semi-Structured Data on Commodity Parallel Processors - A Compilation-based Approach. In Proceedings of the 24th ACM International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS), 2019.</p>
+<h2 class="mume-header" id="getting-started">Getting Started</h2>
+
+<h3 class="mume-header" id="jsonpath">JSONPath</h3>
+
+<p>JSONPath is the basic query language of JSON data. It refers to substructures of JSON data in a similar way as XPath queries are used for XML data. For the details of JSONPath syntax, please refer to <a href="https://goessner.net/articles/JsonPath/index.html#e2">Stefan Goessner&apos;s article</a>.</p>
+<h4 class="mume-header" id="supported-operators">Supported Operators</h4>
+
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Operator</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>$</code></td>
+<td style="text-align:center">root object</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>@</code></td>
+<td style="text-align:center">current object filtered by predicate</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>.</code></td>
+<td style="text-align:center">child object</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>[]</code></td>
+<td style="text-align:center">child array</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>*</code></td>
+<td style="text-align:center">wildcard, all objects or array members</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>..</code></td>
+<td style="text-align:center">decendant elements</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>[index]</code></td>
+<td style="text-align:center">array index</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>[start:end]</code></td>
+<td style="text-align:center">array slice operator</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>[?(&lt;expression&gt;)]</code></td>
+<td style="text-align:center">filter expression for evaluation</td>
+</tr>
+</tbody>
+</table>
+<h4 class="mume-header" id="operators-not-supported">Operators Not Supported</h4>
+
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Operator</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>[index1, index2, ...]</code></td>
+<td style="text-align:center">multiple array indexes</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>[-start:-end]</code></td>
+<td style="text-align:center">last few array elements</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$..[*]</code></td>
+<td style="text-align:center">get all arrays</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>()</code></td>
+<td style="text-align:center">script expression, using underlying script engine</td>
+</tr>
+</tbody>
+</table>
+<h4 class="mume-header" id="path-examples">Path Examples</h4>
+
+<p>Consider a piece of simplified Google route data</p>
+<pre data-role="codeBlock" data-info="javascript" class="language-javascript"><span class="token punctuation">{</span>
+    <span class="token string">&quot;routes&quot;</span><span class="token punctuation">:</span> <span class="token punctuation">[</span> <span class="token punctuation">{</span>
+        <span class="token string">&quot;steps&quot;</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+            <span class="token punctuation">{</span>
+                <span class="token string">&quot;loc&quot;</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                    <span class="token string">&quot;lat&quot;</span><span class="token punctuation">:</span> <span class="token number">32</span><span class="token punctuation">,</span>
+                    <span class="token string">&quot;lng&quot;</span><span class="token punctuation">:</span> <span class="token operator">-</span><span class="token number">107</span>
+                <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                <span class="token string">&quot;dis&quot;</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                    <span class="token string">&quot;text&quot;</span><span class="token punctuation">:</span> <span class="token string">&quot;92 ft&quot;</span><span class="token punctuation">,</span>
+                    <span class="token string">&quot;value&quot;</span><span class="token punctuation">:</span> <span class="token number">28</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span>
+                <span class="token string">&quot;loc&quot;</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+                    <span class="token string">&quot;lat&quot;</span><span class="token punctuation">:</span> <span class="token number">35</span><span class="token punctuation">,</span>
+                    <span class="token string">&quot;lng&quot;</span><span class="token punctuation">:</span> <span class="token operator">-</span><span class="token number">106</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">]</span> <span class="token punctuation">}</span>
+    <span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+</pre><table>
+<thead>
+<tr>
+<th style="text-align:left">JsonPath</th>
+<th style="text-align:left">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>$.routes[*].steps[*]</code></td>
+<td style="text-align:left">all steps of each route</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$.routes[*].steps[*].*</code></td>
+<td style="text-align:left">all things in steps of each route</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$..loc</code></td>
+<td style="text-align:left">all locations</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$.routes[*]..loc</code></td>
+<td style="text-align:left">location in each route</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$.routes[*].steps[2].dis</code></td>
+<td style="text-align:left">distance of the third step in each route</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$.routes[0:2]</code></td>
+<td style="text-align:left">first two routes</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$.routes[*].steps[?(@.loc&amp;&amp;@.dis)]</code></td>
+<td style="text-align:left">filter all steps of each route with location and distance</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$.routes[*].steps[?(@.loc.lat==32)]</code></td>
+<td style="text-align:left">filter all steps of each route with location at 32 degrees latitude</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>$..*</code></td>
+<td style="text-align:left">everything in JSON structure</td>
+</tr>
+</tbody>
+</table>
+<h3 class="mume-header" id="build">Build</h3>
+
+<p>There are some requirements for building this system: cmake <code>3.12+</code> and <code>gcc 4.8.5</code>.</p>
+<pre data-role="codeBlock" data-info class="language-"><code>mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
-</code></pre>
-        <h3 class="mume-header" id="demo">Demo</h3>
-
-        <p>There are several running cases in &quot;query_test.c&quot; under the folder demo/. New cases can be added
-          there. To run it, after building the system, execute the following commands:</p>
-        <pre data-role="codeBlock" data-info="" class="language-"><code>cd build/bin
+</code></pre><p>There are several running cases in &quot;query_test.c&quot; under the folder demo/. New cases can be added there. To run it, after building the system, execute the following commands:</p>
+<pre data-role="codeBlock" data-info class="language-"><code>cd build/bin
 ./query_test
-</code></pre>
-        <h2 class="mume-header" id="code-structure">Code Structure</h2>
+</code></pre><h3 class="mume-header" id="demo">Demo</h3>
 
-        <h3 class="mume-header" id="jsonpath-parser">JSONPath Parser</h3>
+<p>For serial execution:</p>
+<pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token keyword">char</span><span class="token operator">*</span> file_path <span class="token operator">=</span> <span class="token string">&quot;../../dataset/bb.json&quot;</span><span class="token punctuation">;</span>
+    PathProcessor<span class="token operator">*</span> path_processor <span class="token operator">=</span> <span class="token function">createPathProcessor</span><span class="token punctuation">(</span><span class="token string">&quot;$.root.products[*].categoryPath[1:3]&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    Output<span class="token operator">*</span> output <span class="token operator">=</span> <span class="token function">serialRun</span><span class="token punctuation">(</span>path_processor<span class="token punctuation">,</span> file_path<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre><p>For parallel execution:</p>
+<pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token keyword">char</span><span class="token operator">*</span> file_path <span class="token operator">=</span> <span class="token string">&quot;../../dataset/bb.json&quot;</span><span class="token punctuation">;</span>
+    PathProcessor<span class="token operator">*</span> path_processor <span class="token operator">=</span> <span class="token function">createPathProcessor</span><span class="token punctuation">(</span><span class="token string">&quot;$.root.products[*].categoryPath[1:3]&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> num_core <span class="token operator">=</span> <span class="token number">16</span><span class="token punctuation">;</span>
+    Output<span class="token operator">*</span> output <span class="token operator">=</span> <span class="token function">parallelRun</span><span class="token punctuation">(</span>path_processor<span class="token punctuation">,</span> file_path<span class="token punctuation">,</span> num_core<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre><p>For parallel execution with data constraint learning (more efficient):</p>
+<pre data-role="codeBlock" data-info="c" class="language-c">    PathProcessor<span class="token operator">*</span> path_processor <span class="token operator">=</span> <span class="token function">createPathProcessor</span><span class="token punctuation">(</span><span class="token string">&quot;$.root.products[*].categoryPath[1:3]&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">//collecting data constraints is optional, but can often make parallel execution more efficient</span>
+    <span class="token keyword">char</span><span class="token operator">*</span> train_file_path <span class="token operator">=</span> <span class="token string">&quot;../../dataset/bb.json&quot;</span><span class="token punctuation">;</span>
+    ConstraintTable<span class="token operator">*</span> ct <span class="token operator">=</span> <span class="token function">collectDataConstraints</span><span class="token punctuation">(</span>path_processor<span class="token punctuation">,</span> train_file_path<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">//parallel exeuction</span>
+    <span class="token keyword">char</span><span class="token operator">*</span> input_file_path <span class="token operator">=</span> <span class="token string">&quot;../../dataset/bb.json&quot;</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> num_core <span class="token operator">=</span> <span class="token number">16</span><span class="token punctuation">;</span>
+    Output<span class="token operator">*</span> output <span class="token operator">=</span> <span class="token function">parallelRunOpt</span><span class="token punctuation">(</span>path_processor<span class="token punctuation">,</span> input_file_path<span class="token punctuation">,</span> num_core<span class="token punctuation">,</span> ct<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre><h2 class="mume-header" id="code-structure">Code Structure</h2>
 
-        <p>Implementations are provided in JSONPathParser/ directory:</p>
-        <ul>
-          <li><strong>jsonpath_evaluator.h</strong>: run a json path filtering on a predicator</li>
-          <li><strong>jsonpath_model.h</strong>: the data structure of a json path</li>
-          <li><strong>jsonpath_parser.h</strong>: major API of parsing a json path query</li>
-          <li><strong>parser_j.y</strong>: bison specification for json path</li>
-          <li><strong>scanner_j.l</strong>: flex specification for json path</li>
-        </ul>
-        <h3 class="mume-header" id="dfa-builder">DFA Builder</h3>
+<h3 class="mume-header" id="jsonpath-parser">JSONPath Parser</h3>
 
-        <p>Implementations are provided in DFABuilder/ directory:</p>
-        <ul>
-          <li><strong>include/dfa.h</strong>: basic DFA data structure</li>
-          <li><strong>include/dfa_builder.h</strong>: a list of functions that helps you create DFA</li>
-        </ul>
-        <h3 class="mume-header" id="jsonpath-query-execution">JSONPath Query Execution</h3>
+<p>Implementations are provided in JSONPathParser/ directory:</p>
+<ul>
+<li><strong>jsonpath_evaluator.h</strong>: run a json path filtering on a predicator</li>
+<li><strong>jsonpath_model.h</strong>: the data structure of a json path</li>
+<li><strong>jsonpath_parser.h</strong>: major API of parsing a json path query</li>
+<li><strong>parser_j.y</strong>: bison specification for json path</li>
+<li><strong>scanner_j.l</strong>: flex specification for json path</li>
+</ul>
+<h3 class="mume-header" id="dfa-builder">DFA Builder</h3>
 
-        <p>Implementations are provided in JSONQuery/ directory:</p>
-        <ul>
-          <li><strong>utility.h</strong>: basic functions for string operations.</li>
-          <li><strong>tuple_list.h</strong>: 2-tuple list generated by serial streaming automaton or parallel streaming
-            automata.</li>
-          <li><strong>output.h</strong>: list that saves the final results generated by predicate filtering.</li>
-          <li><strong>stack.h</strong>: syntax stack, query stack and current state information.</li>
-          <li><strong>multi_stack.h</strong>: query stack with multiple paths.</li>
-          <li><strong>lexing.h</strong>: lexer for input JSON stream.</li>
-          <li><strong>streaming_automaton.h</strong>: serial streaming automaton.</li>
-          <li><strong>parallel_automata_execution.h</strong>: parallel streaming automata.</li>
-          <li><strong>file_partitioner.h</strong>: separate input stream into several chunks.</li>
-          <li><strong>worker_automaton.h</strong>: worker automaton used for each thread during parallel execution.</li>
-          <li><strong>unit.h</strong>: data units in worker automaton.</li>
-          <li><strong>predicate.h</strong>: predicate filter.</li>
-        </ul>
-        <h2 class="mume-header" id="api">API</h2>
+<p>Implementations are provided in DFABuilder/ directory:</p>
+<ul>
+<li><strong>include/dfa.h</strong>: basic DFA data structure</li>
+<li><strong>include/dfa_builder.h</strong>: a list of functions that helps you create DFA</li>
+</ul>
+<h3 class="mume-header" id="jsonpath-query-execution">JSONPath Query Execution</h3>
 
-        <h3 class="mume-header" id="jsonpath-parser-1">JSONPath Parser</h3>
+<p>Implementations are provided in JSONQuery/ directory:</p>
+<ul>
+<li><strong>utility.h</strong>: basic functions for string operations.</li>
+<li><strong>tuple_list.h</strong>: 2-tuple list generated by serial streaming automaton or parallel streaming automata.</li>
+<li><strong>output.h</strong>: list that saves the final results generated by predicate filtering.</li>
+<li><strong>stack.h</strong>: syntax stack, query stack and current state information.</li>
+<li><strong>multi_stack.h</strong>: query stack with multiple paths.</li>
+<li><strong>lexing.h</strong>: lexer for input JSON stream.</li>
+<li><strong>streaming_automaton.h</strong>: serial streaming automaton.</li>
+<li><strong>parallel_automata_execution.h</strong>: parallel streaming automata.</li>
+<li><strong>file_partitioner.h</strong>: separate input stream into several chunks.</li>
+<li><strong>worker_automaton.h</strong>: worker automaton used for each thread during parallel execution.</li>
+<li><strong>unit.h</strong>: data units in worker automaton.</li>
+<li><strong>predicate.h</strong>: predicate filter.</li>
+<li><strong>path_processor.h</strong>: interfaces for path processors (high level API).</li>
+</ul>
+<h2 class="mume-header" id="internal-api">Internal API</h2>
 
-        <ul>
-          <li><code>ASTNode* analysisJSONPath(const char* data)</code>: parse the json path string into an AST format
-          </li>
-          <li><code>void printJsonPathAST(JSONPathNode* root)</code>: print the tree structure</li>
-        </ul>
-        <h3 class="mume-header" id="dfa-builder-1">DFA Builder</h3>
+<h3 class="mume-header" id="jsonpath-parser-1">JSONPath Parser</h3>
 
-        <ul>
-          <li>
-            <p><code>JSONQueryDFA* buildJSONQueryDFA(const char* json_path, JSONQueryDFAContext* context)</code>: Create
-              a JSON Query DFA from a JSON Path string</p>
-          </li>
-          <li>
-            <p><code>JSONQueryDFA* buildJSONQueryDFAFromAST(JSONPathNode* json_path, JSONQueryDFAContext*
-                context)</code>: Create a JSON Query DFA from a JSON Path AST</p>
-          </li>
-          <li>
-            <p><code>JSONPathNode* getContextSubtree(JSONQueryDFAContext* ctx, int stop_state)</code>: get the subtree
-              that a stop state is connected</p>
-          </li>
-          <li>
-            <p><code>int getContextSizeOfMapping(JSONQueryDFAContext* ctx, int stop_state)</code>: get the size of
-              mapping</p>
-          </li>
-          <li>
-            <p><code>int getContextValueOfMapping(JSONQueryDFAContext* ctx, int stop_state, int idx)</code>: get the
-              content of one mapping. Idx is the number from range (0 ~ size-1) that you get from the previous API.</p>
-          </li>
-        </ul>
-        <h3 class="mume-header" id="serial-streaming-automaton">Serial Streaming Automaton</h3>
+<ul>
+<li><code>ASTNode* analysisJSONPath(const char* data)</code>: parse the json path string into an AST format</li>
+<li><code>void printJsonPathAST(JSONPathNode* root)</code>: print the tree structure</li>
+</ul>
+<h3 class="mume-header" id="dfa-builder-1">DFA Builder</h3>
 
-        <ul>
-          <li><code>void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* qa)</code>: Initialize streaming
-            automaton based on query automaton.</li>
-          <li><code>void destroyStreamingAutomaton(StreamingAutomaton* sa)</code>: Free dynamic memory spaces allocated
-            by streaming automaton.</li>
-          <li><code>void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constraint_flag)</code>:
-            Execute streaming automaton based on input stream. To generate data constraint table,
-            <code>data_constraint_flag</code> should be <code>OPEN</code> (otherwise it should be <code>CLOSE</code>).
-          </li>
-        </ul>
-        <h3 class="mume-header" id="file-partitioning">File Partitioning</h3>
+<ul>
+<li>
+<p><code>JSONQueryDFA* buildJSONQueryDFA(const char* json_path, JSONQueryDFAContext* context)</code>: Create a JSON Query DFA from a JSON Path string</p>
+</li>
+<li>
+<p><code>JSONQueryDFA* buildJSONQueryDFAFromAST(JSONPathNode* json_path, JSONQueryDFAContext* context)</code>: Create a JSON Query DFA from a JSON Path AST</p>
+</li>
+<li>
+<p><code>JSONPathNode* getContextSubtree(JSONQueryDFAContext* ctx, int stop_state)</code>: get the subtree that a stop state is connected</p>
+</li>
+<li>
+<p><code>int getContextSizeOfMapping(JSONQueryDFAContext* ctx, int stop_state)</code>: get the size of mapping</p>
+</li>
+<li>
+<p><code>int getContextValueOfMapping(JSONQueryDFAContext* ctx, int stop_state, int idx)</code>: get the content of one mapping. Idx is the number from range (0 ~ size-1) that you get from the previous API.</p>
+</li>
+</ul>
+<h3 class="mume-header" id="serial-streaming-automaton">Serial Streaming Automaton</h3>
 
-        <ul>
-          <li><code>PartitionInfo partitionFile(char* file_name, int num_core)</code>: Load and partition input stream
-            into several chunks.</li>
-        </ul>
-        <h3 class="mume-header" id="parallel-streaming-automata">Parallel Streaming Automata</h3>
+<ul>
+<li><code>void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* qa)</code>: Initialize streaming automaton based on query automaton.</li>
+<li><code>void destroyStreamingAutomaton(StreamingAutomaton* sa)</code>: Free dynamic memory spaces allocated by streaming automaton.</li>
+<li><code>void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constraint_flag)</code>: Execute streaming automaton based on input stream. To generate data constraint table, <code>data_constraint_flag</code> should be <code>OPEN</code> (otherwise it should be <code>CLOSE</code>).</li>
+</ul>
+<h3 class="mume-header" id="file-loading-and-partitioning">File Loading and Partitioning</h3>
 
-        <ul>
-          <li><code>void initParallelAutomata(ParallelAutomata* pa, JSONQueryDFA* qa)</code>: Initialize parallel
-            streaming automata based on query automaton.</li>
-          <li><code>void destroyParallelAutomata(ParallelAutomata* pa)</code>: Free dynamic memory spaces allocated by
-            parallel streaming automata.</li>
-          <li><code>void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, int warmup_cpu,
-              ConstraintTable* ct)</code>: Execute parallel streaming automata based on partitioned chunks. Each CPU can
-            be warmed up by setting <code>warmup_cpu</code> as <code>WARMUP</code> (otherwise it should be
-            <code>NOWARMUP</code>). Data constraint table can be used for runtime optimization.</li>
-        </ul>
-        <h3 class="mume-header" id="predicate-filtering">Predicate Filtering</h3>
+<ul>
+<li><code>char* loadInputStream(char* file_name)</code>: Load input stream into memory.</li>
+<li><code>char* loadBoundedInputStream(char* file_name, int* start_pos)</code>: Load the next available input chunk with bounded memory footprint, <code>start_pos</code> records the starting position of the next available chunk, the initial value is 0.</li>
+<li><code>PartitionInfo partitionInputStream(char* input_stream, int num_core)</code>: Split the loaded input stream into several chunks.</li>
+<li><code>PartitionInfo partitionFile(char* file_name, int num_core)</code>: Load and partition input stream into several chunks.</li>
+</ul>
+<h3 class="mume-header" id="parallel-streaming-automata">Parallel Streaming Automata</h3>
 
-        <ul>
-          <li><code>void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx)</code>:
-            Initialize predicate filter based on 2-tuple list and query automaton.</li>
-          <li><code>void destroyPredicateFilter(PredicateFilter* pf)</code>: Free dynamic memory spaces allocated by
-            predicate filtering component.</li>
-          <li><code>Output* generateFinalOutput(PredicateFilter* pf)</code>: Run predicate filter component and generate
-            final output list.</li>
-        </ul>
-        <h2 class="mume-header" id="examples">Examples</h2>
+<ul>
+<li><code>void initParallelAutomata(ParallelAutomata* pa, JSONQueryDFA* qa)</code>: Initialize parallel streaming automata based on query automaton.</li>
+<li><code>void destroyParallelAutomata(ParallelAutomata* pa)</code>: Free dynamic memory spaces allocated by parallel streaming automata.</li>
+<li><code>void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, ConstraintTable* ct)</code>: Execute parallel streaming automata based on partitioned chunks. Data constraint table can be used for runtime optimization.</li>
+</ul>
+<h3 class="mume-header" id="predicate-filtering">Predicate Filtering</h3>
 
-        <h3 class="mume-header" id="loading-input-stream">Loading Input Stream</h3>
+<ul>
+<li><code>void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx)</code>: Initialize predicate filter based on 2-tuple list and query automaton.</li>
+<li><code>void destroyPredicateFilter(PredicateFilter* pf)</code>: Free dynamic memory spaces allocated by predicate filtering component.</li>
+<li><code>Output* generateFinalOutput(PredicateFilter* pf)</code>: Run predicate filter component and generate final output list.</li>
+</ul>
+<h2 class="mume-header" id="usage-of-internal-api">Usage of Internal API</h2>
 
-        <p>To load input stream without partitioning:</p>
-        <pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token keyword">char</span><span class="token operator">*</span> stream <span class="token operator">=</span> <span class="token function">loadJSONStream</span><span class="token punctuation">(</span><span class="token string">&quot;../../dataset/wiki.json&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-</pre>
-        <p>To load input stream with partitioning:</p>
-        <pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token keyword">int</span> num_core <span class="token operator">=</span> <span class="token number">16</span><span class="token punctuation">;</span>
+<h3 class="mume-header" id="loading-input-stream">Loading Input Stream</h3>
+
+<p>To load input stream without partitioning:</p>
+<pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token comment">//load input stream</span>
+    <span class="token keyword">char</span><span class="token operator">*</span> stream <span class="token operator">=</span> <span class="token function">loadInputStream</span><span class="token punctuation">(</span><span class="token string">&quot;../../dataset/wiki.json&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">//load input stream with bounded memory</span>
+    <span class="token keyword">int</span> start_pos <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span><span class="token operator">*</span> stream <span class="token operator">=</span> <span class="token function">loadInputStream</span><span class="token punctuation">(</span><span class="token string">&quot;../../dataset/wiki.json&quot;</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>start_pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</pre><p>To load input stream with partitioning:</p>
+<pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token keyword">int</span> num_core <span class="token operator">=</span> <span class="token number">16</span><span class="token punctuation">;</span>
     PartitionInfo pInfo <span class="token operator">=</span> <span class="token function">partitionFile</span><span class="token punctuation">(</span><span class="token string">&quot;../../dataset/bb.json&quot;</span><span class="token punctuation">,</span> num_core<span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token keyword">int</span> num_chunk <span class="token operator">=</span> pInfo<span class="token punctuation">.</span>num_chunk<span class="token punctuation">;</span>
     <span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span> stream <span class="token operator">=</span> pInfo<span class="token punctuation">.</span>stream<span class="token punctuation">;</span>
-</pre>
-        <h3 class="mume-header" id="generating-deterministic-finite-automaton-dfa-for-jsonpath-query">Generating
-          Deterministic Finite Automaton (DFA) for JSONPath query</h3>
+</pre><h3 class="mume-header" id="generating-deterministic-finite-automaton-dfa-for-jsonpath-query">Generating Deterministic Finite Automaton (DFA) for JSONPath query</h3>
 
-        <pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token keyword">char</span><span class="token operator">*</span> path <span class="token operator">=</span> <span class="token string">&quot;$.root.products[?(@.sku&amp;&amp;@.productId)].categoryPath[?(@.name)].id&quot;</span><span class="token punctuation">;</span>
+<pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token keyword">char</span><span class="token operator">*</span> path <span class="token operator">=</span> <span class="token string">&quot;$.root.products[?(@.sku&amp;&amp;@.productId)].categoryPath[?(@.name)].id&quot;</span><span class="token punctuation">;</span>
     JSONQueryDFAContext<span class="token operator">*</span> ctx <span class="token operator">=</span> <span class="token punctuation">(</span>JSONQueryDFAContext<span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>JSONQueryDFAContext<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     JSONQueryDFA<span class="token operator">*</span> dfa <span class="token operator">=</span> <span class="token function">buildJSONQueryDFA</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> ctx<span class="token punctuation">)</span><span class="token punctuation">;</span>
-</pre>
-        <h3 class="mume-header" id="getting-executables-and-run">Getting Executables and Run</h3>
+</pre><h3 class="mume-header" id="getting-executables-and-run">Getting Executables and Run</h3>
 
-        <p>For serial streaming automaton,</p>
-        <pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token comment">//create streaming automaton</span>
+<p>For serial streaming automaton,</p>
+<pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token comment">//create streaming automaton</span>
     StreamingAutomaton sa<span class="token punctuation">;</span>
     <span class="token function">initStreamingAutomaton</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>sa<span class="token punctuation">,</span> dfa<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
@@ -966,40 +1116,26 @@ make
     
     <span class="token comment">//get results generated from streaming automaton</span>
     TupleList<span class="token operator">*</span> tl <span class="token operator">=</span> sa<span class="token punctuation">.</span>tuple_list<span class="token punctuation">;</span>
-</pre>
-        <p>For parallel streaming automata,</p>
-        <pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token comment">//create parallel streaming automata </span>
+</pre><p>For parallel streaming automata,</p>
+<pre data-role="codeBlock" data-info="c" class="language-c">    <span class="token comment">//create parallel streaming automata </span>
     ParallelAutomata pa<span class="token punctuation">;</span>
     <span class="token function">initParallelAutomata</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pa<span class="token punctuation">,</span> dfa<span class="token punctuation">)</span><span class="token punctuation">;</span>
     
     <span class="token comment">//run parallel automata without data constraint learning</span>
-    <span class="token function">executeParallelAutomata</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pa<span class="token punctuation">,</span> pInfo<span class="token punctuation">,</span> WARMUP<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">executeParallelAutomata</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pa<span class="token punctuation">,</span> pInfo<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     
     <span class="token comment">//run parallel automata with data constraint learning</span>
-    <span class="token function">executeParallelAutomata</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pa<span class="token punctuation">,</span> pInfo<span class="token punctuation">,</span> WARMUP<span class="token punctuation">,</span> sa<span class="token punctuation">.</span>constraint_table<span class="token punctuation">)</span><span class="token punctuation">;</span>
-    
-    <span class="token comment">//run parallel automata without warming up CPU</span>
-    <span class="token function">executeParallelAutomata</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pa<span class="token punctuation">,</span> pInfo<span class="token punctuation">,</span> NOWARMUP<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">executeParallelAutomata</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pa<span class="token punctuation">,</span> pInfo<span class="token punctuation">,</span> sa<span class="token punctuation">.</span>constraint_table<span class="token punctuation">)</span><span class="token punctuation">;</span>
     
     <span class="token comment">//get results generated from parallel automata</span>
     TupleList<span class="token operator">*</span> tl <span class="token operator">=</span> pa<span class="token punctuation">.</span>tuple_list<span class="token punctuation">;</span>
-</pre>
-        <h3 class="mume-header" id="filtering-results-for-jsonpath-with-predicates">Filtering Results for JSONPath with
-          Predicates</h3>
+</pre><h3 class="mume-header" id="filtering-results-for-jsonpath-with-predicates">Filtering Results for JSONPath with Predicates</h3>
 
-        <pre data-role="codeBlock" data-info="c" class="language-c">    PredicateFilter pf<span class="token punctuation">;</span>
+<pre data-role="codeBlock" data-info="c" class="language-c">    PredicateFilter pf<span class="token punctuation">;</span>
     <span class="token function">initPredicateFilter</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pf<span class="token punctuation">,</span> tl<span class="token punctuation">,</span> ctx<span class="token punctuation">)</span><span class="token punctuation">;</span>
     Output<span class="token operator">*</span> final <span class="token operator">=</span> <span class="token function">generateFinalOutput</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pf<span class="token punctuation">)</span><span class="token punctuation">;</span>
 </pre>
-        <h2 class="mume-header" id="publications">Publications</h2>
-
-        <p>[1] Lin Jiang, Xiaofan Sun, Umar Farooq, and Zhijia Zhao. Stream Processing of Contemporary Semi-Structured
-          Data on Commodity Parallel Processors - A Compilation-based Approach. In Proceedings of the 24th ACM
-          International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS),
-          2019.</p>
-
       </div>
-
     </div>
   </div>
 </section>
