@@ -214,5 +214,19 @@ Token nextToken(Lexer* lexer)
         
     }
     token.token_type = END;
+    templen = p-start;
+    if(templen>0) //the last symbol is a primitive
+    {
+        substring_in_place(sub1, token_pointer, 0, tempcount);
+        strcopy(sub1,lexer->content);
+        token.token_type = PRI;
+        token_len = p - start + 1;
+        token_pointer = start + token_len;
+        lexer->current_pointer = token_pointer;
+        lexer->current_start = lexer->current_pointer+1; 
+        lexer->lex_state = 0;
+        lexer->next_start = p+1;
+        token.content = lexer->content;
+    }
     return token;
 }
