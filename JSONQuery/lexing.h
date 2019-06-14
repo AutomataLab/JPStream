@@ -26,6 +26,8 @@ typedef struct Lexer{
     char* end_stream;         //ending position of input json
     int lex_state;       
     char* content;           //content of the current symbol
+    int start_content;       //start position for current symbol
+    int end_content;         //end position for current symbol
 }Lexer; 
 
 

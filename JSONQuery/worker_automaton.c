@@ -225,11 +225,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                                 if(matched_type==DFA_OUTPUT_CANDIDATE||(wa->id>0 && matched_type==DFA_UNSELECTED_CANDIDATE))
                                 {  
                                     int matched_end = lexer.next_start - lexer.begin_stream;
-                                    if(wa->id==0){
-                                        char* output_text = substring(lexer.begin_stream, c_node.matched_start, matched_end);
-                                        addTupleInfo(&qs, start_index, c_node.query_state, output_text, tl); 
-                                    }
-                                    else addVirtualTupleInfo(&qs, start_index, c_node.query_state, c_node.matched_start, matched_end, tl);
+                                    addVirtualTupleInfo(&qs, start_index, c_node.query_state, c_node.matched_start, matched_end, tl);
                                     qs.node[start_index].matched_start = INVALID; 
                                 }
                             }
@@ -388,11 +384,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                             if(matched_type==DFA_OUTPUT_CANDIDATE||(wa->id>0 && matched_type==DFA_UNSELECTED_CANDIDATE))
                             {   
                                 int matched_end = lexer.next_start - lexer.begin_stream;
-                                if(wa->id==0){
-                                    char* output_text = substring(lexer.begin_stream, c_node.matched_start, matched_end);
-                                    addTupleInfo(&qs, start_index, c_node.query_state, output_text, tl); 
-                                }
-                                else addVirtualTupleInfo(&qs, start_index, c_node.query_state, c_node.matched_start, matched_end, tl);
+                                addVirtualTupleInfo(&qs, start_index, c_node.query_state, c_node.matched_start, matched_end, tl);
                                 qs.node[start_index].matched_start = INVALID; 
                             }
                             else if(matched_type==DFA_INCOMPLETE_INDEX)
@@ -522,7 +514,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                         int matched_type = getMatchedType(qa,&c_node);
                         if(matched_type==DFA_OUTPUT_CANDIDATE||matched_type==DFA_CONDITION||(wa->id>0 && matched_type==DFA_UNSELECTED_CANDIDATE))
                         {
-                            addTupleInfo(&qs, start_index, c_node.query_state, token.content, tl);
+                            addVirtualTupleInfo(&qs, start_index, c_node.query_state, lexer.start_content, lexer.end_content, tl); 
                         }
                         if(syntaxStackTop(&ss)==LB)  
                             qs.node[start_index].count++;
@@ -568,8 +560,8 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                             TreeNode c_node = qs.node[start_index];
                             int matched_type = getMatchedType(qa,&c_node);
                             if(matched_type==DFA_OUTPUT_CANDIDATE||matched_type==DFA_CONDITION||(wa->id>0 && matched_type==DFA_UNSELECTED_CANDIDATE))
-                            {
-                                addTupleInfo(&qs, start_index, c_node.query_state, token.content, tl);
+                            {   
+                                addVirtualTupleInfo(&qs, start_index, c_node.query_state, lexer.start_content, lexer.end_content, tl);
                             }
                             qs.node[start_index].count++;
                             start_index++;

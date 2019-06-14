@@ -4,30 +4,27 @@
 #include "utility.h"
 
 #define MAX_OUTPUT 800000 //290000
-#define MAX_STRING 500
+
 
 typedef struct Output{
     char** element;
     int count;
+    int max_size;
 }Output;
 
 static inline void initOutput(Output* output)
 {
     output->element = (char**)malloc(MAX_OUTPUT*sizeof(char*));
-    int i;
-    for(i=0; i<MAX_OUTPUT; i++)
-    {
-        output->element[i] = (char*)malloc(MAX_STRING*sizeof(char));
-    }
     output->count = -1;
+    output->max_size = MAX_OUTPUT;
 }
 
 static inline void destroyOutput(Output* output)
 {
     int i;
-    for(i=0; i<MAX_OUTPUT; i++)
-    {
-        if(output->element[i]!=NULL) free(output->element[i]);
+    for(i=0; i<output->count; i++)
+    {   
+        if(output->element[i]!=NULL) free(output->element[i]); 
     }
     free(output->element);
 }
@@ -47,8 +44,15 @@ static inline void freeOutput(Output* output)
 
 static inline void addOutputElement(Output* output, char* text)
 {
+    if(output->count==output->max_size-1)
+    {
+        output->element = (char**)realloc(output->element, (2*output->max_size)*sizeof(char*));
+        output->max_size = 2*output->max_size;
+    }
     int index = (++output->count);
-    strcopy(text, output->element[index]); //printf("text %s %d\n", text, index);
+    output->element[index] = text;
+    //strcopy(text, output->element[index]); 
+    //printf("text %s %d\n", text, index);
 }
 
 static inline char* getOutputElement(Output* output, int index)
@@ -56,8 +60,20 @@ static inline char* getOutputElement(Output* output, int index)
     return output->element[index];
 }
 
+static inline void resetOutputElement(Output* output, int index)
+{
+    output->element[index] = NULL;
+}
+
 static inline void removeOutputElement(Output* output, int number)
 {
+    int i;
+    int count = output->count;
+    for(i = count; i>count-number; i--)
+    {
+        free(output->element[i]); 
+        output->element[i] = NULL;
+    }
     output->count-=number; 
 }
 

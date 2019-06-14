@@ -54,8 +54,8 @@ char* loadBoundedInputStream(char* file_name, int* start_pos)
     if(size > MEMORY_FOOTPRINT)
         size = MEMORY_FOOTPRINT;
     if(size<=0) return NULL;    
-    fseek(fp, loaded_size, SEEK_CUR);
-    char* stream =(char*)malloc((size+MAX_EXTENSION)*sizeof(char));
+    fseek(fp, loaded_size, SEEK_CUR); 
+    char* stream =(char*)malloc((size+MAX_EXTENSION)*sizeof(char)); 
     fread(stream,1,size,fp);
     int add = 0;
     //look for the next complete token
@@ -94,10 +94,12 @@ PartitionInfo partitionInputStream(char* input_stream, int num_core)
     PartitionInfo pInfo;
     pInfo.num_chunk = 0;
     char** stream = NULL;
+    int* start_pos = NULL;
     long stream_size, chunk_size;
     stream_size = strlen(input_stream);
     chunk_size = (stream_size/num_core)+1;
     stream = (char**)malloc(num_core*sizeof(char*));
+    start_pos = (int*)malloc(num_core*sizeof(int));
     int i;
     for(i = 0; i<num_core; i++)
         stream[i] = NULL;
@@ -105,6 +107,7 @@ PartitionInfo partitionInputStream(char* input_stream, int num_core)
     char ch = -1; 
     for(i = 0; i<num_core-1; i++)
     {   
+        start_pos[i] = sum_size;
         stream[i] = (char*)malloc((chunk_size+MAX_EXTENSION)*sizeof(char)); 
         substring_in_place(stream[i], input_stream, sum_size, sum_size+chunk_size);
         sum_size += chunk_size; 
@@ -135,7 +138,8 @@ PartitionInfo partitionInputStream(char* input_stream, int num_core)
         sum_size += add;
         if((sum_size+chunk_size)>=stream_size) {i++; break;}
     } 
-    pInfo.num_chunk = i;
+    pInfo.num_chunk = i; 
+    start_pos[i] = sum_size;
     long remain_size = stream_size-sum_size;
     if(remain_size>0)
     {
@@ -144,10 +148,10 @@ PartitionInfo partitionInputStream(char* input_stream, int num_core)
     }
     pInfo.num_chunk = i+1;
     pInfo.stream = stream;
+    pInfo.start_pos = start_pos;
     printf("stream partitioner: finish splitting the input stream\n");
     return pInfo;
 }
-
 typedef struct PathProcessor{
     JSONQueryDFAContext* query_context; 
     JSONQueryDFA* query_automaton;
@@ -211,8 +215,8 @@ static inline Output* serialPartialRun(PathProcessor* path_processor, char* inpu
 
     //predicate filtering
     PredicateFilter pf;
-    if(cflag == CONTEXT) { pf = ci->pf; pf.tuple_list = streaming_automaton.tuple_list;}
-    else initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx);
+    if(cflag == CONTEXT) { pf = ci->pf; pf.tuple_list = streaming_automaton.tuple_list; pf.input_stream = input_stream; }
+    else initPredicateFilter(&pf, streaming_automaton.tuple_list, ctx, input_stream);
     Output* output = generateFinalOutput(&pf);
     ci->pf = pf;
 
@@ -265,7 +269,7 @@ static inline ConstraintTable* collectDataConstraints(PathProcessor* path_proces
 // when input size might exceed the memory limit
 static inline Output* parallelPartialRun(PathProcessor* path_processor, char* input_stream, int num_core, StreamingContext* ci)
 {   
-    PartitionInfo pInfo = partitionInputStream(input_stream, num_core);
+    PartitionInfo pInfo = partitionInputStream(input_stream, num_core); 
     JSONQueryDFAContext* ctx = path_processor->query_context;
     JSONQueryDFA* dfa = path_processor->query_automaton;
     int cflag = ci->context_flag;
@@ -279,13 +283,12 @@ static inline Output* parallelPartialRun(PathProcessor* path_processor, char* in
     //execute parallel streaming automata
     executeParallelAutomata(&pa, pInfo, NULL);
     TupleList* tl = pa.tuple_list;
-
     ci->pa = pa;
 
     //predicate filtering
     PredicateFilter pf;
-    if(cflag == CONTEXT) { pf = ci->pf; pf.tuple_list = tl;}
-    else initPredicateFilter(&pf, tl, ctx);
+    if(cflag == CONTEXT) { pf = ci->pf; pf.tuple_list = tl; pf.input_stream = input_stream;}
+    else initPredicateFilter(&pf, tl, ctx, input_stream);
     Output* output = generateFinalOutput(&pf);
     ci->pf = pf;
    
@@ -336,8 +339,8 @@ static inline Output* parallelPartialRunOpt(PathProcessor* path_processor, char*
 
     //predicate filtering
     PredicateFilter pf;
-    if(cflag == CONTEXT) { pf = ci->pf; pf.tuple_list = tl;}
-    else initPredicateFilter(&pf, tl, ctx);
+    if(cflag == CONTEXT) { pf = ci->pf; pf.tuple_list = tl; pf.input_stream = input_stream; }
+    else initPredicateFilter(&pf, tl, ctx, input_stream);
     Output* output = generateFinalOutput(&pf);
     ci->pf = pf;
 
@@ -353,12 +356,12 @@ static inline Output* parallelRunOpt(PathProcessor* path_processor, char* file_n
     StreamingContext ci; 
     initStreamingContext(&ci);
     char* input_stream = NULL;
-    Output* output = NULL;
+    Output* output = NULL; 
     int start_pos = 0; //pointer to the starting position of the next available input chunk
     while(1)
     {
         input_stream = loadBoundedInputStream(file_name, &start_pos);
-        if(input_stream == NULL) break;
+        if(input_stream == NULL) break; 
         output = parallelPartialRunOpt(path_processor, input_stream, num_core, ct, &ci);
         free(input_stream);
     }

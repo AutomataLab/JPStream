@@ -44,6 +44,7 @@ static inline void initStreamingAutomaton(StreamingAutomaton* sa, JSONQueryDFA* 
     //by default don't generate any data constraints
     sa->constraint_flag = CLOSE;
     sa->constraint_table = NULL;
+    sa->finish_flag = INPROGRESS;
 }
 
 static inline void destroyStreamingAutomaton(StreamingAutomaton* sa)

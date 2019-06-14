@@ -187,9 +187,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
                 if(qs_elt->matched_start!=INVALID && getMatchedType(qa, qs_elt)==DFA_OUTPUT_CANDIDATE)
                 {
                     int position = lexer.next_start - lexer.begin_stream;
-                    char* output_text = substring(lexer.begin_stream, qs_elt->matched_start, position);
-                    qs_elt->matched_start = INVALID;
-                    addTuple(tl, qs_elt->query_state, output_text);
+                    addVirtualTuple(tl, qs_elt->query_state, qs_elt->matched_start, position);
                 }
                 //syntax stack only has one '{'
                 if(syntaxStackSize(ss) == 1)   
@@ -250,9 +248,8 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
                     if(top_qs_elt.matched_start!=INVALID && getMatchedType(qa, &top_qs_elt)==DFA_OUTPUT_CANDIDATE)  
                     { 
                         int position = lexer.next_start - lexer.begin_stream;
-                        char* output_text = substring(lexer.begin_stream, top_qs_elt.matched_start, position); 
+                        addVirtualTuple(tl, qs_elt->query_state, qs_elt->matched_start, position);
                         top_qs_elt.matched_start = INVALID;
-                        addTuple(tl, top_qs_elt.query_state, output_text);  
                     }
                     //syntax stack only has one '['
                     if(syntaxStackSize(ss) == 1)  
@@ -299,11 +296,11 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
                     int matched_type = getMatchedType(qa,qs_elt);
                     if(matched_type==DFA_OUTPUT_CANDIDATE)  
                     { 
-                        addTuple(tl, qs_elt->query_state, token.content);  
+                        addVirtualTuple(tl, qs_elt->query_state, lexer.start_content, lexer.end_content);
                     }
                     else if(matched_type==DFA_CONDITION)
                     {
-                        addTuple(tl, qs_elt->query_state, token.content);
+                        addVirtualTuple(tl, qs_elt->query_state, lexer.start_content, lexer.end_content);
                     }
                     //the top element on syntax stack is a key field
                     if(syntaxStackTop(ss)==KY)  
@@ -326,7 +323,7 @@ void executeAutomaton(StreamingAutomaton* sa, char* json_stream, int data_constr
     sa->count = qs_elt->count;
     sa->matched_start = qs_elt->matched_start;
     ///printf("syntax size %d query state %d %d\n", syntaxStackSize(ss), sa->query_state, qs->top_item);
-    ///printf("size of 2-tuple list before filtering %d\n", getTupleListSize(tl));
+    printf("size of 2-tuple list before filtering %d\n", getTupleListSize(tl));
 }
 
 

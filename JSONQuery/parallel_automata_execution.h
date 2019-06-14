@@ -28,6 +28,7 @@ typedef struct ThreadInfo{
     int thread_id;
     char* input_stream;
     double execution_time;
+    int base_pos;
     WorkerAutomaton* worker_automaton;
 }ThreadInfo;
 
@@ -46,6 +47,7 @@ static inline void initParallelAutomata(ParallelAutomata* pa, JSONQueryDFA* qa)
     pa->query_automaton = qa;
     pa->tuple_list = NULL;
     pa->major_automaton = NULL;
+    pa->finish_flag = INPROGRESS;
 }
 
 static inline void destroyParallelAutomata(ParallelAutomata* pa)
@@ -59,7 +61,7 @@ static inline void destroyParallelAutomata(ParallelAutomata* pa)
     {  
         if(pa->finish_flag==INPROGRESS)
         {
-            pa->major_automaton->tuple_list = createTupleList();
+            pa->major_automaton->tuple_list = createTupleList(); 
         }
         else if(pa->finish_flag==FINISH)
         {   
@@ -132,6 +134,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
 
     for(int i = 1; i<num_thread; i++)
     {
+        int base_pos = thread_info[i].base_pos;  ///printf("base position %d\n", base_pos);
         WorkerAutomaton* wa = thread_info[i].worker_automaton;
         UnitList ul = wa->unit_list; 
         TupleList* tl = wa->tuple_list;  
@@ -161,14 +164,10 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                         {
                             int matched_type = getMatchedType(qa,&c_node);
                             if(matched_type==DFA_OUTPUT_CANDIDATE)
-                            {  
-                                int left_len = strlen(thread_info[i-1].input_stream)-c_node.matched_start;
-                                int right_len = us.index+1;
-                                int strlen = left_len+right_len;
-                                char* object_text = (char*)malloc((strlen+1)*sizeof(char));
-                                substring_in_place(object_text, thread_info[i-1].input_stream, c_node.matched_start, c_node.matched_start+left_len);
-                                substring_in_place(object_text+left_len, thread_info[i].input_stream, 0, us.index+1);
-                                addTupleInfo(&qs, node_index, c_node.query_state, object_text, tuple_list);
+                            { 
+                                int start_content = thread_info[i-1].base_pos + c_node.matched_start;
+                                int end_content = base_pos + us.index+1; 
+                                addVirtualTupleInfo(&qs, node_index, c_node.query_state, start_content, end_content, tuple_list);
                                 qs.node[node_index].matched_start = INVALID;
                                 sum++;
                             }
@@ -212,14 +211,10 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                             
                             int matched_type = getMatchedType(qa,&c_node);
                             if(matched_type==DFA_OUTPUT_CANDIDATE)
-                            {  
-                                int left_len = strlen(thread_info[i-1].input_stream)-c_node.matched_start;
-                                int right_len = us.index;
-                                int strlen = left_len+right_len;
-                                char* object_text = (char*)malloc((strlen+1)*sizeof(char));
-                                substring_in_place(object_text, thread_info[i-1].input_stream, c_node.matched_start, c_node.matched_start+left_len);
-                                substring_in_place(object_text+left_len, thread_info[i].input_stream, 0, us.index+1);
-                                addTupleInfo(&qs, node_index, c_node.query_state, object_text, tuple_list);
+                            { 
+                                int start_content = thread_info[i-1].base_pos + c_node.matched_start;
+                                int end_content = base_pos + us.index+1;
+                                addVirtualTupleInfo(&qs, node_index, c_node.query_state, start_content, end_content, tuple_list);
                                 qs.node[node_index].matched_start = INVALID;
                                 sum++;
                             }
@@ -327,8 +322,7 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                     addTuple(tuple_list, tuple.state, tuple.text);
                 else
                 {   
-                    substring_in_place(tuple.text, thread_info[i].input_stream, tuple.start_position, tuple.end_position); 
-                    addTuple(tuple_list, tuple.state, tuple.text); 
+                    addVirtualTuple(tuple_list, tuple.state, base_pos+tuple.start_position, base_pos+tuple.end_position);   
                 }
                 sum++;
             }
@@ -356,13 +350,15 @@ void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, Const
     ThreadInfo ti[MAX_THREAD]; 
     int i;
     for(i = 0; i<num_cores; i++)
-    {
+    {   
         //initialize each thread
         ti[i].thread_id = i;
-        ti[i].input_stream = par_info.stream[i];
+        ti[i].input_stream = par_info.stream[i]; 
         if((i==0)&&(pa->major_automaton!=NULL))  ti[i].worker_automaton = pa->major_automaton;  
         else 
-            ti[i].worker_automaton = createWorkerAutomaton(qa, i, ct);
+            ti[i].worker_automaton = createWorkerAutomaton(qa, i, ct); 
+        //printf("position %d\n", par_info.start_pos[i]); 
+        ti[i].base_pos = par_info.start_pos[i];
         int rc=pthread_create(&ti[i].thread, NULL, main_thread, &ti[i]);  
     	if (rc)
         {

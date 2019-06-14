@@ -3,7 +3,8 @@
 
 Output* generateFinalOutput(PredicateFilter* pf)
 { 
-    Output* output = pf->output;//createOutput();  //final results
+    char* input_stream = pf->input_stream;
+    Output* output = pf->output;  //final results
     //get 2-tuple list
     TupleList* tl = pf->tuple_list;
     int start_index = 0;
@@ -18,20 +19,22 @@ Output* generateFinalOutput(PredicateFilter* pf)
        for(int i = start_index; i < end_index; i++) 
        {
            Tuple tuple = getTuple(tl, i);  
-           addOutputElement(output, tuple.text);
+           int start_pos = tuple.start_position;
+           int end_pos = tuple.end_position;
+           char* text_value = substring(input_stream, start_pos, end_pos);
+           addOutputElement(output, text_value);
        }
        return output; 
     }
 
     if(pf->buffer==NULL) pf->buffer = createOutput();
-    Output* buffer = pf->buffer;   //temporary buffer pf->buffer; //
+    Output* buffer = pf->buffer;   //temporary buffer 
     PredicateStack ps = pf->pstack;
-    ///initPredicateStack(&ps);
-//////printf("1 %d\n", getPredicateStackSize(&ps));
+
     //iterate through each element in tuple list
     for(int i = start_index; i < end_index; i++)
     {
-        Tuple tuple = getTuple(tl, i); ///printf("text %s\n", tuple.text);
+        Tuple tuple = getTuple(tl, i); 
         int state = tuple.state;  //query state
         char* text = tuple.text;  //text content
         //starting position of an object
@@ -53,15 +56,17 @@ Output* generateFinalOutput(PredicateFilter* pf)
             bool v = evaluateExpression(node, pc); 
             int first_idx = ps_elt.output_buffer_pointer;
             int buf_size = getOutputSize(buffer);
-            int rmv_num = buf_size - first_idx;
+            int rmv_num = buf_size - first_idx; 
             if (v)
-            {
+            {   
                 //release buffer into final output list
                 if(getPredicateStackSize(&ps)==1)
                 {
                     for(int j = first_idx; j<buf_size; j++)
-                    { 
-                        addOutputElement(output, getOutputElement(buffer, j)); 
+                    {    
+                        char* text_value = getOutputElement(buffer, j); 
+                        addOutputElement(output, text_value); 
+                        resetOutputElement(buffer, j);
                     }
                     //clear the last few elements into buffer
                     removeOutputElement(buffer, rmv_num);
@@ -91,16 +96,30 @@ Output* generateFinalOutput(PredicateFilter* pf)
             //update value for predicate condition
             if(node!=NULL&&pc[index].name!=NULL)
             {  
-                pc[index].text = allocate_and_copy(text); 
+                char* text_value = NULL;
+                int start_pos = tuple.start_position;
+                if(start_pos!=-1)
+                {
+                    int end_pos = tuple.end_position;
+                    text_value = substring(input_stream, start_pos, end_pos); 
+                }
+                else
+                {
+                    text_value = allocate_and_copy(text); 
+                }
+                pc[index].text = text_value;       
             }
             else //add candidate output into buffer
             {
-                addOutputElement(buffer, text);
+                int start_pos = tuple.start_position;
+                int end_pos = tuple.end_position;
+                char* text_value = substring(input_stream, start_pos, end_pos);
+                addOutputElement(buffer, text_value); 
             }
         }
     }
     pf->pstack = ps;
-    ///printf("stack size %d\n", getPredicateStackSize(&pf->pstack));
+    //printf("stack size %d output size %d\n", getPredicateStackSize(&pf->pstack), getOutputSize(output));
     ///printf("buffer size %d %s\n", getOutputSize(&buffer), getOutputElement(&buffer, 0));
     return output;
 }

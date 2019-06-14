@@ -76,7 +76,7 @@ Token nextToken(Lexer* lexer)
                         token_len = p - start;
                         token_pointer = start + token_len;
                         start = token_pointer;
-                        state = 1;  //printf("to 1\n");
+                        state = 1;  
                         break;
                     case ' ':
                     case '\t':  //jump space
@@ -116,6 +116,8 @@ Token nextToken(Lexer* lexer)
                         tempcount = p-start;
                         templen = tempcount; 
                         substring_in_place(sub1, start , 1, tempcount);     
+                        int s_content = start + 1 -lexer->begin_stream;
+                        int e_content = s_content + tempcount - 1;
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         start = token_pointer;
@@ -143,15 +145,12 @@ Token nextToken(Lexer* lexer)
                         }
                         else //primitive value
                         {
-                            lexer->content[0]='"';
-                            strcopy(sub1, lexer->content+1);
-                            lexer->content[strlen(lexer->content)]='"'; 
-                            lexer->content[strlen(lexer->content)+1]='\0'; 
                             lexer->current_start = lexer->current_pointer+1; 
                             lexer->lex_state = 0; 
                             lexer->next_start = p+1; 
+                            lexer->start_content = s_content-1;
+                            lexer->end_content = e_content+1;
                             token.token_type = PRI;
-                            token.content = lexer->content;
                             return token;
                         }
                         
@@ -174,12 +173,22 @@ Token nextToken(Lexer* lexer)
                    	{
                         int tempcount = p-start;
                         templen = tempcount; 
+                        int s_content = start + 1 -lexer->begin_stream;
+                        int e_content = s_content + tempcount - 1;
                         if(p[0]=='"')
-                            substring_in_place(sub1, start, 1 ,tempcount); 
+                        {
+                            s_content = start + 1 -lexer->begin_stream;
+                            e_content = s_content + tempcount - 1;
+                        }
                         else if(token_pointer[tempcount-1]==',') 
-                            substring_in_place(sub1, token_pointer, 0, tempcount-1);
-                        else substring_in_place(sub1, token_pointer, 0, tempcount);
-                        strcopy(sub1,lexer->content);
+                        {
+                            s_content = token_pointer - lexer->begin_stream;
+                            e_content = s_content + tempcount - 1;
+                        }
+                        else{
+                            s_content = token_pointer - lexer->begin_stream;
+                            e_content = s_content + tempcount;
+                        } 
                         token_len = p - start + 1;
                         token_pointer = start + token_len;
                         lexer->current_pointer = token_pointer;
@@ -187,8 +196,9 @@ Token nextToken(Lexer* lexer)
                         p--;
                         lexer->lex_state = 0;
                         lexer->next_start = p+1;
+                        lexer->start_content = s_content;
+                        lexer->end_content = e_content;
                         token.token_type = PRI;
-                        token.content = lexer->content;
                         return token;
                     }
                     default:

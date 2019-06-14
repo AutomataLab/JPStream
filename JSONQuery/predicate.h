@@ -35,6 +35,7 @@ typedef struct PredicateFilter{
     Output* output;
     //whether predicate filtering is done
     int finish_flag;
+    char* input_stream;
 }PredicateFilter;
 
 static inline void initPredicateStack(PredicateStack* ps)
@@ -63,7 +64,7 @@ static inline int getPredicateStackSize(PredicateStack* ps)
     return ps->top_element+1;
 }
 
-static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx)  
+static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx, char* input_stream)  
 {
     pf->tuple_list = tl;
     pf->ctx = ctx;
@@ -91,6 +92,7 @@ static inline void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQ
     pf->buffer = NULL;
     pf->output = createOutput();
     initPredicateStack(&pf->pstack);
+    pf->input_stream = input_stream;
     pf->finish_flag = INPROGRESS;
 }
 

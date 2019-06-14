@@ -12,6 +12,7 @@ PartitionInfo partitionFile(char* file_name, int num_core)
     PartitionInfo pInfo;
     pInfo.num_chunk = 0;
     char** stream=NULL;
+    int* start_pos = NULL;
     FILE *fp; 
     long file_size, chunk_size;
     fp = fopen(file_name,"rb");
@@ -22,13 +23,16 @@ PartitionInfo partitionFile(char* file_name, int num_core)
 
     chunk_size = (file_size/num_core)+1;
     stream = (char**)malloc(num_core*sizeof(char*));
+    start_pos = (int*)malloc(num_core*sizeof(int));
+
     int i;
     for(i = 0; i<num_core; i++)
         stream[i] = NULL;
     long sum_size = 0;   //the number of bytes that have been processed
     char ch = -1; 
     for(i = 0; i<num_core-1; i++)
-    {
+    {   
+        start_pos[i] = sum_size;
         stream[i] = (char*)malloc((chunk_size+MAX_EXTENSION)*sizeof(char));
         if(ch!=-1)
         {
@@ -72,6 +76,7 @@ PartitionInfo partitionFile(char* file_name, int num_core)
     long remain_size = file_size-sum_size;
     if(remain_size>0)
     {
+        start_pos[i] = sum_size;
         stream[i] = (char*)malloc((remain_size)*sizeof(char));
         if(ch!=-1)
         {
@@ -91,6 +96,7 @@ PartitionInfo partitionFile(char* file_name, int num_core)
     }
     pInfo.num_chunk = i+1;
     pInfo.stream = stream;
+    pInfo.start_pos = start_pos;
     printf("file partitioner: finish splitting the input stream\n");
     return pInfo;
 }
