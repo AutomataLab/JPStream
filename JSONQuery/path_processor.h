@@ -15,7 +15,7 @@
 #include "file_partition.h"
 #include "parallel_automata_execution.h"
 
-#define MAX_EXTENSION 2000
+#define MAX_EXTENSION 20000
 #define CONTEXT 1
 #define NOCONTEXT 0
 #define FINISH 1
@@ -39,17 +39,17 @@ char* loadInputStream(char* file_name)
 }
 
 //load the next available input stream with bounded memory footprint
-char* loadBoundedInputStream(char* file_name, int* start_pos)
+char* loadBoundedInputStream(char* file_name, long* start_pos)
 {
     FILE *fp;
-    int size;
+    long size;
     fp = fopen(file_name,"rb");
     if (fp==NULL) { return NULL;}
     fseek (fp, 0, SEEK_END);
     size=ftell(fp);
     rewind(fp);
 
-    int loaded_size = *(start_pos);
+    long loaded_size = *(start_pos);
     size = size - loaded_size;
     if(size > MEMORY_FOOTPRINT)
         size = MEMORY_FOOTPRINT;
@@ -57,7 +57,8 @@ char* loadBoundedInputStream(char* file_name, int* start_pos)
     fseek(fp, loaded_size, SEEK_CUR); 
     char* stream =(char*)malloc((size+MAX_EXTENSION)*sizeof(char)); 
     fread(stream,1,size,fp);
-    int add = 0;
+    long add = 0;
+    stream[size+add] = '\0'; 
     //look for the next complete token
     char ch = fgetc(fp);
     while(1)
@@ -82,7 +83,7 @@ char* loadBoundedInputStream(char* file_name, int* start_pos)
         ch = fgetc(fp);
     }
     stream[size+add]='\0';
-    int next = loaded_size+size+add;
+    long next = loaded_size+size+add;
     *(start_pos) = next;
     fclose(fp);
     return stream;
@@ -104,7 +105,7 @@ PartitionInfo partitionInputStream(char* input_stream, int num_core)
     for(i = 0; i<num_core; i++)
         stream[i] = NULL;
     long sum_size = 0;   //the number of bytes that have been processed
-    char ch = -1; 
+    char ch = -1;
     for(i = 0; i<num_core-1; i++)
     {   
         start_pos[i] = sum_size;
@@ -135,7 +136,7 @@ PartitionInfo partitionInputStream(char* input_stream, int num_core)
             add = add+1;
         }
         stream[i][chunk_size+add] = '\0'; 
-        sum_size += add;
+        sum_size += add;  
         if((sum_size+chunk_size)>=stream_size) {i++; break;}
     } 
     pInfo.num_chunk = i; 
@@ -234,7 +235,7 @@ static inline Output* serialRun(PathProcessor* path_processor, char* file_name)
     initStreamingContext(&ci);
     char* input_stream = NULL;
     Output* output = NULL;
-    int start_pos = 0;  //pointer to the starting position of the next available input chunk
+    long start_pos = 0;  //pointer to the starting position of the next available input chunk
     while(1)
     {
         input_stream = loadBoundedInputStream(file_name, &start_pos);
@@ -291,11 +292,11 @@ static inline Output* parallelPartialRun(PathProcessor* path_processor, char* in
     else initPredicateFilter(&pf, tl, ctx, input_stream);
     Output* output = generateFinalOutput(&pf);
     ci->pf = pf;
-   
+    printf("finish predicate filtering\n");
     //free up dynamic memories
     freeInputChunks(pInfo);
     destroyParallelAutomata(&pa);
-    ci->context_flag = CONTEXT;
+    ci->context_flag = CONTEXT; 
     return output;
 }
 
@@ -305,7 +306,7 @@ static inline Output* parallelRun(PathProcessor* path_processor, char* file_name
     initStreamingContext(&ci);
     char* input_stream = NULL;
     Output* output = NULL;
-    int start_pos = 0; //pointer to the starting position of the next available input chunk
+    long start_pos = 0; //pointer to the starting position of the next available input chunk
     while(1)
     {
         input_stream = loadBoundedInputStream(file_name, &start_pos);
@@ -357,7 +358,7 @@ static inline Output* parallelRunOpt(PathProcessor* path_processor, char* file_n
     initStreamingContext(&ci);
     char* input_stream = NULL;
     Output* output = NULL; 
-    int start_pos = 0; //pointer to the starting position of the next available input chunk
+    long start_pos = 0; //pointer to the starting position of the next available input chunk
     while(1)
     {
         input_stream = loadBoundedInputStream(file_name, &start_pos);

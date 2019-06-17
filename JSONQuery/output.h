@@ -3,7 +3,7 @@
 
 #include "utility.h"
 
-#define MAX_OUTPUT 800000 //290000
+#define MAX_OUTPUT 2000000//800000 //290000
 
 
 typedef struct Output{

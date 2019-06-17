@@ -107,38 +107,13 @@ void Test6()
     freeOutput(output);
 }
 
-void Test7()
-{
-    PathProcessor* path_processor = createPathProcessor("$.root[*].quoted_status.entities.user_mentions[0:1].indices[0:1]");
-    if(path_processor==NULL) return;
-
-    printf("start collecting data constraints\n");
-    //collecting data constraints is optional, but can often make the parallel execution more efficient
-    ConstraintTable* ct = collectDataConstraints(path_processor, "twitter_store1.txt");
-    ///free(train_stream);
-    printf("finish collecting data constraints\n");
-
-    printf("start executing JSONPath query\n");
-    int num_core = 16;
-    Output* output = parallelRunOpt(path_processor, "twitter_store1.txt", num_core, ct);
-    printf("size of final output is %d\n", getOutputSize(output));
-
-    //free up dynamic memories
-    freeConstraintTable(ct);
-    ///free(input_stream);
-    freePathProcessor(path_processor);
-    freeOutput(output);
-}
-
-
 int main()
 {
-   /*Test1();  
+   Test1();  
    Test2();  
    Test3();  
    Test4(); 
    Test5(); 
-   Test6(); */
-   Test7();
+   Test6(); 
    return 1;
 }
