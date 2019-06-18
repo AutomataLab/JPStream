@@ -85,7 +85,7 @@ void *main_thread(void *arg)
     printf("thread %d finishes.\n", t_id);  
     exe_timestamp=1000000*(end_timestamp.tv_sec-start_timestamp.tv_sec)+end_timestamp.tv_usec-start_timestamp.tv_usec;
     ti->execution_time = exe_timestamp/1000000;
-    printf("The execution time of thread %d is %lf\n", t_id, ti->execution_time); 
+    //printf("The execution time of thread %d is %lf\n", t_id, ti->execution_time); 
     return NULL;
 }
 
