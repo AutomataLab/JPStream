@@ -142,7 +142,7 @@ For parallel execution with data constraint learning (more efficient):
 - `void executeParallelAutomata(ParallelAutomata* pa, PartitionInfo par_info, ConstraintTable* ct)`: Execute parallel streaming automata based on partitioned chunks. Data constraint table can be used for runtime optimization. 
 
 ### Predicate Filtering
-- `void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx)`: Initialize predicate filter based on 2-tuple list and query automaton. 
+- `void initPredicateFilter(PredicateFilter* pf, TupleList* tl, JSONQueryDFAContext* ctx, char* input_stream)`: Initialize predicate filter based on 2-tuple list and query automaton. 
 - `void destroyPredicateFilter(PredicateFilter* pf)`: Free dynamic memory spaces allocated by predicate filtering component. 
 - `Output* generateFinalOutput(PredicateFilter* pf)`: Run predicate filter component and generate final output list. 
 
@@ -204,7 +204,7 @@ For parallel streaming automata,
 ### Filtering Results for JSONPath with Predicates
 ```c
     PredicateFilter pf;
-    initPredicateFilter(&pf, tl, ctx);
+    initPredicateFilter(&pf, tl, ctx, stream);
     Output* final = generateFinalOutput(&pf);
 ```
 
