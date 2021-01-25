@@ -4,7 +4,7 @@
 #include "utility.h"
 
 #define MAX_TUPLE_LIST 5000000
-#define MAX_TEXT 500
+#define MAX_TEXT 1000
 
 typedef struct Tuple{
     //starting index for string text

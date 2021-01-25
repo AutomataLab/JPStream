@@ -4,7 +4,7 @@
 #include "utility.h"
 
 #define MAX_OUTPUT 800000 //290000
-#define MAX_STRING 500
+#define MAX_STRING 1000
 
 typedef struct Output{
     char** element;

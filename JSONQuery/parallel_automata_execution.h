@@ -75,6 +75,20 @@ void *main_thread(void *arg)
     double exe_timestamp;
     ThreadInfo* ti = (ThreadInfo*)arg;
     int t_id = ti->thread_id;
+    // bind CPU
+    /*cpu_set_t mask;
+    CPU_ZERO(&mask);
+    CPU_SET(t_id, &mask);
+    if(pthread_setaffinity_np(pthread_self(), sizeof(mask), &mask)<0)
+        printf("CPU combination failed for thread %d\n", t_id);*/
+    // CPU warmup
+    /*gettimeofday(&start_timestamp,NULL);
+    while(1)
+    {
+        gettimeofday(&end_timestamp,NULL);
+        exe_timestamp=1000000*(end_timestamp.tv_sec-start_timestamp.tv_sec)+end_timestamp.tv_usec-start_timestamp.tv_usec;
+        if(exe_timestamp>3000000) break;
+    }*/
 
     printf("thread %d starts.\n", t_id);
     gettimeofday(&start_timestamp,NULL);
@@ -246,13 +260,10 @@ TupleList* combine(ThreadInfo* thread_info, int num_thread)
                         }
                     }
                 }
-                else if(us.token_type==OBJECT)
+                else if(us.token_type==OBJECT || us.token_type==ARRAY)
                 {
-                    val_obj_e(&qs_elt, &ss, &qs);
-                }
-                else if(us.token_type==ARRAY)
-                {
-                    val_ary_e(&qs_elt, &ss, &qs); 
+                    qs_elt = queryStacksPop(&qs);
+                    syntaxStackPop(&ss);
                 }
             }
 

@@ -352,7 +352,7 @@ void executeWorkerAutomaton(WorkerAutomaton* wa, char* json_stream)
                         { 
                             qs_elt = pruneQueryPaths(&qs, ci.state_set, ci.num_state);
                         }
-                        unit.unit_state = PRUNED;
+                        unit.has_pruned = PRUNED;
                     }
                     //write an iterator to get all nodes for current states from qs_elt
                     int start_index=qs_elt.start, end_index=qs_elt.end;
